@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOG FORMATTER — EDEN LOG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600&family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --paper: #FAF7F1;
+    --paper-edge: #EFE9DD;
+    --ink: #2B2A28;
+    --ink-soft: #6b6862;
+    --accent: #2A9D93;
+    --accent-dim: #cfe9e6;
+    --chrome-bg: #1E211F;
+    --chrome-text: #E9E6DE;
+    --chrome-sub: #8C9490;
+    --hl-yellow: #FBE79A;
+    --hl-pink: #F6C9D6;
+    --hl-mint: #BFE8DA;
+    --hl-lavender: #D6CFF2;
+    --danger: #C96A5B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--chrome-bg);
+    color: var(--chrome-text);
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    display:flex;
+    flex-wrap:wrap;
+  }
+
+  /* ---------- LEFT: control rail ---------- */
+  .rail{
+    width: 340px;
+    flex-shrink:0;
+    padding: 28px 24px 40px;
+    border-right: 1px solid #33372f;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    min-height:100vh;
+  }
+  .rail-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:2px;
+    color: var(--accent);
+    text-transform:uppercase;
+  }
+  .rail h1{
+    font-size:18px;
+    margin:2px 0 0;
+    font-weight:600;
+    color:var(--chrome-text);
+  }
+  .field label{
+    display:block;
+    font-size:11px;
+    color:var(--chrome-sub);
+    margin-bottom:6px;
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.5px;
+  }
+  select{
+    width:100%;
+    background:#262A24;
+    border:1px solid #3a3f37;
+    border-radius:6px;
+    color:var(--chrome-text);
+    padding:9px 10px;
+    font-family:'Pretendard', sans-serif;
+    font-size:13px;
+  }
+  select:focus{outline:none; border-color:var(--accent);}
+  .slider-row{
+    display:flex; align-items:center; gap:10px;
+  }
+  .slider-row input[type=range]{
+    flex:1;
+    accent-color: var(--accent);
+    height:4px;
+  }
+  .slider-row .val{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--chrome-sub);
+    width:38px;
+    text-align:right;
+  }
+  textarea, input[type=text]{
+    width:100%;
+    background:#15170F0D;
+    background:#262A24;
+    border:1px solid #3a3f37;
+    border-radius:6px;
+    color:var(--chrome-text);
+    padding:10px 12px;
+    font-family:'Pretendard', sans-serif;
+    font-size:13px;
+    resize:vertical;
+  }
+  textarea{min-height:160px; line-height:1.5;}
+  textarea:focus, input:focus{outline:none; border-color:var(--accent);}
+
+  .btn{
+    appearance:none;
+    border:none;
+    border-radius:6px;
+    padding:10px 14px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'Pretendard', sans-serif;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--accent); color:#0f1512;}
+  .btn-primary:hover{opacity:.9;}
+  .btn-ghost{background:transparent; color:var(--chrome-sub); border:1px solid #3a3f37;}
+  .btn-ghost:hover{color:var(--chrome-text); border-color:#565c52;}
+  .btn-row{display:flex; gap:8px;}
+  .btn-row .btn{flex:1;}
+
+  .btn-ghost.active{background:var(--accent); color:#0f1512; border-color:var(--accent);}
+  .btn-ghost.active:hover{color:#0f1512;}
+  .theme-swatch{
+    flex:1;
+    height:30px;
+    border-radius:6px;
+    border:2px solid transparent;
+    cursor:pointer;
+    padding:0;
+  }
+  .theme-swatch:hover{border-color:#565c52;}
+  .theme-swatch.active{border-color:#fff;}
+  .align-row{display:flex; gap:6px;}
+  .align-btn{
+    flex:1;
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#262A24;
+    border:1px solid #3a3f37;
+    border-radius:6px;
+    cursor:pointer;
+    color:var(--chrome-sub);
+    transition:background .12s ease, color .12s ease, border-color .12s ease;
+  }
+  .align-btn svg rect{fill:currentColor;}
+  .align-btn:hover{color:var(--chrome-text); border-color:#565c52;}
+  .align-btn.active{background:var(--accent); border-color:var(--accent); color:#0f1512;}
+  .divider{height:1px; background:#33372f; margin:2px 0;}
+
+  .section-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:1.5px;
+    color:var(--chrome-sub);
+    text-transform:uppercase;
+  }
+
+  .swatch-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .swatch{
+    width:26px; height:26px; border-radius:50%;
+    border:2px solid transparent;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .swatch.active{border-color:#fff;}
+  .swatch-custom{
+    width:26px;height:26px;padding:0;border:none;border-radius:50%;overflow:hidden;cursor:pointer;background:none;
+    display:inline-block;
+  }
+  .swatch-custom input[type=color]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;height:100%;
+    border:none;padding:0;cursor:pointer;background:none;
+  }
+  .swatch-custom input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
+  .swatch-custom input[type=color]::-webkit-color-swatch{border:none;border-radius:50%;}
+  .swatch-custom input[type=color]::-moz-color-swatch{border:none;border-radius:50%;}
+  .swatch-custom.bubble-custom{
+    width:20px;height:20px;
+    position:relative;
+  }
+  .swatch-custom.bubble-custom::after{
+    content:"+";
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    text-shadow:0 0 2px rgba(0,0,0,0.6);
+    pointer-events:none;
+  }
+
+  .hint{
+    font-size:11.5px;
+    color:var(--chrome-sub);
+    line-height:1.6;
+  }
+
+  /* ---------- RIGHT: paper stage ---------- */
+  .stage{
+    flex:1;
+    min-width:340px;
+    padding: 48px 32px 80px;
+    display:flex;
+    justify-content:center;
+  }
+  .paper-wrap{
+    width:100%;
+    max-width:680px;
+  }
+  .log-meta{
+    display:flex;
+    align-items:baseline;
+    font-family:'Noto Serif KR', serif;
+    font-size:13px;
+    color:#B0AA9C;
+    margin-bottom:20px;
+    padding-bottom:12px;
+    border-bottom:1px dashed var(--paper-edge);
+  }
+  .log-meta .log-id{color:var(--accent); letter-spacing:0.5px;}
+
+  #paper{
+    background: var(--paper);
+    border:1px solid var(--paper-edge);
+    border-radius:2px;
+    padding: 52px 64px 40px;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+    position:relative;
+  }
+  #output{
+    font-family:'Noto Serif KR', serif;
+    font-weight:300;
+    color:var(--ink);
+    font-size:16px;
+    line-height:2.0;
+    letter-spacing:-0.1px;
+    outline:none;
+    min-height:200px;
+  }
+  #output p{
+    margin:0 0 26px;
+    text-align:justify;
+    word-break:keep-all;
+  }
+  #output p:last-child{margin-bottom:0;}
+  #output p.quote{
+    color:var(--accent);
+    font-weight:600;
+    font-size:16.5px;
+  }
+  #output p.blank-beat{
+    text-align:center;
+    color:var(--ink-soft);
+    letter-spacing:4px;
+  }
+  #output p.stage-direction{
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+  #output .timestamp{
+    color:var(--ink-soft);
+    font-weight:500;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.9em;
+    letter-spacing:0.2px;
+    margin-right:2px;
+  }
+  #output .log-list{
+    margin:0 0 26px;
+  }
+  #output .log-list:last-child{margin-bottom:0;}
+  #output .log-list-item{
+    display:flex;
+    align-items:baseline;
+    margin-bottom:9px;
+    text-align:justify;
+    word-break:keep-all;
+  }
+  #output .log-list-item:last-child{margin-bottom:0;}
+  #output .log-list-item .marker{
+    flex:0 0 auto;
+    min-width:2.4em;
+    padding-right:2px;
+    font-weight:500;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  #output .log-list-item .text{
+    flex:1 1 auto;
+    min-width:0;
+  }
+  #output .log-divider{
+    border:none;
+    margin:6px 0 26px;
+  }
+  #output .log-divider.dashed{
+    border-top:1px dashed var(--paper-edge);
+  }
+  #output .log-divider.solid{
+    border-top:1px solid var(--paper-edge);
+  }
+  #output .log-meta-list{
+    margin:0 0 26px;
+  }
+  #output .log-meta-list:last-child{margin-bottom:0;}
+  #output .log-meta-item{
+    display:flex;
+    align-items:baseline;
+    margin-bottom:6px;
+    word-break:keep-all;
+  }
+  #output .log-meta-item:last-child{margin-bottom:0;}
+  #output .log-meta-item .label{
+    flex:0 0 auto;
+    min-width:5.4em;
+    color:var(--ink-soft);
+    font-size:14.5px;
+  }
+  #output .log-meta-item .value{
+    flex:1 1 auto;
+    min-width:0;
+    color:var(--ink);
+  }
+  #output.placeholder{color:#B8B2A4; font-style:italic;}
+
+  /* floating selection toolbar */
+  #bubble{
+    position:absolute;
+    display:none;
+    background:#1E211F;
+    border:1px solid #3a3f37;
+    border-radius:10px;
+    padding:8px 9px;
+    box-shadow:0 12px 30px rgba(0,0,0,.45);
+    z-index:50;
+    gap:6px;
+    align-items:center;
+  }
+  #bubble.show{display:flex;}
+  #bubble .sep{width:1px; height:18px; background:#3a3f37; margin:0 2px;}
+  #bubble .swatch{width:20px;height:20px;}
+  #bubble button.clear{
+    background:transparent; border:1px solid #3a3f37; color:#8C9490;
+    font-size:10.5px; border-radius:5px; padding:4px 7px; cursor:pointer;
+    font-family:'JetBrains Mono', monospace;
+  }
+  #bubble button.clear:hover{color:#fff; border-color:#565c52;}
+
+  @media (max-width: 760px){
+    .rail{width:100%; min-height:auto; border-right:none; border-bottom:1px solid #33372f;}
+    .stage{padding:32px 16px 60px;}
+    #paper{padding:36px 22px 32px;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- LEFT CONTROL RAIL -->
+  <div class="rail">
+    <div>
+      <div class="rail-title">EOE // ARCHIVE UTILITY</div>
+      <h1>로그 포맷터</h1>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="clearBtn" style="width:100%;">전체 지우기</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <label>01 · 로그 번호</label>
+      <input type="text" id="logIdInput" placeholder="LOG #001">
+      <div class="slider-row" style="margin-top:8px;">
+        <span class="swatch-custom">
+          <input type="color" id="logIdColor" value="#2A9D93">
+        </span>
+        <span class="hint" style="margin:0;">로그 번호 색상</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <label>02 · 본문 폰트</label>
+      <select id="fontSelect">
+        <option value="'Noto Serif KR', serif" selected>Noto Serif KR (명조/세리프)</option>
+        <option value="'Pretendard', sans-serif">Pretendard (고딕/산세리프)</option>
+        <option value="'JetBrains Mono', monospace">JetBrains Mono (고정폭)</option>
+        <option value="'Nanum Myeongjo', serif">Nanum Myeongjo (붓글씨풍 명조)</option>
+        <option value="'Gowun Batang', serif">Gowun Batang (감성 명조)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>03 · 자간 (letter-spacing)</label>
+      <div class="slider-row">
+        <input type="range" id="letterSpacing" min="-4" max="8" step="0.5" value="-0.1">
+        <span class="val" id="letterSpacingVal">-0.1px</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>04 · 행간 (line-height)</label>
+      <div class="slider-row">
+        <input type="range" id="lineHeight" min="1.2" max="2.6" step="0.1" value="2.0">
+        <span class="val" id="lineHeightVal">2.0</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>05 · 글자 굵기</label>
+      <div class="slider-row">
+        <input type="range" id="fontWeight" min="300" max="700" step="100" value="300">
+        <span class="val" id="fontWeightVal">300</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>06 · 줄바꿈 방식</label>
+      <div class="btn-row">
+        <button class="btn btn-ghost active" id="wrapAutoBtn" type="button">자동 줄바꿈</button>
+        <button class="btn btn-ghost" id="wrapManualBtn" type="button">원본 줄바꿈 유지</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>07 · 정렬</label>
+      <div class="align-row">
+        <button class="align-btn" id="alignLeft" type="button" data-align="justifyLeft" title="왼쪽 정렬" aria-label="왼쪽 정렬">
+          <svg viewBox="0 0 20 14" width="20" height="14"><rect x="0" y="1" width="16" height="2" rx="1"/><rect x="0" y="6" width="20" height="2" rx="1"/><rect x="0" y="11" width="11" height="2" rx="1"/></svg>
+        </button>
+        <button class="align-btn" id="alignCenter" type="button" data-align="justifyCenter" title="가운데 정렬" aria-label="가운데 정렬">
+          <svg viewBox="0 0 20 14" width="20" height="14"><rect x="2" y="1" width="16" height="2" rx="1"/><rect x="0" y="6" width="20" height="2" rx="1"/><rect x="4.5" y="11" width="11" height="2" rx="1"/></svg>
+        </button>
+        <button class="align-btn" id="alignRight" type="button" data-align="justifyRight" title="오른쪽 정렬" aria-label="오른쪽 정렬">
+          <svg viewBox="0 0 20 14" width="20" height="14"><rect x="4" y="1" width="16" height="2" rx="1"/><rect x="0" y="6" width="20" height="2" rx="1"/><rect x="9" y="11" width="11" height="2" rx="1"/></svg>
+        </button>
+        <button class="align-btn active" id="alignJustify" type="button" data-align="justifyFull" title="끝맞춤" aria-label="끝맞춤">
+          <svg viewBox="0 0 20 14" width="20" height="14"><rect x="0" y="1" width="20" height="2" rx="1"/><rect x="0" y="6" width="20" height="2" rx="1"/><rect x="0" y="11" width="20" height="2" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>08 · 종이 상하 여백</label>
+      <div class="slider-row">
+        <input type="range" id="paperPadding" min="16" max="100" step="2" value="50">
+        <span class="val" id="paperPaddingVal">50px</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>08-1 · 종이 좌우 여백</label>
+      <div class="slider-row">
+        <input type="range" id="paperPaddingX" min="16" max="120" step="2" value="64">
+        <span class="val" id="paperPaddingXVal">64px</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>08-2 · 종이 색상</label>
+      <div class="align-row">
+        <button class="theme-swatch" data-color="#FAF7F1" style="background:#FAF7F1" title="미색(기본)"></button>
+        <button class="theme-swatch" data-color="#FFFFFF" style="background:#FFFFFF" title="화이트"></button>
+        <button class="theme-swatch" data-color="#F2EFE4" style="background:#F2EFE4" title="크림"></button>
+        <button class="theme-swatch" data-color="#EDEAE3" style="background:#EDEAE3" title="그레이지"></button>
+        <span class="swatch-custom">
+          <input type="color" id="paperColorCustom" value="#FAF7F1">
+        </span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>09 · 구분선</label>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="dividerSolidBtn" type="button">— 일자</button>
+        <button class="btn btn-ghost" id="dividerDashedBtn" type="button">┄ 점선</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn btn-ghost" id="downloadBtn">🖼 이미지로 저장</button>
+    <div class="hint" id="statusMsg" style="min-height:14px;"></div>
+  </div>
+
+  <!-- RIGHT PAPER STAGE -->
+  <div class="stage">
+    <div class="paper-wrap">
+      <div id="paper">
+        <div class="log-meta">
+          <span class="log-id" id="logIdDisplay">LOG #001</span>
+        </div>
+
+        <div id="output" class="placeholder" contenteditable="true">복붙해서 사용하세요. 드래그 시 이탤릭, 볼드, 형광펜, 색상 변경 가능. 다른 기능 추가 원하면 연락 ㄱ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- floating color toolbar -->
+  <div id="bubble">
+    <span class="swatch" data-mode="fore" data-color="#2A9D93" style="background:#2A9D93"></span>
+    <span class="swatch" data-mode="fore" data-color="#C96A5B" style="background:#C96A5B"></span>
+    <span class="swatch" data-mode="fore" data-color="#2B2A28" style="background:#2B2A28"></span>
+    <span class="swatch-custom bubble-custom" title="자유 색상 선택">
+      <input type="color" id="bubbleForeCustom" value="#E0729E">
+    </span>
+    <div class="sep"></div>
+    <span class="swatch" data-mode="back" data-color="#FBE79A" style="background:#FBE79A"></span>
+    <span class="swatch" data-mode="back" data-color="#F6C9D6" style="background:#F6C9D6"></span>
+    <span class="swatch" data-mode="back" data-color="#BFE8DA" style="background:#BFE8DA"></span>
+    <span class="swatch-custom bubble-custom" title="자유 형광펜 색상">
+      <input type="color" id="bubbleBackCustom" value="#D6CFF2">
+    </span>
+    <div class="sep"></div>
+    <button class="clear" id="boldBtn" style="font-weight:700;">B</button>
+    <button class="clear" id="italicBtn" style="font-style:italic;">I</button>
+    <div class="sep"></div>
+    <button class="clear" id="clearFormatBtn">지우기</button>
+  </div>
+
+<script>
+document.execCommand('styleWithCSS', false, true);
+
+const output = document.getElementById('output');
+const clearBtn = document.getElementById('clearBtn');
+const logIdInput = document.getElementById('logIdInput');
+const logIdDisplay = document.getElementById('logIdDisplay');
+const statusMsg = document.getElementById('statusMsg');
+const bubble = document.getElementById('bubble');
+
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+let wrapMode = 'auto'; // 'auto' | 'manual'
+
+const listLineRe = /^\d+(?:[-.]\d+)*[.)]\s+/;
+const dashLineRe = /^-{2,}$/;
+function parseMetaLine(line){
+  const m = line.match(/^([^\s:：\[][^:：]{0,13})[:：](\s*)(.+)$/);
+  if(!m) return null;
+  const label = m[1].trim();
+  const spaceAfter = m[2];
+  const rest = m[3];
+  // "00:01" 같은 타임스탬프 오인 방지: 공백 없이 숫자 라벨 + 숫자로 시작하는 값이면 제외
+  if(spaceAfter.length === 0 && /^\d+$/.test(label) && /^\d/.test(rest)){
+    return null;
+  }
+  return { label, value: rest.trim() };
+}
+
+function buildLogHtml(raw){
+  raw = raw.trim();
+  if(!raw) return '';
+  const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  return blocks.map(block => {
+    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // 구분선: "---" 단독 라인
+    if(lines.length === 1 && dashLineRe.test(lines[0])){
+      return `<hr class="log-divider ${dividerStyle}">`;
+    }
+
+    // 번호 리스트: "1-1." 형태가 절반 이상
+    const listMatchCount = lines.filter(l => listLineRe.test(l)).length;
+    if(lines.length > 1 && listMatchCount / lines.length >= 0.5){
+      const items = lines.map(line => {
+        const m = line.match(listLineRe);
+        if(m){
+          const marker = m[0].trim();
+          const text = line.slice(m[0].length).trim();
+          return `<div class="log-list-item"><span class="marker">${escapeHtml(marker)}</span><span class="text">${escapeHtml(text)}</span></div>`;
+        }
+        return `<div class="log-list-item"><span class="marker"></span><span class="text">${escapeHtml(line)}</span></div>`;
+      }).join('');
+      return `<div class="log-list">${items}</div>`;
+    }
+
+    // 메타데이터: "라벨: 값" 형태가 여러 줄에 걸쳐 있으면 각각 항목으로
+    const metaMatchCount = lines.filter(l => parseMetaLine(l)).length;
+    if(lines.length > 1 && metaMatchCount >= 2 && metaMatchCount / lines.length >= 0.5){
+      const items = lines.map(line => {
+        const parsed = parseMetaLine(line);
+        if(parsed){
+          return `<div class="log-meta-item"><span class="label">${escapeHtml(parsed.label)}</span><span class="value">${escapeHtml(parsed.value)}</span></div>`;
+        }
+        return `<div class="log-meta-item"><span class="label"></span><span class="value">${escapeHtml(line)}</span></div>`;
+      }).join('');
+      return `<div class="log-meta-list">${items}</div>`;
+    }
+
+    // 화자 라벨 + 대사: 첫 줄만 "라벨: 내용" 형태면 (이어지는 줄이 있어도) 한 항목으로 정렬
+    const firstLineParsed = lines[0] ? parseMetaLine(lines[0]) : null;
+    if(firstLineParsed){
+      const { label, value: restOfFirst } = firstLineParsed;
+      const otherLines = lines.slice(1);
+      let valueContent;
+      if(wrapMode === 'manual'){
+        valueContent = [restOfFirst, ...otherLines].filter(Boolean).map(escapeHtml).join('<br>');
+      } else {
+        valueContent = escapeHtml([restOfFirst, ...otherLines].filter(Boolean).join(' '));
+      }
+      return `<div class="log-meta-list"><div class="log-meta-item"><span class="label">${escapeHtml(label)}</span><span class="value">${valueContent}</span></div></div>`;
+    }
+
+    const rawLine = block.trim();
+    const flatLine = rawLine.replace(/\n/g, ' ').trim();
+    const isQuote = /^["“”'『「]/.test(flatLine);
+    const isBeat = /^\.{2,}$|^…$/.test(flatLine);
+    const isStageDirection = /^[(（].*[)）]$/.test(flatLine);
+    const timestampMatch = flatLine.match(/^(\[\d{1,2}:\d{2}\])\s*/);
+
+    let content;
+    if(wrapMode === 'manual'){
+      content = escapeHtml(rawLine).replace(/\n/g, '<br>');
+    } else {
+      content = escapeHtml(flatLine);
+    }
+
+    if(isQuote) return `<p class="quote">${content}</p>`;
+    if(isBeat) return `<p class="blank-beat">${content}</p>`;
+    if(isStageDirection) return `<p class="stage-direction">${content}</p>`;
+    if(timestampMatch){
+      const tsEscaped = escapeHtml(timestampMatch[1]);
+      content = content.replace(tsEscaped, `<span class="timestamp">${tsEscaped}</span>`);
+      return `<p>${content}</p>`;
+    }
+    return `<p>${content}</p>`;
+  }).join('');
+}
+
+const wrapAutoBtn = document.getElementById('wrapAutoBtn');
+const wrapManualBtn = document.getElementById('wrapManualBtn');
+wrapAutoBtn.addEventListener('click', () => {
+  wrapMode = 'auto';
+  wrapAutoBtn.classList.add('active');
+  wrapManualBtn.classList.remove('active');
+});
+wrapManualBtn.addEventListener('click', () => {
+  wrapMode = 'manual';
+  wrapManualBtn.classList.add('active');
+  wrapAutoBtn.classList.remove('active');
+});
+
+// ---------- text alignment ----------
+const alignBtns = [
+  document.getElementById('alignLeft'),
+  document.getElementById('alignCenter'),
+  document.getElementById('alignRight'),
+  document.getElementById('alignJustify')
+];
+
+function applyAlign(cmd, btn){
+  output.focus();
+  const sel = window.getSelection();
+  const hasUsableSelection = sel && sel.rangeCount > 0 && output.contains(sel.anchorNode) && !sel.isCollapsed;
+  if(!hasUsableSelection){
+    const range = document.createRange();
+    range.selectNodeContents(output);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  document.execCommand(cmd, false, null);
+  alignBtns.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+alignBtns.forEach(btn => {
+  btn.addEventListener('mousedown', (e) => e.preventDefault()); // keep selection alive
+  btn.addEventListener('click', () => applyAlign(btn.dataset.align, btn));
+});
+
+const PLACEHOLDER_TEXT = "복붙해서 사용하세요. 드래그 시 이탤릭, 볼드, 형광펜, 색상 변경 가능. 다른 기능 추가 원하면 연락 ㄱ";
+
+clearBtn.addEventListener('click', () => {
+  output.innerHTML = PLACEHOLDER_TEXT;
+  output.classList.add('placeholder');
+  statusMsg.textContent = '';
+});
+
+logIdInput.addEventListener('input', () => {
+  logIdDisplay.textContent = logIdInput.value || 'LOG #001';
+});
+
+const logIdColor = document.getElementById('logIdColor');
+logIdColor.addEventListener('input', () => {
+  logIdDisplay.style.color = logIdColor.value;
+});
+
+// ---------- selection color toolbar ----------
+let savedRange = null;
+
+function showBubble(){
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed || sel.rangeCount === 0){
+    bubble.classList.remove('show');
+    return;
+  }
+  const range = sel.getRangeAt(0);
+  if(!output.contains(range.commonAncestorContainer)){
+    bubble.classList.remove('show');
+    return;
+  }
+  savedRange = range.cloneRange();
+  const rect = range.getBoundingClientRect();
+  const stageRect = document.body.getBoundingClientRect();
+  bubble.style.left = (rect.left - stageRect.left + rect.width/2 - 90) + 'px';
+  bubble.style.top = (rect.top - stageRect.top - 46 + window.scrollY) + 'px';
+  bubble.classList.add('show');
+}
+
+document.addEventListener('mouseup', (e) => {
+  if(bubble.contains(e.target)) return;
+  setTimeout(showBubble, 0);
+});
+
+document.addEventListener('mousedown', (e) => {
+  if(!output.contains(e.target) && !bubble.contains(e.target)){
+    bubble.classList.remove('show');
+  }
+});
+
+function restoreSelection(){
+  if(!savedRange) return;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(savedRange);
+}
+
+bubble.querySelectorAll('.swatch').forEach(sw => {
+  sw.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    restoreSelection();
+    const mode = sw.dataset.mode;
+    const color = sw.dataset.color;
+    if(mode === 'fore'){
+      document.execCommand('foreColor', false, color);
+    } else {
+      document.execCommand('hiliteColor', false, color);
+    }
+  });
+});
+
+const bubbleForeCustom = document.getElementById('bubbleForeCustom');
+bubbleForeCustom.addEventListener('mousedown', (e) => {
+  restoreSelection();
+});
+bubbleForeCustom.addEventListener('input', () => {
+  restoreSelection();
+  document.execCommand('foreColor', false, bubbleForeCustom.value);
+});
+
+const bubbleBackCustom = document.getElementById('bubbleBackCustom');
+bubbleBackCustom.addEventListener('mousedown', (e) => {
+  restoreSelection();
+});
+bubbleBackCustom.addEventListener('input', () => {
+  restoreSelection();
+  document.execCommand('hiliteColor', false, bubbleBackCustom.value);
+});
+
+document.getElementById('clearFormatBtn').addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  restoreSelection();
+  document.execCommand('removeFormat', false, null);
+});
+
+document.getElementById('boldBtn').addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  restoreSelection();
+  document.execCommand('bold', false, null);
+});
+
+document.getElementById('italicBtn').addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  restoreSelection();
+  document.execCommand('italic', false, null);
+});
+
+// ---------- download as image ----------
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  bubble.classList.remove('show');
+  const paper = document.getElementById('paper');
+  statusMsg.textContent = '이미지 생성 중...';
+  const currentPaperColor = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim() || '#FAF7F1';
+  html2canvas(paper, {backgroundColor: currentPaperColor, scale: 2}).then(canvas => {
+    const link = document.createElement('a');
+    link.download = (logIdInput.value || 'eoe-log').replace(/[^a-zA-Z0-9_-]/g,'_') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    statusMsg.textContent = '저장 완료.';
+  }).catch(() => {
+    statusMsg.textContent = '이미지 생성에 실패했어. 다시 시도해줘.';
+  });
+});
+
+// ---------- paper padding ----------
+const paperPadding = document.getElementById('paperPadding');
+const paperPaddingVal = document.getElementById('paperPaddingVal');
+const paperEl = document.getElementById('paper');
+paperPadding.addEventListener('input', () => {
+  const v = paperPadding.value;
+  paperEl.style.paddingTop = v + 'px';
+  paperEl.style.paddingBottom = (v - 12) + 'px';
+  paperPaddingVal.textContent = v + 'px';
+});
+
+const paperPaddingX = document.getElementById('paperPaddingX');
+const paperPaddingXVal = document.getElementById('paperPaddingXVal');
+paperPaddingX.addEventListener('input', () => {
+  const v = paperPaddingX.value;
+  paperEl.style.paddingLeft = v + 'px';
+  paperEl.style.paddingRight = v + 'px';
+  paperPaddingXVal.textContent = v + 'px';
+});
+
+// ---------- paper color ----------
+const paperColorSwatches = document.querySelectorAll('.theme-swatch');
+const paperColorCustom = document.getElementById('paperColorCustom');
+
+function setPaperColor(color, activeBtn){
+  document.documentElement.style.setProperty('--paper', color);
+  paperColorSwatches.forEach(b => b.classList.remove('active'));
+  if(activeBtn) activeBtn.classList.add('active');
+}
+
+paperColorSwatches.forEach(btn => {
+  btn.addEventListener('click', () => {
+    setPaperColor(btn.dataset.color, btn);
+    paperColorCustom.value = btn.dataset.color;
+  });
+});
+paperColorCustom.addEventListener('input', () => {
+  setPaperColor(paperColorCustom.value, null);
+});
+paperColorSwatches[0].classList.add('active');
+
+// ---------- manual divider insert ----------
+let dividerStyle = 'solid'; // used by convert() for auto "---" detection
+
+function insertDivider(styleClass){
+  if(output.classList.contains('placeholder')){
+    output.innerHTML = '';
+    output.classList.remove('placeholder');
+  }
+  output.focus();
+  const sel = window.getSelection();
+  if(!sel || sel.rangeCount === 0 || !output.contains(sel.anchorNode)){
+    const range = document.createRange();
+    range.selectNodeContents(output);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  document.execCommand('insertHTML', false, `<hr class="log-divider ${styleClass}">`);
+}
+
+document.getElementById('dividerSolidBtn').addEventListener('click', () => insertDivider('solid'));
+document.getElementById('dividerDashedBtn').addEventListener('click', () => insertDivider('dashed'));
+
+// ---------- letter-spacing / line-height ----------
+const letterSpacing = document.getElementById('letterSpacing');
+const letterSpacingVal = document.getElementById('letterSpacingVal');
+const lineHeight = document.getElementById('lineHeight');
+const lineHeightVal = document.getElementById('lineHeightVal');
+
+letterSpacing.addEventListener('input', () => {
+  output.style.letterSpacing = letterSpacing.value + 'px';
+  letterSpacingVal.textContent = letterSpacing.value + 'px';
+});
+lineHeight.addEventListener('input', () => {
+  output.style.lineHeight = lineHeight.value;
+  lineHeightVal.textContent = lineHeight.value;
+});
+
+// ---------- font weight ----------
+const fontWeight = document.getElementById('fontWeight');
+const fontWeightVal = document.getElementById('fontWeightVal');
+fontWeight.addEventListener('input', () => {
+  output.style.fontWeight = fontWeight.value;
+  fontWeightVal.textContent = fontWeight.value;
+});
+
+// ---------- font switcher ----------
+const fontSelect = document.getElementById('fontSelect');
+const logMetaEl = document.querySelector('.log-meta');
+fontSelect.addEventListener('change', () => {
+  output.style.fontFamily = fontSelect.value;
+  logMetaEl.style.fontFamily = fontSelect.value;
+});
+
+// remove placeholder styling on manual focus/typing
+output.addEventListener('focus', () => {
+  if(output.classList.contains('placeholder')){
+    output.innerHTML = '';
+    output.classList.remove('placeholder');
+  }
+});
+
+// 본문 안에 직접 붙여넣을 때는 항상 서식 없는 텍스트로만 삽입 (원본 사이트 스타일 유입 방지)
+output.addEventListener('paste', (e) => {
+  e.preventDefault();
+  if(output.classList.contains('placeholder')){
+    output.innerHTML = '';
+    output.classList.remove('placeholder');
+  }
+  const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+  const html = buildLogHtml(text);
+  if(html){
+    document.execCommand('insertHTML', false, html);
+  }
+});
+</script>
+</body>
+</html>
