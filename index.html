@@ -245,7 +245,7 @@
     font-family:'Noto Serif KR', serif;
     font-weight:300;
     color:var(--ink);
-    font-size:16px;
+    font-size:13px;
     line-height:2.0;
     letter-spacing:-0.1px;
     outline:none;
@@ -260,7 +260,7 @@
   #output p.quote{
     color:var(--accent);
     font-weight:600;
-    font-size:16.5px;
+    font-size:1.03em;
   }
   #output p.blank-beat{
     text-align:center;
@@ -328,7 +328,7 @@
     flex:0 0 auto;
     min-width:5.4em;
     color:var(--ink-soft);
-    font-size:14.5px;
+    font-size:0.94em;
   }
   #output .log-meta-item .value{
     flex:1 1 auto;
@@ -404,6 +404,14 @@
         <option value="'Nanum Myeongjo', serif">Nanum Myeongjo (붓글씨풍 명조)</option>
         <option value="'Gowun Batang', serif">Gowun Batang (감성 명조)</option>
       </select>
+    </div>
+
+    <div class="field">
+      <label>02-1 · 글자 크기</label>
+      <div class="slider-row">
+        <input type="range" id="fontSize" min="10" max="22" step="0.5" value="13">
+        <span class="val" id="fontSizeVal">13px</span>
+      </div>
     </div>
 
     <div class="field">
@@ -874,12 +882,18 @@ function insertDivider(styleClass){
 document.getElementById('dividerSolidBtn').addEventListener('click', () => insertDivider('solid'));
 document.getElementById('dividerDashedBtn').addEventListener('click', () => insertDivider('dashed'));
 
-// ---------- letter-spacing / line-height ----------
+// ---------- font-size / letter-spacing / line-height ----------
+const fontSize = document.getElementById('fontSize');
+const fontSizeVal = document.getElementById('fontSizeVal');
 const letterSpacing = document.getElementById('letterSpacing');
 const letterSpacingVal = document.getElementById('letterSpacingVal');
 const lineHeight = document.getElementById('lineHeight');
 const lineHeightVal = document.getElementById('lineHeightVal');
 
+fontSize.addEventListener('input', () => {
+  output.style.fontSize = fontSize.value + 'px';
+  fontSizeVal.textContent = fontSize.value + 'px';
+});
 letterSpacing.addEventListener('input', () => {
   output.style.letterSpacing = letterSpacing.value + 'px';
   letterSpacingVal.textContent = letterSpacing.value + 'px';
