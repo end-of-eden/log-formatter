@@ -1180,7 +1180,7 @@
   }
   .writer-color-custom{
     display:grid;
-    grid-template-columns:20px 1fr 34px;
+    grid-template-columns:20px 1fr;
     align-items:center;
     gap:8px;
     margin:12px -14px -10px;
@@ -1188,7 +1188,21 @@
     border-top:1px solid #ececef;
   }
   .writer-color-preview{width:20px;height:20px;border-radius:50%;background:#333;}
-  .writer-color-value{color:#96999f;font:12px 'Pretendard',sans-serif;}
+  .writer-color-value{
+    width:100%;
+    height:26px;
+    padding:0 7px;
+    border:1px solid #dedfe3;
+    border-radius:4px;
+    background:#fff;
+    color:#64676d;
+    font:12px 'JetBrains Mono',monospace;
+    text-transform:uppercase;
+  }
+  .writer-color-value.invalid{
+    border-color:#d94b3d;
+    outline:2px solid rgba(217,75,61,.12);
+  }
   .writer-color-input-button{
     height:24px;
     padding:0;
@@ -1784,6 +1798,7 @@
     background:var(--writer-bubble-color,#ececef);
     color:#303236;
     font-size:var(--writer-message-font-size,13px);
+    font-weight:300;
     line-height:1.5;
     text-align:left;
     white-space:pre-wrap;
@@ -1950,6 +1965,7 @@
     outline:none;
     color:#2d2f33;
     font:10pt/2.15 'Noto Serif KR',serif;
+    font-weight:300;
     text-align:justify;
     white-space:normal;
   }
@@ -2037,14 +2053,27 @@
     font:500 12px/1.5 'Pretendard',sans-serif;
   }
   .writer-preview-log-name:empty{display:none;}
-  .writer-app.night{background:#17181b;color:#eee;}
-  body.writer-active:has(.writer-app.night){background:#17181b;}
-  .writer-app.night .writer-preview-sheet{--writer-sheet-bg:#000;background:#000;}
+  .writer-app.night{background:#0d0e10;color:#eee;}
+  body.writer-active:has(.writer-app.night){background:#0d0e10;}
+  .writer-app.night .writer-preview-sheet{
+    --writer-sheet-bg:#17181b;
+    background:#17181b;
+  }
   .writer-app.night .writer-toolbar{background:rgba(31,32,35,.97);border-color:#33353a;}
   .writer-app.night .writer-toolbar select,
   .writer-app.night .writer-format,
   .writer-app.night .writer-icon,
   .writer-app.night .writer-photo{color:#e7e5df;}
+  .writer-app.night .writer-icon:hover,
+  .writer-app.night .writer-format:hover,
+  .writer-app.night .writer-photo:hover{
+    background:#35373c;
+    color:#fff;
+  }
+  .writer-app.night .writer-toolbar select option{
+    background:#292b2f;
+    color:#e7e5df;
+  }
   .writer-app.night .writer-insert-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-insert-menu button{color:#e7e5df;}
   .writer-app.night .writer-insert-menu button:hover{background:#35373c;}
@@ -2057,6 +2086,40 @@
   .writer-app.night .writer-json-action,
   .writer-app.night .writer-chat-menu .writer-member-row-actions button,
   .writer-app.night .writer-chat-menu #writerCloseMemberPanel{background:#34363b;border-color:#484b51;color:#d8d9dc;}
+  .writer-app.night .writer-message-form{border-top-color:#41444a;}
+  .writer-app.night .writer-chat-menu input[type=text],
+  .writer-app.night .writer-chat-menu input[type=file],
+  .writer-app.night .writer-chat-menu input[type=time],
+  .writer-app.night .writer-chat-menu select,
+  .writer-app.night .writer-chat-menu textarea{
+    border-color:#41444a;
+    background:#202226;
+    color:#ece9e1;
+  }
+  .writer-app.night .writer-chat-menu select option{
+    background:#202226;
+    color:#ece9e1;
+  }
+  .writer-app.night .writer-chat-menu input:disabled,
+  .writer-app.night .writer-chat-menu select:disabled{
+    border-color:#35383e;
+    background:#2b2d31;
+    color:#73767d;
+  }
+  .writer-app.night .writer-chat-menu textarea::placeholder,
+  .writer-app.night .writer-chat-menu input::placeholder{color:#777b83;}
+  .writer-app.night .writer-member-form .writer-avatar-field{
+    border-color:#41444a;
+    background:#202226;
+  }
+  .writer-app.night #writerAddBubble{
+    border-color:#d94b3d;
+    background:#24262a;
+    color:#ef6255;
+    box-shadow:none;
+  }
+  .writer-app.night #writerAddBubble::before{color:#ef6255;}
+  .writer-app.night #writerAddBubble:hover{background:#2e3035;}
   .writer-app.night .writer-selection-toolbar{
     border-color:#3b3d43;
     background:#292b2f;
@@ -2072,9 +2135,16 @@
   .writer-app.night .writer-color-trigger{color:#e7e5df;}
   .writer-app.night .writer-color-trigger:hover,
   .writer-app.night .writer-color-trigger[aria-expanded="true"]{background:#34363b;}
+  .writer-app.night .writer-color-trigger.fore::after{
+    box-shadow:0 0 0 1px #e7e5df;
+  }
+  .writer-app.night .writer-color-trigger.back span{
+    border-color:#e7e5df;
+    color:#24262a;
+  }
   .writer-app.night .writer-color-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-color-custom{border-color:#3b3d43;}
-  .writer-app.night .writer-color-input-button{background:#34363b;border-color:#4a4c52;color:#e7e5df;}
+  .writer-app.night .writer-color-value{background:#202226;border-color:#4a4c52;color:#e7e5df;}
   .writer-app.night .writer-margin-menu label{color:#e7e5df;}
   .writer-export-sheet{
     --writer-sheet-bg:#fff;
@@ -2087,8 +2157,8 @@
     color:#2d2f33;
     font-family:'Noto Serif KR',serif;
   }
-  .writer-export-sheet.dark{--writer-sheet-bg:#000;background:#000;color:#ece9e1;}
-  .writer-export-body{font:10pt/2.15 'Noto Serif KR',serif;text-align:justify;}
+  .writer-export-sheet.dark{--writer-sheet-bg:#17181b;background:#17181b;color:#ece9e1;}
+  .writer-export-body{font:300 10pt/2.15 'Noto Serif KR',serif;text-align:justify;}
   .writer-export-body > :first-child{margin-top:0!important;}
   .writer-export-body p{margin:0 0 32px;}
   .writer-export-body > :last-child{margin-bottom:0!important;}
@@ -2101,7 +2171,7 @@
     color:#8c8f95;
     font:500 12px/1.5 'Pretendard',sans-serif;
   }
-  .writer-app.night .writer-page,
+  .writer-app.night .writer-page{color:#ece9e1;}
   .writer-app.night #writerCanvas{color:#ece9e1;}
   .writer-app.night .writer-category-row select{background:#292b2f;border-color:#3b3d43;color:#ddd;}
   .writer-app.night #writerLogName{background:#292b2f;border-color:#3b3d43;color:#ddd;}
@@ -2162,8 +2232,7 @@
         <div class="writer-color-menu" id="writerForeMenu" hidden>
           <div class="writer-color-grid"></div>
           <div class="writer-color-custom">
-            <i class="writer-color-preview"></i><span class="writer-color-value">#333333</span>
-            <button class="writer-color-input-button" type="button">입력</button>
+            <i class="writer-color-preview"></i><input class="writer-color-value" type="text" value="#333333" maxlength="7" spellcheck="false" aria-label="글자 색상 코드">
           </div>
         </div>
       </div>
@@ -2172,8 +2241,7 @@
         <div class="writer-color-menu" id="writerBackMenu" hidden>
           <div class="writer-color-grid"></div>
           <div class="writer-color-custom">
-            <i class="writer-color-preview"></i><span class="writer-color-value">#FFF2A8</span>
-            <button class="writer-color-input-button" type="button">입력</button>
+            <i class="writer-color-preview"></i><input class="writer-color-value" type="text" value="#FFF2A8" maxlength="7" spellcheck="false" aria-label="형광펜 색상 코드">
           </div>
         </div>
       </div>
@@ -3610,7 +3678,7 @@ function setupWriterColorPicker(mode,buttonId,menuId,initialColor){
   const menu = document.getElementById(menuId);
   const grid = menu.querySelector('.writer-color-grid');
   const preview = menu.querySelector('.writer-color-preview');
-  const valueLabel = menu.querySelector('.writer-color-value');
+  const codeInput = menu.querySelector('.writer-color-value');
   let currentColor = initialColor;
 
   writerPalette.forEach(color => {
@@ -3628,7 +3696,7 @@ function setupWriterColorPicker(mode,buttonId,menuId,initialColor){
     currentColor = color || (mode === 'fore' ? '#333333' : 'transparent');
     const visibleColor = currentColor === 'transparent' ? '#FFFFFF' : currentColor;
     preview.style.background = visibleColor;
-    valueLabel.textContent = currentColor === 'transparent' ? '색상 없음' : currentColor.toUpperCase();
+    codeInput.value = currentColor === 'transparent' ? '#FFFFFF' : currentColor.toUpperCase();
     trigger.style.setProperty(mode === 'fore' ? '--writer-fore-color' : '--writer-back-color',currentColor);
   }
 
@@ -3656,17 +3724,25 @@ function setupWriterColorPicker(mode,buttonId,menuId,initialColor){
     trigger.setAttribute('aria-expanded',String(!menu.hidden));
   });
   menu.addEventListener('click', event => event.stopPropagation());
-  menu.querySelector('.writer-color-input-button').addEventListener('mousedown', event => event.preventDefault());
-  menu.querySelector('.writer-color-input-button').addEventListener('click', () => {
-    const entered = prompt('색상 코드를 입력해줘.',currentColor === 'transparent' ? '#FFFFFF' : currentColor);
-    if(!entered) return;
-    const normalized = entered.trim().toUpperCase();
+  function applyTypedColor(){
+    const normalized = codeInput.value.trim().toUpperCase();
     if(!/^#[0-9A-F]{6}$/.test(normalized)){
-      alert('색상 코드는 #333333 형식으로 입력해줘.');
+      codeInput.value = currentColor === 'transparent' ? '#FFFFFF' : currentColor.toUpperCase();
+      codeInput.classList.add('invalid');
+      setTimeout(() => codeInput.classList.remove('invalid'),700);
       return;
     }
     applyColor(normalized);
+  }
+  codeInput.addEventListener('input', () => {
+    if(codeInput.value && !codeInput.value.startsWith('#')) codeInput.value = `#${codeInput.value}`;
   });
+  codeInput.addEventListener('keydown', event => {
+    if(event.key !== 'Enter') return;
+    event.preventDefault();
+    applyTypedColor();
+  });
+  codeInput.addEventListener('change',applyTypedColor);
   updatePicker(initialColor);
 }
 
@@ -3894,6 +3970,51 @@ document.addEventListener('selectionchange', () => {
   if(!writerSelectionPointerDown) scheduleWriterSelectionToolbar();
 });
 writerCanvas.addEventListener('keyup', scheduleWriterSelectionToolbar);
+function writerChatBeforeCaret(){
+  const selection = window.getSelection();
+  if(!selection?.rangeCount || !selection.isCollapsed) return null;
+  const range = selection.getRangeAt(0);
+  if(!writerCanvas.contains(range.startContainer)) return null;
+
+  if(range.startContainer === writerCanvas){
+    return writerCanvas.children[range.startOffset - 1]?.matches('.writer-inline-chat')
+      ? writerCanvas.children[range.startOffset - 1]
+      : null;
+  }
+
+  const containerElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+    ? range.startContainer
+    : range.startContainer.parentElement;
+  const block = containerElement?.closest('#writerCanvas > *');
+  if(!block) return null;
+  const beforeCaret = document.createRange();
+  beforeCaret.selectNodeContents(block);
+  beforeCaret.setEnd(range.startContainer,range.startOffset);
+  if(beforeCaret.toString().length) return null;
+  return block.previousElementSibling?.matches('.writer-inline-chat')
+    ? block.previousElementSibling
+    : null;
+}
+writerCanvas.addEventListener('keydown', event => {
+  if(event.key !== 'Backspace' || event.ctrlKey || event.metaKey || event.altKey) return;
+  const group = writerChatBeforeCaret();
+  if(!group) return;
+  event.preventDefault();
+  const items = [...group.querySelectorAll('.writer-inline-chat-bubble-item')];
+  if(items.length > 1){
+    items.at(-1).remove();
+  }else{
+    group.remove();
+    if(writerSelectedChatGroup === group){
+      writerSelectedChatGroup = null;
+      writerSelectedBubbleItem = null;
+      writerAddBubble.classList.remove('is-editing');
+    }
+  }
+  writerSelectionToolbar.hidden = true;
+  cleanupEmptyBlocksBetweenChats();
+  queueWriterSave();
+});
 function cleanupEmptyBlocksBetweenChats(){
   const blocks = [...writerCanvas.children];
   const isEmptyBlock = block =>
@@ -4366,7 +4487,7 @@ writerMarginButton.addEventListener('click', event => {
 });
 writerClearAll.addEventListener('click', () => {
   if(!writerCanvas.textContent.trim() && !writerCanvas.querySelector('img,.writer-inline-chat')) return;
-  if(!confirm('본문과 말풍선을 모두 삭제할까? 등록된 멤버는 유지돼.')) return;
+  if(!confirm('본문과 말풍선을 모두 삭제하시겠습니까? 등록된 멤버는 유지됩니다.')) return;
   writerCanvas.innerHTML = '';
   writerSelectedChatGroup = null;
   writerSavedRange = null;
@@ -4485,7 +4606,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
   sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
   document.body.appendChild(sheet);
   Promise.resolve(document.fonts?.ready).then(() => html2canvas(sheet,{
-    backgroundColor:dark ? '#000000' : '#FFFFFF',
+    backgroundColor:dark ? '#17181B' : '#FFFFFF',
     scale:2,
     useCORS:true,
     width:sheet.scrollWidth,
