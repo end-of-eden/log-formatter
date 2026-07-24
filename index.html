@@ -765,6 +765,26 @@
     color:var(--gold);
   }
   .bubble-fields{display:flex;flex-direction:column;gap:7px;}
+  .dialogue-style-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:5px;
+  }
+  .dialogue-style-btn{
+    appearance:none;
+    border:1px solid #dfe1e5;
+    border-radius:8px;
+    background:#fff;
+    color:#858a93;
+    padding:8px 3px;
+    font:600 10px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .dialogue-style-btn.active{
+    border-color:rgba(192,57,43,.24);
+    background:var(--burgundy-soft);
+    color:var(--burgundy);
+  }
   #blockImageUrl{
     width:100%;
     background:#fff;
@@ -928,6 +948,41 @@
     border:1px solid rgba(166,124,0,.2);
     object-fit:contain;
     cursor:pointer;
+  }
+  .dialogue-plain{
+    align-self:center;
+    max-width:84%;
+    padding:14px 24px;
+    color:var(--chat-ink);
+    border-top:1px solid rgba(166,124,0,.26);
+    border-bottom:1px solid rgba(166,124,0,.26);
+    font:500 14px/1.85 'Noto Serif KR',serif;
+    text-align:center;
+    white-space:pre-wrap;
+    cursor:pointer;
+  }
+  .dialogue-profile{
+    display:grid;
+    grid-template-columns:42px minmax(0,1fr);
+    gap:12px;
+    align-items:start;
+    max-width:84%;
+    padding:4px 2px;
+    cursor:pointer;
+  }
+  .dialogue-profile.right{
+    grid-template-columns:minmax(0,1fr) 42px;
+    align-self:flex-end;
+    text-align:right;
+  }
+  .dialogue-profile .chat-avatar{width:42px;height:42px;}
+  .dialogue-profile.right .chat-avatar{grid-column:2;grid-row:1;}
+  .profile-dialogue-body{min-width:0;}
+  .dialogue-profile.right .profile-dialogue-body{grid-column:1;grid-row:1;}
+  .profile-dialogue-text{
+    color:var(--chat-ink);
+    font:500 14px/1.75 'Noto Serif KR',serif;
+    white-space:pre-wrap;
   }
   @media (max-width:860px){
     body{display:block;overflow:auto;}
@@ -1132,11 +1187,16 @@
       <label>02 · 블록 작성</label>
       <div class="block-type-row" role="tablist" aria-label="블록 종류">
         <button class="block-type-btn active" type="button" data-block-type="text">글</button>
-        <button class="block-type-btn" type="button" data-block-type="bubble">말풍선</button>
+        <button class="block-type-btn" type="button" data-block-type="bubble">대사</button>
         <button class="block-type-btn" type="button" data-block-type="divider">구분선</button>
         <button class="block-type-btn" type="button" data-block-type="image">사진</button>
       </div>
       <div class="bubble-fields" id="bubbleFields" hidden>
+        <div class="dialogue-style-row" role="group" aria-label="대사 표현">
+          <button class="dialogue-style-btn active" type="button" data-dialogue-style="plain">대사</button>
+          <button class="dialogue-style-btn" type="button" data-dialogue-style="sns">SNS</button>
+          <button class="dialogue-style-btn" type="button" data-dialogue-style="profile">프로필 대사</button>
+        </div>
         <select id="messageSender" aria-label="발신자">
           <option value="">멤버를 먼저 추가하세요</option>
         </select>
@@ -1744,6 +1804,7 @@ const chatOutput = document.getElementById('chatOutput');
 const chatStatus = document.getElementById('chatStatus');
 const sideButtons = [...document.querySelectorAll('.side-btn')];
 const blockTypeButtons = [...document.querySelectorAll('.block-type-btn')];
+const dialogueStyleButtons = [...document.querySelectorAll('.dialogue-style-btn')];
 const bubbleFields = document.getElementById('bubbleFields');
 const blockImageUrl = document.getElementById('blockImageUrl');
 
@@ -1760,6 +1821,7 @@ let chatMembers = readStoredList('eoe-chat-members');
 let chatMessages = readStoredList('eoe-chat-messages');
 let messageSide = 'left';
 let blockType = 'text';
+let dialogueStyle = 'plain';
 
 function escapeAttr(value){
   return escapeHtml(String(value || '')).replace(/"/g,'&quot;');
@@ -1816,10 +1878,25 @@ function renderMessages(){
     if(type === 'image'){
       return `<img class="excerpt-image" data-block-index="${index}" src="${escapeAttr(message.url)}" alt="발췌 이미지" title="눌러서 삭제">`;
     }
+    const style = message.style || 'sns';
+    if(style === 'plain'){
+      return `<div class="dialogue-plain" data-block-index="${index}" title="눌러서 삭제">${escapeHtml(message.text)}</div>`;
+    }
     const member = chatMembers.find(item => item.id === message.memberId);
     if(!member) return '';
     const right = message.side === 'right';
     const avatar = memberAvatarHtml(member, 'chat-avatar');
+    if(style === 'profile'){
+      return `
+        <article class="dialogue-profile${right ? ' right' : ''}" data-block-index="${index}" title="눌러서 삭제">
+          ${right ? '' : avatar}
+          <div class="profile-dialogue-body">
+            <div class="chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
+            <div class="profile-dialogue-text">${escapeHtml(message.text)}</div>
+          </div>
+          ${right ? avatar : ''}
+        </article>`;
+    }
     const content = `
       <div class="chat-content">
         <div class="chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
@@ -1878,6 +1955,11 @@ function setBlockType(type){
   bubbleFields.hidden = type !== 'bubble';
   blockImageUrl.hidden = type !== 'image';
   messageText.hidden = type === 'divider' || type === 'image';
+  if(type === 'bubble'){
+    const needsMember = dialogueStyle !== 'plain';
+    messageSender.disabled = !needsMember;
+    sideButtons.forEach(item => item.disabled = !needsMember);
+  }
   const labels = {text:'글 추가',bubble:'말풍선 추가',divider:'구분선 추가',image:'사진 추가'};
   addMessageBtn.textContent = labels[type];
   if(type === 'text') messageText.placeholder = '발췌문을 입력하세요. 문단마다 글 블록으로 나뉩니다.';
@@ -1886,6 +1968,16 @@ function setBlockType(type){
 
 blockTypeButtons.forEach(button => {
   button.addEventListener('click', () => setBlockType(button.dataset.blockType));
+});
+
+dialogueStyleButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    dialogueStyle = button.dataset.dialogueStyle;
+    dialogueStyleButtons.forEach(item => item.classList.toggle('active', item === button));
+    const needsMember = dialogueStyle !== 'plain';
+    messageSender.disabled = !needsMember;
+    sideButtons.forEach(item => item.disabled = !needsMember);
+  });
 });
 
 function addChatMessage(){
@@ -1913,7 +2005,7 @@ function addChatMessage(){
     messageText.value = '';
   }else{
     const memberId = messageSender.value;
-    if(!memberId){
+    if(dialogueStyle !== 'plain' && !memberId){
       chatStatus.textContent = '멤버를 먼저 추가해줘.';
       return;
     }
@@ -1924,7 +2016,8 @@ function addChatMessage(){
     }
     chatMessages.push({
       type:'bubble',
-      memberId,
+      style:dialogueStyle,
+      memberId:dialogueStyle === 'plain' ? '' : memberId,
       text,
       side: messageSide,
       time: new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
