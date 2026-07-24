@@ -1041,7 +1041,7 @@
     margin:0 4px;
     background:#ececef;
   }
-  .writer-icon,.writer-format{
+  .writer-icon,.writer-format,.writer-photo{
     appearance:none;
     min-width:28px;
     height:32px;
@@ -1053,7 +1053,12 @@
     font:14px 'Pretendard',sans-serif;
     cursor:pointer;
   }
-  .writer-icon:hover,.writer-format:hover{background:#f3f3f5;}
+  .writer-icon:hover,.writer-format:hover,.writer-photo:hover{background:#f3f3f5;}
+  .writer-photo{
+    min-width:42px;
+    font-size:11px;
+    font-weight:600;
+  }
   .writer-format.strong{font-weight:800;}
   .writer-format.italic{font-style:italic;}
   .writer-format.underline{text-decoration:underline;}
@@ -1074,6 +1079,47 @@
     opacity:0;
   }
   .writer-spacer{flex:1;}
+  .align-visual{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:3px;
+  }
+  .align-visual i{
+    display:block;
+    width:16px;
+    height:1px;
+    background:currentColor;
+  }
+  .align-left i:nth-child(2),.align-left i:nth-child(4){width:11px;}
+  .align-center i:nth-child(2),.align-center i:nth-child(4){width:11px;align-self:center;}
+  .align-right i:nth-child(2),.align-right i:nth-child(4){width:11px;align-self:flex-end;}
+  .writer-insert-wrap{position:relative;flex:0 0 auto;}
+  .writer-insert-button{width:auto;min-width:58px;font-size:10px;}
+  .writer-insert-menu{
+    position:absolute;
+    top:38px;
+    left:0;
+    width:150px;
+    padding:6px;
+    border:1px solid #e0e1e4;
+    border-radius:6px;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(32,34,38,.14);
+  }
+  .writer-insert-menu button{
+    width:100%;
+    height:auto;
+    padding:9px 10px;
+    border:0;
+    border-radius:4px;
+    background:transparent;
+    color:#4b4f56;
+    text-align:left;
+    font:12px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-insert-menu button:hover{background:#f4f4f6;}
   .writer-save{
     appearance:none;
     border:1px solid #dedfe3;
@@ -1109,7 +1155,6 @@
     padding:8px 10px;
     font-size:12px;
   }
-  #writerSaveState{color:#b0b2b7;font-size:10px;}
   #writerTitle{
     width:100%;
     border:0;
@@ -1150,6 +1195,31 @@
     margin:36px 0;
   }
   #writerCanvas img{max-width:100%;height:auto;border-radius:4px;}
+  #writerCanvas table{
+    width:100%;
+    margin:28px 0;
+    border-collapse:collapse;
+  }
+  #writerCanvas td{
+    min-width:80px;
+    padding:10px 12px;
+    border:1px solid #dfe0e3;
+  }
+  #writerCanvas pre{
+    margin:28px 0;
+    padding:18px;
+    border-radius:6px;
+    background:#f4f4f6;
+    font:13px/1.7 'JetBrains Mono',monospace;
+    white-space:pre-wrap;
+  }
+  #writerCanvas details{
+    margin:28px 0;
+    padding:12px 14px;
+    border:1px solid #e0e1e4;
+    border-radius:6px;
+  }
+  #writerCanvas summary{cursor:pointer;font-weight:600;}
   #writerCanvas .writer-dialogue{
     margin:28px auto;
     padding:14px 24px;
@@ -1162,7 +1232,11 @@
   .writer-app.night .writer-toolbar{background:rgba(31,32,35,.97);border-color:#33353a;}
   .writer-app.night .writer-toolbar select,
   .writer-app.night .writer-format,
-  .writer-app.night .writer-icon{color:#e7e5df;}
+  .writer-app.night .writer-icon,
+  .writer-app.night .writer-photo{color:#e7e5df;}
+  .writer-app.night .writer-insert-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-insert-menu button{color:#e7e5df;}
+  .writer-app.night .writer-insert-menu button:hover{background:#35373c;}
   .writer-app.night .writer-page,
   .writer-app.night #writerTitle,
   .writer-app.night #writerCanvas{color:#ece9e1;}
@@ -1191,7 +1265,7 @@
   <div class="writer-app" id="writerApp">
     <header class="writer-toolbar" aria-label="글 서식 도구">
       <div class="writer-brand">EOE log</div>
-      <button class="writer-icon" type="button" data-writer-action="image" title="이미지">▧</button>
+      <button class="writer-photo" type="button" data-writer-action="image" title="사진 삽입">사진</button>
       <select id="writerBlockType" aria-label="문단 종류">
         <option value="p">본문</option>
         <option value="h2">제목 1</option>
@@ -1211,20 +1285,29 @@
       <button class="writer-format strike" type="button" data-command="strikeThrough" title="취소선">T</button>
       <label class="writer-color" title="글자색">●<input type="color" id="writerColor" value="#C0392B"></label>
       <span class="writer-sep"></span>
-      <button class="writer-format" type="button" data-command="justifyLeft" title="왼쪽 정렬">☰</button>
-      <button class="writer-format" type="button" data-command="justifyCenter" title="가운데 정렬">≡</button>
-      <button class="writer-format" type="button" data-command="justifyRight" title="오른쪽 정렬">☷</button>
-      <button class="writer-format" type="button" data-command="justifyFull" title="양쪽 정렬">▤</button>
+      <button class="writer-format align-visual align-left" type="button" data-command="justifyLeft" title="왼쪽 정렬"><i></i><i></i><i></i><i></i></button>
+      <button class="writer-format align-visual align-center" type="button" data-command="justifyCenter" title="가운데 정렬"><i></i><i></i><i></i><i></i></button>
+      <button class="writer-format align-visual align-right" type="button" data-command="justifyRight" title="오른쪽 정렬"><i></i><i></i><i></i><i></i></button>
+      <button class="writer-format align-visual align-justify" type="button" data-command="justifyFull" title="양쪽 정렬"><i></i><i></i><i></i><i></i></button>
       <span class="writer-sep"></span>
       <button class="writer-format" type="button" data-command="formatBlock" data-value="blockquote" title="인용">“ ”</button>
+      <button class="writer-format" type="button" data-writer-action="emoji" title="윈도우 이모티콘">☺</button>
+      <button class="writer-format" type="button" data-writer-action="table" title="표">▦</button>
       <button class="writer-format" type="button" data-writer-action="link" title="링크">⌕</button>
+      <div class="writer-insert-wrap">
+        <button class="writer-format writer-insert-button" type="button" data-writer-action="insert-menu" title="삽입/수정">삽입/수정</button>
+        <div class="writer-insert-menu" id="writerInsertMenu" hidden>
+          <button type="button" data-insert-kind="special">특수문자</button>
+          <button type="button" data-insert-kind="code">코드블럭</button>
+          <button type="button" data-insert-kind="html">HTML블럭</button>
+          <button type="button" data-insert-kind="fold">접은글</button>
+        </div>
+      </div>
       <button class="writer-format" type="button" data-command="insertUnorderedList" title="목록">☷</button>
       <button class="writer-format" type="button" data-command="insertHorizontalRule" title="구분선">―</button>
-      <button class="writer-format" type="button" data-writer-action="dialogue" title="대사 블록">대사</button>
       <div class="writer-spacer"></div>
       <select id="writerMode" aria-label="편집 모드">
         <option value="default">기본모드</option>
-        <option value="archive">아카이브</option>
         <option value="night">야간</option>
       </select>
       <button class="writer-save" id="writerHtmlSave" type="button">HTML 저장</button>
@@ -1234,12 +1317,9 @@
     <main class="writer-page">
       <div class="writer-category-row">
         <select id="writerCategory" aria-label="카테고리">
-          <option>카테고리</option>
-          <option>ARCH 로그</option>
-          <option>시냅스</option>
-          <option>백업</option>
+          <option>로그형</option>
+          <option>메신저형</option>
         </select>
-        <span id="writerSaveState">자동 저장됨</span>
       </div>
       <input id="writerTitle" type="text" placeholder="제목을 입력하세요" aria-label="제목">
       <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
@@ -2399,36 +2479,7 @@ const writerBlockType = document.getElementById('writerBlockType');
 const writerFont = document.getElementById('writerFont');
 const writerColor = document.getElementById('writerColor');
 const writerMode = document.getElementById('writerMode');
-const writerSaveState = document.getElementById('writerSaveState');
-
-function saveWriterDraft(){
-  localStorage.setItem('eoe-writer-draft', JSON.stringify({
-    title:writerTitle.value,
-    category:writerCategory.value,
-    html:writerCanvas.innerHTML,
-    mode:writerMode.value,
-    font:writerFont.value
-  }));
-  writerSaveState.textContent = '자동 저장됨';
-}
-
-let writerSaveTimer;
-function queueWriterSave(){
-  writerSaveState.textContent = '저장 중...';
-  clearTimeout(writerSaveTimer);
-  writerSaveTimer = setTimeout(saveWriterDraft, 350);
-}
-
-function restoreWriterDraft(){
-  try{
-    const draft = JSON.parse(localStorage.getItem('eoe-writer-draft') || '{}');
-    if(draft.title) writerTitle.value = draft.title;
-    if(draft.category) writerCategory.value = draft.category;
-    if(draft.html) writerCanvas.innerHTML = draft.html;
-    if(draft.mode) writerMode.value = draft.mode;
-    if(draft.font) writerFont.value = draft.font;
-  }catch{}
-}
+function queueWriterSave(){}
 
 document.querySelectorAll('[data-command]').forEach(button => {
   button.addEventListener('mousedown', event => event.preventDefault());
@@ -2455,8 +2506,6 @@ writerColor.addEventListener('input', () => {
 });
 writerMode.addEventListener('change', () => {
   writerApp.classList.toggle('night',writerMode.value === 'night');
-  writerApp.classList.toggle('archive',writerMode.value === 'archive');
-  queueWriterSave();
 });
 
 document.querySelector('[data-writer-action="link"]').addEventListener('click', () => {
@@ -2473,16 +2522,42 @@ document.querySelector('[data-writer-action="image"]').addEventListener('click',
   document.execCommand('insertImage',false,url);
   queueWriterSave();
 });
-document.querySelector('[data-writer-action="dialogue"]').addEventListener('click', () => {
-  const selection = window.getSelection();
-  const text = selection ? selection.toString().trim() : '';
-  if(!text){
-    writerCanvas.focus();
-    document.execCommand('insertHTML',false,'<div class="writer-dialogue">대사를 입력하세요.</div><p><br></p>');
-  }else{
-    document.execCommand('insertHTML',false,`<div class="writer-dialogue">${escapeHtml(text)}</div><p><br></p>`);
+document.querySelector('[data-writer-action="emoji"]').addEventListener('click', () => {
+  writerCanvas.focus();
+  alert('Windows 이모티콘 창은 Windows 키 + . 를 눌러 열 수 있어.');
+});
+document.querySelector('[data-writer-action="table"]').addEventListener('click', () => {
+  writerCanvas.focus();
+  document.execCommand('insertHTML',false,'<table><tbody><tr><td>내용</td><td>내용</td></tr><tr><td>내용</td><td>내용</td></tr></tbody></table><p><br></p>');
+});
+
+const writerInsertMenu = document.getElementById('writerInsertMenu');
+document.querySelector('[data-writer-action="insert-menu"]').addEventListener('click', event => {
+  event.stopPropagation();
+  writerInsertMenu.hidden = !writerInsertMenu.hidden;
+});
+writerInsertMenu.addEventListener('click', event => {
+  const button = event.target.closest('[data-insert-kind]');
+  if(!button) return;
+  writerCanvas.focus();
+  if(button.dataset.insertKind === 'special'){
+    const value = prompt('넣을 특수문자를 입력해줘.');
+    if(value) document.execCommand('insertText',false,value);
   }
-  queueWriterSave();
+  if(button.dataset.insertKind === 'code'){
+    document.execCommand('insertHTML',false,'<pre><code>코드를 입력하세요.</code></pre><p><br></p>');
+  }
+  if(button.dataset.insertKind === 'html'){
+    const value = prompt('삽입할 HTML을 입력해줘.');
+    if(value) document.execCommand('insertHTML',false,value);
+  }
+  if(button.dataset.insertKind === 'fold'){
+    document.execCommand('insertHTML',false,'<details><summary>접은글</summary><p>내용을 입력하세요.</p></details><p><br></p>');
+  }
+  writerInsertMenu.hidden = true;
+});
+document.addEventListener('click', event => {
+  if(!event.target.closest('.writer-insert-wrap')) writerInsertMenu.hidden = true;
 });
 
 writerCanvas.addEventListener('paste', event => {
@@ -2492,11 +2567,6 @@ writerCanvas.addEventListener('paste', event => {
   const html = paragraphs.map(value => `<p>${escapeHtml(value).replace(/\n/g,'<br>')}</p>`).join('');
   document.execCommand('insertHTML',false,html);
   queueWriterSave();
-});
-
-[writerCanvas,writerTitle,writerCategory].forEach(element => {
-  element.addEventListener('input',queueWriterSave);
-  element.addEventListener('change',queueWriterSave);
 });
 
 document.getElementById('writerHtmlSave').addEventListener('click', () => {
@@ -2509,17 +2579,14 @@ document.getElementById('writerHtmlSave').addEventListener('click', () => {
   URL.revokeObjectURL(link.href);
 });
 document.getElementById('writerImageSave').addEventListener('click', () => {
-  writerSaveState.textContent = '이미지 생성 중...';
   html2canvas(document.querySelector('.writer-page'),{backgroundColor:writerApp.classList.contains('night') ? '#1F2023' : '#FFFFFF',scale:2,useCORS:true}).then(canvas => {
     const link = document.createElement('a');
     link.download = `${(writerTitle.value.trim() || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-    writerSaveState.textContent = '저장 완료';
-  }).catch(() => writerSaveState.textContent = '이미지 저장 실패');
+  }).catch(() => alert('이미지 저장에 실패했어. 삽입한 사진 주소를 확인해줘.'));
 });
 
-restoreWriterDraft();
 writerCanvas.style.fontFamily = writerFont.value;
 writerMode.dispatchEvent(new Event('change'));
 </script>
