@@ -1256,6 +1256,46 @@
     width:390px;
     padding:12px;
   }
+  .writer-selection-toolbar{
+    position:fixed;
+    z-index:1000;
+    display:flex;
+    align-items:center;
+    padding:5px;
+    border:1px solid #dedfe3;
+    border-radius:8px;
+    background:#fff;
+    box-shadow:0 7px 22px rgba(25,28,34,.18);
+    transform:translate(-50%,-100%);
+  }
+  .writer-selection-toolbar[hidden]{display:none;}
+  .writer-selection-toolbar::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:-5px;
+    width:8px;
+    height:8px;
+    border-right:1px solid #dedfe3;
+    border-bottom:1px solid #dedfe3;
+    background:#fff;
+    transform:translateX(-50%) rotate(45deg);
+  }
+  .writer-selection-toolbar button{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 9px;
+    border:0;
+    border-radius:5px;
+    background:transparent;
+    color:#44484f;
+    font:600 11px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-selection-toolbar button:hover{background:#f1f2f4;}
   .writer-margin-wrap{position:relative;flex:0 0 auto;}
   .writer-margin-button{width:auto;min-width:38px;font-size:10px;}
   .writer-margin-menu{
@@ -1664,6 +1704,16 @@
   .writer-app.night .writer-insert-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-insert-menu button{color:#e7e5df;}
   .writer-app.night .writer-insert-menu button:hover{background:#35373c;}
+  .writer-app.night .writer-selection-toolbar{
+    border-color:#3b3d43;
+    background:#292b2f;
+  }
+  .writer-app.night .writer-selection-toolbar::after{
+    border-color:#3b3d43;
+    background:#292b2f;
+  }
+  .writer-app.night .writer-selection-toolbar button{color:#e7e5df;}
+  .writer-app.night .writer-selection-toolbar button:hover{background:#35373c;}
   .writer-app.night .writer-margin-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-color-trigger{color:#e7e5df;}
   .writer-app.night .writer-color-trigger:hover,
@@ -1833,6 +1883,12 @@
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
     </main>
+    <div class="writer-selection-toolbar" id="writerSelectionToolbar" hidden>
+      <button type="button" id="writerSelectionBubble">
+        <span class="writer-bubble-glyph" aria-hidden="true"></span>
+        말풍선
+      </button>
+    </div>
   </div>
 
   <header class="appbar">
@@ -3164,8 +3220,6 @@ function readWriterImage(file){
   });
 }
 
-writerCanvas.addEventListener('mouseup',rememberWriterRange);
-writerCanvas.addEventListener('keyup',rememberWriterRange);
 document.querySelector('[data-writer-action="image"]').addEventListener('click', () => {
   rememberWriterRange();
   writerImageInput.click();
@@ -3188,6 +3242,8 @@ const writerMessageSide = document.getElementById('writerMessageSide');
 const writerChatTime = document.getElementById('writerChatTime');
 const writerChatText = document.getElementById('writerChatText');
 const writerAddBubble = document.getElementById('writerAddBubble');
+const writerSelectionToolbar = document.getElementById('writerSelectionToolbar');
+const writerSelectionBubble = document.getElementById('writerSelectionBubble');
 let writerBubbleReplaceRange = null;
 let writerMembers = [];
 try{
@@ -3231,14 +3287,7 @@ function resizeWriterAvatar(file){
   });
 }
 
-writerInsertButton.addEventListener('mousedown', () => rememberWriterRange());
-writerInsertButton.addEventListener('click', event => {
-  event.stopPropagation();
-  writerInsertMenu.hidden = !writerInsertMenu.hidden;
-  if(writerInsertMenu.hidden){
-    writerBubbleReplaceRange = null;
-    return;
-  }
+function prepareWriterBubbleSelection(){
   if(writerSavedRange
     && !writerSavedRange.collapsed
     && writerCanvas.contains(writerSavedRange.commonAncestorContainer)){
@@ -3255,6 +3304,50 @@ writerInsertButton.addEventListener('click', event => {
     writerBubbleReplaceRange = null;
     writerAddBubble.textContent = '말풍선 추가';
   }
+}
+
+function updateWriterSelectionToolbar(){
+  const selection = window.getSelection();
+  if(!selection
+    || !selection.rangeCount
+    || selection.isCollapsed
+    || !writerCanvas.contains(selection.anchorNode)
+    || !writerCanvas.contains(selection.focusNode)){
+    writerSelectionToolbar.hidden = true;
+    return;
+  }
+  rememberWriterRange();
+  const rect = selection.getRangeAt(0).getBoundingClientRect();
+  if(!rect.width && !rect.height){
+    writerSelectionToolbar.hidden = true;
+    return;
+  }
+  writerSelectionToolbar.style.left = `${Math.min(window.innerWidth - 48,Math.max(48,rect.left + rect.width / 2))}px`;
+  writerSelectionToolbar.style.top = `${Math.max(54,rect.top - 8)}px`;
+  writerSelectionToolbar.hidden = false;
+}
+
+writerCanvas.addEventListener('mouseup', () => requestAnimationFrame(updateWriterSelectionToolbar));
+writerCanvas.addEventListener('keyup', () => requestAnimationFrame(updateWriterSelectionToolbar));
+writerCanvas.addEventListener('input', () => {
+  writerSelectionToolbar.hidden = true;
+});
+writerSelectionBubble.addEventListener('mousedown', event => event.preventDefault());
+writerSelectionBubble.addEventListener('click', event => {
+  event.stopPropagation();
+  prepareWriterBubbleSelection();
+  writerInsertMenu.hidden = false;
+  writerSelectionToolbar.hidden = true;
+});
+writerInsertButton.addEventListener('mousedown', () => rememberWriterRange());
+writerInsertButton.addEventListener('click', event => {
+  event.stopPropagation();
+  writerInsertMenu.hidden = !writerInsertMenu.hidden;
+  if(writerInsertMenu.hidden){
+    writerBubbleReplaceRange = null;
+    return;
+  }
+  prepareWriterBubbleSelection();
 });
 writerInsertMenu.addEventListener('click', event => event.stopPropagation());
 document.getElementById('writerAddMember').addEventListener('click', async () => {
@@ -3401,7 +3494,13 @@ writerCategory.addEventListener('change', () => {
 });
 document.addEventListener('click', event => {
   if(!event.target.closest('.writer-insert-wrap')) writerInsertMenu.hidden = true;
+  if(!event.target.closest('.writer-selection-toolbar') && !writerCanvas.contains(event.target)){
+    writerSelectionToolbar.hidden = true;
+  }
 });
+window.addEventListener('scroll', () => {
+  writerSelectionToolbar.hidden = true;
+},{passive:true});
 writerMarginButton.addEventListener('click', event => {
   event.stopPropagation();
   writerMarginMenu.hidden = !writerMarginMenu.hidden;
