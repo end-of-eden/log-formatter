@@ -1037,55 +1037,7 @@
   .writer-toolbar button{
     flex:0 0 auto;
   }
-  .writer-block-select{display:none;}
-  .writer-block-wrap{position:relative;flex:0 0 auto;}
-  .writer-block-button{
-    width:86px;
-    height:32px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 8px;
-    border:0;
-    border-radius:4px;
-    background:transparent;
-    color:#3c3e42;
-    font:12px 'Pretendard',sans-serif;
-    cursor:pointer;
-  }
-  .writer-block-button:hover,.writer-block-button[aria-expanded="true"]{background:#f3f3f5;}
-  .writer-block-menu{
-    position:absolute;
-    top:38px;
-    left:0;
-    z-index:300;
-    width:112px;
-    padding:6px 0;
-    border:1px solid #e0e1e4;
-    border-radius:4px;
-    background:#fff;
-    box-shadow:0 8px 24px rgba(32,34,38,.14);
-  }
-  .writer-block-menu button{
-    width:100%;
-    height:auto;
-    display:block;
-    padding:5px 12px;
-    border:0;
-    background:transparent;
-    color:#303236;
-    text-align:left;
-    font-family:'Pretendard',sans-serif;
-    line-height:1.2;
-    cursor:pointer;
-  }
-  .writer-block-menu button:hover{background:#f3f3f5;}
-  .writer-block-menu [data-block-value="h1|30"]{font-size:24px;}
-  .writer-block-menu [data-block-value="h2|24"]{font-size:21px;}
-  .writer-block-menu [data-block-value="h3|20"]{font-size:18px;}
-  .writer-block-menu [data-block-value="p|18"]{font-size:16px;}
-  .writer-block-menu [data-block-value="p|15"]{font-size:14px;}
-  .writer-block-menu [data-block-value="p|13"]{font-size:12px;}
+  #writerFontSize{min-width:62px;}
   .writer-sep{
     width:1px;
     height:20px;
@@ -1363,7 +1315,7 @@
     padding:0;
     outline:none;
     color:#2d2f33;
-    font:15px/2.15 'Noto Serif KR',serif;
+    font:10pt/2.15 'Noto Serif KR',serif;
     white-space:normal;
   }
   #writerCanvas.dragging-image{
@@ -1443,12 +1395,6 @@
   .writer-app.night .writer-insert-menu button{color:#e7e5df;}
   .writer-app.night .writer-insert-menu button:hover{background:#35373c;}
   .writer-app.night .writer-margin-menu{background:#292b2f;border-color:#3b3d43;}
-  .writer-app.night .writer-block-button{color:#e7e5df;}
-  .writer-app.night .writer-block-button:hover,
-  .writer-app.night .writer-block-button[aria-expanded="true"]{background:#34363b;}
-  .writer-app.night .writer-block-menu{background:#292b2f;border-color:#3b3d43;}
-  .writer-app.night .writer-block-menu button{color:#e7e5df;}
-  .writer-app.night .writer-block-menu button:hover{background:#34363b;}
   .writer-app.night .writer-color-trigger{color:#e7e5df;}
   .writer-app.night .writer-color-trigger:hover,
   .writer-app.night .writer-color-trigger[aria-expanded="true"]{background:#34363b;}
@@ -1467,7 +1413,7 @@
     font-family:'Noto Serif KR',serif;
   }
   .writer-export-sheet.dark{background:#1f2023;color:#ece9e1;}
-  .writer-export-body{min-height:560px;font:15px/2.15 'Noto Serif KR',serif;}
+  .writer-export-body{min-height:560px;font:10pt/2.15 'Noto Serif KR',serif;}
   .writer-export-body p{margin:0 0 32px;}
   .writer-export-body img{max-width:100%;height:auto;}
   .writer-export-body blockquote{margin:28px 0;padding:8px 0 8px 18px;border-left:3px solid var(--gold);}
@@ -1507,25 +1453,15 @@
       <div class="writer-brand">EOE log</div>
       <button class="writer-photo" type="button" data-writer-action="image" title="사진 파일 선택" aria-label="사진"><span class="photo-glyph" aria-hidden="true"></span></button>
       <input type="file" id="writerImageInput" accept="image/*" multiple hidden>
-      <div class="writer-block-wrap">
-        <button class="writer-block-button" id="writerBlockButton" type="button" aria-haspopup="listbox" aria-expanded="false">본문2 <span aria-hidden="true">⌄</span></button>
-        <div class="writer-block-menu" id="writerBlockMenu" role="listbox" hidden>
-          <button type="button" role="option" data-block-value="h1|30">제목1</button>
-          <button type="button" role="option" data-block-value="h2|24">제목2</button>
-          <button type="button" role="option" data-block-value="h3|20">제목3</button>
-          <button type="button" role="option" data-block-value="p|18">본문1</button>
-          <button type="button" role="option" data-block-value="p|15">본문2</button>
-          <button type="button" role="option" data-block-value="p|13">본문3</button>
-        </div>
-        <select class="writer-block-select" id="writerBlockType" aria-label="문단 종류" tabindex="-1">
-          <option value="p|15">본문2</option>
-          <option value="h1|30">제목1</option>
-          <option value="h2|24">제목2</option>
-          <option value="h3|20">제목3</option>
-          <option value="p|18">본문1</option>
-          <option value="p|13">본문3</option>
-        </select>
-      </div>
+      <select id="writerFontSize" aria-label="글자 크기">
+        <option>6pt</option><option>7pt</option><option>8pt</option><option>9pt</option>
+        <option selected>10pt</option><option>11pt</option><option>12pt</option><option>13pt</option>
+        <option>14pt</option><option>15pt</option><option>16pt</option><option>17pt</option>
+        <option>18pt</option><option>19pt</option><option>20pt</option><option>21pt</option>
+        <option>22pt</option><option>23pt</option><option>24pt</option><option>25pt</option>
+        <option>26pt</option><option>27pt</option><option>28pt</option><option>29pt</option>
+        <option>30pt</option>
+      </select>
       <select id="writerFont" aria-label="글꼴">
         <option value="'Pretendard', sans-serif">프리텐다드</option>
         <option value="'Noto Sans KR', sans-serif">노토 산스</option>
@@ -2766,9 +2702,7 @@ const writerLogName = document.getElementById('writerLogName');
 const writerPreviewSheet = document.getElementById('writerPreviewSheet');
 const writerPreviewLogName = document.getElementById('writerPreviewLogName');
 const writerCategory = document.getElementById('writerCategory');
-const writerBlockType = document.getElementById('writerBlockType');
-const writerBlockButton = document.getElementById('writerBlockButton');
-const writerBlockMenu = document.getElementById('writerBlockMenu');
+const writerFontSize = document.getElementById('writerFontSize');
 const writerFont = document.getElementById('writerFont');
 const writerMode = document.getElementById('writerMode');
 const writerMarginButton = document.getElementById('writerMarginButton');
@@ -2786,28 +2720,6 @@ function syncWriterPreview(){
 }
 writerLogName.addEventListener('input',syncWriterPreview);
 
-writerBlockButton.addEventListener('mousedown', event => event.preventDefault());
-writerBlockButton.addEventListener('click', () => {
-  writerBlockMenu.hidden = !writerBlockMenu.hidden;
-  writerBlockButton.setAttribute('aria-expanded',String(!writerBlockMenu.hidden));
-});
-writerBlockMenu.querySelectorAll('[data-block-value]').forEach(button => {
-  button.addEventListener('mousedown', event => event.preventDefault());
-  button.addEventListener('click', () => {
-    writerBlockType.value = button.dataset.blockValue;
-    writerBlockButton.firstChild.textContent = `${button.textContent} `;
-    writerBlockType.dispatchEvent(new Event('change'));
-    writerBlockMenu.hidden = true;
-    writerBlockButton.setAttribute('aria-expanded','false');
-  });
-});
-document.addEventListener('click', event => {
-  if(!event.target.closest('.writer-block-wrap')){
-    writerBlockMenu.hidden = true;
-    writerBlockButton.setAttribute('aria-expanded','false');
-  }
-});
-
 document.querySelectorAll('[data-command]').forEach(button => {
   button.addEventListener('mousedown', event => event.preventDefault());
   button.addEventListener('click', () => {
@@ -2817,15 +2729,25 @@ document.querySelectorAll('[data-command]').forEach(button => {
   });
 });
 
-writerBlockType.addEventListener('change', () => {
-  writerCanvas.focus();
-  const [tagName,pointSize] = writerBlockType.value.split('|');
-  document.execCommand('formatBlock',false,tagName);
+writerFontSize.addEventListener('change', () => {
+  const pointSize = parseInt(writerFontSize.value,10);
+  restoreWriterRange();
   const selection = window.getSelection();
-  let block = selection?.anchorNode;
-  if(block?.nodeType === Node.TEXT_NODE) block = block.parentElement;
-  block = block?.closest?.('h1,h2,h3,p,div,blockquote');
-  if(block && writerCanvas.contains(block)) block.style.fontSize = `${pointSize}pt`;
+  if(selection?.isCollapsed){
+    let block = selection.anchorNode;
+    if(block?.nodeType === Node.TEXT_NODE) block = block.parentElement;
+    block = block?.closest?.('h1,h2,h3,p,div,blockquote');
+    if(block && writerCanvas.contains(block)) block.style.fontSize = `${pointSize}pt`;
+  }else{
+    document.execCommand('styleWithCSS',false,false);
+    document.execCommand('fontSize',false,'7');
+    document.execCommand('styleWithCSS',false,true);
+    writerCanvas.querySelectorAll('font[size="7"]').forEach(node => {
+      node.removeAttribute('size');
+      node.style.fontSize = `${pointSize}pt`;
+    });
+  }
+  rememberWriterRange();
   queueWriterSave();
 });
 writerFont.addEventListener('change', () => {
