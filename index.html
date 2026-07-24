@@ -989,7 +989,7 @@
   body.writer-active{
     display:block;
     overflow:auto;
-    background:#fff;
+    background:#f1f2f4;
     color:#222;
   }
   body.writer-active>.appbar,
@@ -999,6 +999,7 @@
   body.writer-active>#messengerStage,
   body.writer-active>#bubble{display:none!important;}
   .writer-app{
+    display:flow-root;
     min-height:100vh;
     background:#f1f2f4;
     color:#222;
@@ -1057,6 +1058,13 @@
     cursor:pointer;
   }
   .writer-icon:hover,.writer-format:hover,.writer-photo:hover{background:#f3f3f5;}
+  .writer-clear-all{
+    width:auto;
+    color:#c0392b;
+    font-size:11px;
+    font-weight:600;
+  }
+  .writer-clear-all:hover{background:rgba(192,57,43,.08);}
   .writer-photo{
     min-width:30px;
     display:grid;
@@ -1978,6 +1986,7 @@
   }
   .writer-preview-log-name:empty{display:none;}
   .writer-app.night{background:#17181b;color:#eee;}
+  body.writer-active:has(.writer-app.night){background:#17181b;}
   .writer-app.night .writer-preview-sheet{--writer-sheet-bg:#000;background:#000;}
   .writer-app.night .writer-toolbar{background:rgba(31,32,35,.97);border-color:#33353a;}
   .writer-app.night .writer-toolbar select,
@@ -2185,6 +2194,7 @@
           <label>왼쪽 <input type="range" id="exportMarginLeft" min="0" max="320" step="4" value="160"><span>160px</span></label>
         </div>
       </div>
+      <button class="writer-format writer-clear-all" type="button" id="writerClearAll">전체 삭제</button>
       <div class="writer-spacer"></div>
       <select id="writerMode" aria-label="편집 모드">
         <option value="default">기본모드</option>
@@ -3374,6 +3384,7 @@ const writerFont = document.getElementById('writerFont');
 const writerMode = document.getElementById('writerMode');
 const writerMarginButton = document.getElementById('writerMarginButton');
 const writerMarginMenu = document.getElementById('writerMarginMenu');
+const writerClearAll = document.getElementById('writerClearAll');
 const exportMarginInputs = {
   top:document.getElementById('exportMarginTop'),
   right:document.getElementById('exportMarginRight'),
@@ -4227,6 +4238,18 @@ window.addEventListener('scroll', () => {
 writerMarginButton.addEventListener('click', event => {
   event.stopPropagation();
   writerMarginMenu.hidden = !writerMarginMenu.hidden;
+});
+writerClearAll.addEventListener('click', () => {
+  if(!writerCanvas.textContent.trim() && !writerCanvas.querySelector('img,.writer-inline-chat')) return;
+  if(!confirm('본문과 말풍선을 모두 삭제할까? 등록된 멤버는 유지돼.')) return;
+  writerCanvas.innerHTML = '';
+  writerSelectedChatGroup = null;
+  writerSavedRange = null;
+  writerBubbleReplaceRange = null;
+  writerChatText.value = '';
+  writerSelectionToolbar.hidden = true;
+  writerInsertMenu.hidden = true;
+  queueWriterSave();
 });
 Object.values(exportMarginInputs).forEach(input => {
   input.addEventListener('input', () => {
