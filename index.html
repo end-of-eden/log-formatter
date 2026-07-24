@@ -1296,6 +1296,12 @@
     cursor:pointer;
   }
   .writer-selection-toolbar button:hover{background:#f1f2f4;}
+  .writer-selection-divider{
+    width:1px;
+    height:20px;
+    margin:0 2px;
+    background:#e4e1dc;
+  }
   .writer-margin-wrap{position:relative;flex:0 0 auto;}
   .writer-margin-button{width:auto;min-width:38px;font-size:10px;}
   .writer-margin-menu{
@@ -1522,7 +1528,14 @@
   }
   .writer-member-form .writer-avatar-field input{display:none;}
   .writer-member-form .writer-color-field{align-items:center;}
-  .writer-member-form #writerAddMember{width:72px;padding:0 8px;}
+  .writer-member-form #writerAddMember{
+    display:flex;
+    width:72px;
+    align-items:center;
+    justify-content:center;
+    padding:0 8px;
+    text-align:center;
+  }
   .writer-message-form{
     grid-template-columns:minmax(86px,1fr) 66px 78px 82px;
     margin-top:10px;
@@ -1982,6 +1995,7 @@
   }
   .writer-app.night .writer-selection-toolbar button{color:#e7e5df;}
   .writer-app.night .writer-selection-toolbar button:hover{background:#35373c;}
+  .writer-app.night .writer-selection-divider{background:#484b51;}
   .writer-app.night .writer-margin-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-color-trigger{color:#e7e5df;}
   .writer-app.night .writer-color-trigger:hover,
@@ -2135,7 +2149,7 @@
             <select id="writerMessageSender" aria-label="발화자"><option value="">멤버가 없습니다</option></select>
             <select id="writerMessageSide" aria-label="말풍선 위치"><option value="left">왼쪽</option><option value="right">오른쪽</option></select>
             <input type="time" id="writerChatTime" aria-label="메시지 시간">
-            <select id="writerChatStyle" aria-label="채팅 표현 방식"><option value="bubble">말풍선형</option><option value="discord">Discord형</option></select>
+            <select id="writerChatStyle" aria-label="채팅 표현 방식"><option value="bubble">말풍선형</option><option value="discord">프로필형</option></select>
             <textarea id="writerChatText" placeholder="말풍선 내용을 입력합니다."></textarea>
             <button type="button" id="writerAddBubble">말풍선 넣기</button>
           </div>
@@ -2177,8 +2191,10 @@
     <div class="writer-selection-toolbar" id="writerSelectionToolbar" hidden>
       <button type="button" id="writerSelectionBubble">
         <span class="writer-bubble-glyph" aria-hidden="true"></span>
-        말풍선
+        말풍선형
       </button>
+      <i class="writer-selection-divider" aria-hidden="true"></i>
+      <button type="button" id="writerSelectionProfile">프로필형</button>
     </div>
   </div>
 
@@ -3543,6 +3559,7 @@ const writerChatText = document.getElementById('writerChatText');
 const writerAddBubble = document.getElementById('writerAddBubble');
 const writerSelectionToolbar = document.getElementById('writerSelectionToolbar');
 const writerSelectionBubble = document.getElementById('writerSelectionBubble');
+const writerSelectionProfile = document.getElementById('writerSelectionProfile');
 let writerBubbleReplaceRange = null;
 let writerMembers = [];
 let writerEditingMemberId = null;
@@ -3680,12 +3697,23 @@ writerCanvas.addEventListener('keyup', scheduleWriterSelectionToolbar);
 writerCanvas.addEventListener('input', () => {
   writerSelectionToolbar.hidden = true;
 });
-writerSelectionBubble.addEventListener('mousedown', event => event.preventDefault());
-writerSelectionBubble.addEventListener('click', event => {
-  event.stopPropagation();
+function openWriterSelectionAs(style){
+  writerChatStyle.value = style;
+  writerChatStyle.dispatchEvent(new Event('change'));
   prepareWriterBubbleSelection();
   writerInsertMenu.hidden = false;
   writerSelectionToolbar.hidden = true;
+}
+[writerSelectionBubble,writerSelectionProfile].forEach(button => {
+  button.addEventListener('mousedown', event => event.preventDefault());
+});
+writerSelectionBubble.addEventListener('click', event => {
+  event.stopPropagation();
+  openWriterSelectionAs('bubble');
+});
+writerSelectionProfile.addEventListener('click', event => {
+  event.stopPropagation();
+  openWriterSelectionAs('discord');
 });
 writerInsertButton.addEventListener('mousedown', () => rememberWriterRange());
 writerInsertButton.addEventListener('click', event => {
@@ -3955,7 +3983,7 @@ function insertWriterMessengerSegments(segments){
 writerChatStyle.addEventListener('change', () => {
   const discord = writerChatStyle.value === 'discord';
   writerMessageSide.disabled = discord;
-  writerChatText.placeholder = discord ? 'Discord형 채팅 내용을 입력합니다.' : '말풍선 내용을 입력합니다.';
+  writerChatText.placeholder = discord ? '프로필형 채팅 내용을 입력합니다.' : '말풍선 내용을 입력합니다.';
   writerAddBubble.textContent = discord ? '채팅 넣기' : '말풍선 넣기';
 });
 writerAddBubble.addEventListener('click', () => {
