@@ -672,6 +672,36 @@
     grid-template-columns:1fr 1fr;
     gap:6px;
   }
+  .block-type-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:5px;
+  }
+  .block-type-btn{
+    appearance:none;
+    border:1px solid #dfe1e5;
+    border-radius:8px;
+    background:#fff;
+    color:#858a93;
+    padding:8px 3px;
+    font:600 11px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .block-type-btn.active{
+    border-color:rgba(166,124,0,.28);
+    background:var(--gold-soft);
+    color:var(--gold);
+  }
+  .bubble-fields{display:flex;flex-direction:column;gap:7px;}
+  #blockImageUrl{
+    width:100%;
+    background:#fff;
+    color:var(--text);
+    border:1px solid #dfe1e5;
+    border-radius:8px;
+    padding:10px 12px;
+    font:13px 'Pretendard',sans-serif;
+  }
   .side-btn{
     appearance:none;
     border:1px solid #dfe1e5;
@@ -797,6 +827,33 @@
     margin:5px 7px 0;
     color:#aaa59d;
     font:9px 'JetBrains Mono',monospace;
+  }
+  .excerpt-text{
+    margin:4px 8px;
+    padding:4px 0 4px 16px;
+    border-left:2px solid rgba(166,124,0,.38);
+    color:#3d3c39;
+    font:14px/1.9 'Noto Serif KR',serif;
+    white-space:pre-wrap;
+    cursor:pointer;
+  }
+  .excerpt-divider{
+    width:55%;
+    height:1px;
+    margin:10px auto;
+    border:0;
+    background:linear-gradient(to right,transparent,var(--gold),transparent);
+    cursor:pointer;
+  }
+  .excerpt-image{
+    display:block;
+    max-width:82%;
+    max-height:520px;
+    margin:4px auto;
+    border-radius:12px;
+    border:1px solid rgba(166,124,0,.2);
+    object-fit:contain;
+    cursor:pointer;
   }
   @media (max-width:860px){
     body{display:block;overflow:auto;}
@@ -1000,17 +1057,26 @@
       <div class="member-list" id="memberList"></div>
     </section>
 
-    <section class="field messenger-section">
-      <label>02 · 메시지 작성</label>
-      <select id="messageSender" aria-label="발신자">
-        <option value="">멤버를 먼저 추가하세요</option>
-      </select>
-      <div class="message-side-row" role="group" aria-label="말풍선 위치">
-        <button class="side-btn active" type="button" data-side="left">왼쪽</button>
-        <button class="side-btn" type="button" data-side="right">오른쪽</button>
+    <section class="field messenger-section block-composer">
+      <label>02 · 블록 작성</label>
+      <div class="block-type-row" role="tablist" aria-label="블록 종류">
+        <button class="block-type-btn active" type="button" data-block-type="text">글</button>
+        <button class="block-type-btn" type="button" data-block-type="bubble">말풍선</button>
+        <button class="block-type-btn" type="button" data-block-type="divider">구분선</button>
+        <button class="block-type-btn" type="button" data-block-type="image">사진</button>
       </div>
-      <textarea id="messageText" placeholder="대화 내용을 입력하세요. Ctrl/⌘ + Enter로 추가"></textarea>
-      <button class="btn messenger-primary" id="addMessageBtn" type="button">메시지 추가</button>
+      <div class="bubble-fields" id="bubbleFields" hidden>
+        <select id="messageSender" aria-label="발신자">
+          <option value="">멤버를 먼저 추가하세요</option>
+        </select>
+        <div class="message-side-row" role="group" aria-label="말풍선 위치">
+          <button class="side-btn active" type="button" data-side="left">왼쪽</button>
+          <button class="side-btn" type="button" data-side="right">오른쪽</button>
+        </div>
+      </div>
+      <textarea id="messageText" placeholder="발췌문을 입력하세요. 문단을 나누면 글 블록도 나뉩니다."></textarea>
+      <input type="url" id="blockImageUrl" placeholder="이미지 주소" hidden>
+      <button class="btn messenger-primary" id="addMessageBtn" type="button">글 추가</button>
     </section>
 
     <div class="messenger-actions">
@@ -1548,6 +1614,9 @@ const downloadChatBtn = document.getElementById('downloadChatBtn');
 const chatOutput = document.getElementById('chatOutput');
 const chatStatus = document.getElementById('chatStatus');
 const sideButtons = [...document.querySelectorAll('.side-btn')];
+const blockTypeButtons = [...document.querySelectorAll('.block-type-btn')];
+const bubbleFields = document.getElementById('bubbleFields');
+const blockImageUrl = document.getElementById('blockImageUrl');
 
 function readStoredList(key){
   try{
@@ -1561,6 +1630,7 @@ function readStoredList(key){
 let chatMembers = readStoredList('eoe-chat-members');
 let chatMessages = readStoredList('eoe-chat-messages');
 let messageSide = 'left';
+let blockType = 'text';
 
 function escapeAttr(value){
   return escapeHtml(String(value || '')).replace(/"/g,'&quot;');
@@ -1607,6 +1677,16 @@ function renderMessages(){
 
   chatOutput.className = '';
   chatOutput.innerHTML = chatMessages.map((message, index) => {
+    const type = message.type || 'bubble';
+    if(type === 'text'){
+      return `<div class="excerpt-text" data-block-index="${index}" title="눌러서 삭제">${escapeHtml(message.text)}</div>`;
+    }
+    if(type === 'divider'){
+      return `<hr class="excerpt-divider" data-block-index="${index}" title="눌러서 삭제">`;
+    }
+    if(type === 'image'){
+      return `<img class="excerpt-image" data-block-index="${index}" src="${escapeAttr(message.url)}" alt="발췌 이미지" title="눌러서 삭제">`;
+    }
     const member = chatMembers.find(item => item.id === message.memberId);
     if(!member) return '';
     const right = message.side === 'right';
@@ -1614,7 +1694,7 @@ function renderMessages(){
     const content = `
       <div class="chat-content">
         <div class="chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
-        <div class="chat-bubble" data-message-index="${index}" title="눌러서 삭제" style="background:${escapeAttr(member.bubbleColor)}">${escapeHtml(message.text)}</div>
+        <div class="chat-bubble" data-block-index="${index}" title="눌러서 삭제" style="background:${escapeAttr(member.bubbleColor)}">${escapeHtml(message.text)}</div>
         <div class="chat-time">${escapeHtml(message.time)}</div>
       </div>`;
     return `<article class="chat-row${right ? ' right' : ''}">${right ? content + avatar : avatar + content}</article>`;
@@ -1661,26 +1741,73 @@ sideButtons.forEach(button => {
   });
 });
 
-function addChatMessage(){
-  const memberId = messageSender.value;
-  const text = messageText.value.trim();
-  if(!memberId){
-    chatStatus.textContent = '멤버를 먼저 추가해줘.';
-    return;
-  }
-  if(!text){
-    messageText.focus();
-    chatStatus.textContent = '메시지를 입력해줘.';
-    return;
-  }
-  chatMessages.push({
-    memberId,
-    text,
-    side: messageSide,
-    time: new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+function setBlockType(type){
+  blockType = type;
+  blockTypeButtons.forEach(button => {
+    button.classList.toggle('active', button.dataset.blockType === type);
   });
-  messageText.value = '';
-  chatStatus.textContent = '메시지를 추가했어.';
+  bubbleFields.hidden = type !== 'bubble';
+  blockImageUrl.hidden = type !== 'image';
+  messageText.hidden = type === 'divider' || type === 'image';
+  const labels = {text:'글 추가',bubble:'말풍선 추가',divider:'구분선 추가',image:'사진 추가'};
+  addMessageBtn.textContent = labels[type];
+  if(type === 'text') messageText.placeholder = '발췌문을 입력하세요. 문단마다 글 블록으로 나뉩니다.';
+  if(type === 'bubble') messageText.placeholder = '대화 내용을 입력하세요. Ctrl/⌘ + Enter로 추가';
+}
+
+blockTypeButtons.forEach(button => {
+  button.addEventListener('click', () => setBlockType(button.dataset.blockType));
+});
+
+function addChatMessage(){
+  const text = messageText.value.trim();
+  if(blockType === 'divider'){
+    chatMessages.push({type:'divider'});
+  }else if(blockType === 'image'){
+    const url = blockImageUrl.value.trim();
+    if(!url){
+      blockImageUrl.focus();
+      chatStatus.textContent = '이미지 주소를 입력해줘.';
+      return;
+    }
+    chatMessages.push({type:'image',url});
+    blockImageUrl.value = '';
+  }else if(blockType === 'text'){
+    if(!text){
+      messageText.focus();
+      chatStatus.textContent = '글을 입력해줘.';
+      return;
+    }
+    text.split(/\n\s*\n/).map(value => value.trim()).filter(Boolean).forEach(value => {
+      chatMessages.push({type:'text',text:value});
+    });
+    messageText.value = '';
+  }else{
+    const memberId = messageSender.value;
+    if(!memberId){
+      chatStatus.textContent = '멤버를 먼저 추가해줘.';
+      return;
+    }
+    if(!text){
+      messageText.focus();
+      chatStatus.textContent = '메시지를 입력해줘.';
+      return;
+    }
+    chatMessages.push({
+      type:'bubble',
+      memberId,
+      text,
+      side: messageSide,
+      time: new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+    });
+    messageText.value = '';
+  }
+  if((blockType === 'text' || blockType === 'bubble') && !text){
+    messageText.focus();
+    chatStatus.textContent = '내용을 입력해줘.';
+    return;
+  }
+  chatStatus.textContent = '블록을 추가했어.';
   saveChatState();
   renderMessages();
 }
@@ -1694,9 +1821,9 @@ messageText.addEventListener('keydown', event => {
 });
 
 chatOutput.addEventListener('click', event => {
-  const bubbleTarget = event.target.closest('[data-message-index]');
-  if(!bubbleTarget) return;
-  chatMessages.splice(Number(bubbleTarget.dataset.messageIndex), 1);
+  const blockTarget = event.target.closest('[data-block-index]');
+  if(!blockTarget) return;
+  chatMessages.splice(Number(blockTarget.dataset.blockIndex), 1);
   saveChatState();
   renderMessages();
   chatStatus.textContent = '메시지를 삭제했어.';
@@ -1727,6 +1854,7 @@ downloadChatBtn.addEventListener('click', () => {
 
 renderMembers();
 renderMessages();
+setBlockType('text');
 setWorkspaceMode(localStorage.getItem('eoe-workspace-mode') || 'log');
 </script>
 </body>
