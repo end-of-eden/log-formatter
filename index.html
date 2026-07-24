@@ -1333,7 +1333,20 @@
     color:#63676f;
     font-size:11px;
   }
-  .writer-margin-menu input{width:100%;accent-color:var(--burgundy);}
+  .writer-margin-menu input{
+    width:100%;
+    height:28px;
+    padding:0 8px;
+    border:1px solid #dfe1e5;
+    border-radius:5px;
+    background:#fff;
+    color:#4b4f56;
+    font:11px 'JetBrains Mono',monospace;
+  }
+  .writer-margin-menu input:focus{
+    border-color:rgba(192,57,43,.55);
+    outline:2px solid rgba(192,57,43,.1);
+  }
   .writer-margin-menu span{text-align:right;font:10px 'JetBrains Mono',monospace;}
   .writer-save{
     appearance:none;
@@ -1573,9 +1586,14 @@
   #writerAddBubble::before{
     content:"+";
     margin-right:6px;
-    color:var(--gold);
+    color:var(--burgundy);
     font-size:15px;
     line-height:1;
+  }
+  #writerAddBubble.is-editing::before{
+    content:"✓";
+    color:var(--burgundy);
+    font-size:14px;
   }
   .writer-chat-menu input[type=text],
   .writer-chat-menu input[type=file],
@@ -1890,9 +1908,42 @@
   .writer-preview-sheet{
     --writer-sheet-bg:#fff;
     box-sizing:border-box;
+    position:relative;
     padding:64px 72px;
     background:#fff;
     box-shadow:0 4px 22px rgba(28,31,36,.08);
+  }
+  .writer-output-guides{
+    position:absolute;
+    inset:0;
+    z-index:20;
+    pointer-events:none;
+  }
+  .writer-output-guides::before,
+  .writer-output-guides::after{
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:0;
+    border-left:1px dashed rgba(192,57,43,.42);
+  }
+  .writer-output-guides::before{left:calc(50% - 300px);}
+  .writer-output-guides::after{right:calc(50% - 300px);}
+  .writer-output-guides span{
+    position:sticky;
+    top:82px;
+    display:block;
+    width:max-content;
+    margin:0 auto;
+    padding:4px 8px;
+    border:1px solid rgba(192,57,43,.18);
+    border-radius:999px;
+    background:rgba(255,255,255,.9);
+    color:rgba(192,57,43,.72);
+    font:600 9px 'Pretendard',sans-serif;
+  }
+  @media (max-width:940px){
+    .writer-output-guides{display:none;}
   }
   #writerCanvas{
     padding:0;
@@ -1913,6 +1964,7 @@
     pointer-events:none;
   }
   #writerCanvas:empty{min-height:420px;}
+  #writerCanvas > :first-child{margin-top:0!important;}
   #writerCanvas p{margin:0 0 32px;}
   #writerCanvas > :last-child{margin-bottom:0!important;}
   #writerCanvas h1{margin:44px 0 20px;line-height:1.35;}
@@ -2037,6 +2089,7 @@
   }
   .writer-export-sheet.dark{--writer-sheet-bg:#000;background:#000;color:#ece9e1;}
   .writer-export-body{font:10pt/2.15 'Noto Serif KR',serif;text-align:justify;}
+  .writer-export-body > :first-child{margin-top:0!important;}
   .writer-export-body p{margin:0 0 32px;}
   .writer-export-body > :last-child{margin-bottom:0!important;}
   .writer-export-body img{max-width:100%;height:auto;}
@@ -2188,10 +2241,10 @@
       <div class="writer-margin-wrap">
         <button class="writer-format writer-margin-button" type="button" id="writerMarginButton">여백</button>
         <div class="writer-margin-menu" id="writerMarginMenu" hidden>
-          <label>위 <input type="range" id="exportMarginTop" min="0" max="160" step="4" value="64"><span>64px</span></label>
-          <label>오른쪽 <input type="range" id="exportMarginRight" min="0" max="320" step="4" value="160"><span>160px</span></label>
-          <label>아래 <input type="range" id="exportMarginBottom" min="0" max="160" step="4" value="64"><span>64px</span></label>
-          <label>왼쪽 <input type="range" id="exportMarginLeft" min="0" max="320" step="4" value="160"><span>160px</span></label>
+          <label>위 <input type="number" id="exportMarginTop" min="0" max="160" step="1" value="30"><span>30px</span></label>
+          <label>오른쪽 <input type="number" id="exportMarginRight" min="0" max="320" step="1" value="20"><span>20px</span></label>
+          <label>아래 <input type="number" id="exportMarginBottom" min="0" max="160" step="1" value="30"><span>30px</span></label>
+          <label>왼쪽 <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="20"><span>20px</span></label>
         </div>
       </div>
       <button class="writer-format writer-clear-all" type="button" id="writerClearAll">전체 삭제</button>
@@ -2200,7 +2253,10 @@
         <option value="default">기본모드</option>
         <option value="night">다크모드</option>
       </select>
-      <button class="writer-save" id="writerHtmlSave" type="button">HTML 저장</button>
+      <select id="writerExportPreset" aria-label="이미지 출력 크기" title="이미지 출력 크기">
+        <option value="mobile" selected>모바일 · 1200px</option>
+        <option value="archive">고화질 · 1800px</option>
+      </select>
       <button class="writer-save primary" id="writerImageSave" type="button">이미지 저장</button>
     </header>
 
@@ -2213,6 +2269,9 @@
         <input id="writerLogName" type="text" placeholder="왼쪽 아래에 표시할 로그 이름" aria-label="로그 이름">
       </div>
       <section class="writer-preview-sheet" id="writerPreviewSheet" aria-label="저장 이미지 미리보기">
+        <div class="writer-output-guides" id="writerOutputGuides" hidden aria-hidden="true">
+          <span>모바일 출력 경계 · 1200px</span>
+        </div>
         <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
@@ -3377,11 +3436,13 @@ const writerToolbar = document.querySelector('.writer-toolbar');
 const writerCanvas = document.getElementById('writerCanvas');
 const writerLogName = document.getElementById('writerLogName');
 const writerPreviewSheet = document.getElementById('writerPreviewSheet');
+const writerOutputGuides = document.getElementById('writerOutputGuides');
 const writerPreviewLogName = document.getElementById('writerPreviewLogName');
 const writerCategory = document.getElementById('writerCategory');
 const writerFontSize = document.getElementById('writerFontSize');
 const writerFont = document.getElementById('writerFont');
 const writerMode = document.getElementById('writerMode');
+const writerExportPreset = document.getElementById('writerExportPreset');
 const writerMarginButton = document.getElementById('writerMarginButton');
 const writerMarginMenu = document.getElementById('writerMarginMenu');
 const writerClearAll = document.getElementById('writerClearAll');
@@ -3400,11 +3461,33 @@ function syncWriterToolbarAlignment(){
   writerToolbar.style.paddingLeft = `${Math.max(18,writerPreviewSheet.getBoundingClientRect().left)}px`;
 }
 function syncWriterPreview(){
-  writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
+  const mobile = writerExportPreset.value === 'mobile';
+  const left = exportMarginInputs.left.value;
+  const right = exportMarginInputs.right.value;
+  writerPreviewSheet.style.padding = mobile
+    ? `${exportMarginInputs.top.value}px 0 ${exportMarginInputs.bottom.value}px`
+    : `${exportMarginInputs.top.value}px ${right}px ${exportMarginInputs.bottom.value}px ${left}px`;
+  [writerCanvas,writerPreviewLogName].forEach(element => {
+    element.style.width = mobile ? `calc(600px - ${left}px - ${right}px)` : '';
+    element.style.marginLeft = mobile ? `calc(50% - 300px + ${left}px)` : '';
+    element.style.marginRight = mobile ? '0' : '';
+  });
   writerPreviewLogName.textContent = writerLogName.value.trim();
   requestAnimationFrame(syncWriterToolbarAlignment);
 }
 writerLogName.addEventListener('input',syncWriterPreview);
+writerExportPreset.addEventListener('change', () => {
+  const mobile = writerExportPreset.value === 'mobile';
+  writerOutputGuides.hidden = !mobile;
+  exportMarginInputs.top.value = '30';
+  exportMarginInputs.right.value = mobile ? '20' : '160';
+  exportMarginInputs.bottom.value = '30';
+  exportMarginInputs.left.value = mobile ? '20' : '160';
+  Object.values(exportMarginInputs).forEach(input => {
+    input.parentElement.querySelector('span').textContent = `${input.value}px`;
+  });
+  syncWriterPreview();
+});
 window.addEventListener('resize',syncWriterToolbarAlignment,{passive:true});
 
 document.querySelectorAll('[data-command]').forEach(button => {
@@ -3649,6 +3732,7 @@ const writerSelectionBubble = document.getElementById('writerSelectionBubble');
 const writerSelectionProfile = document.getElementById('writerSelectionProfile');
 let writerBubbleReplaceRange = null;
 let writerSelectedChatGroup = null;
+let writerSelectedBubbleItem = null;
 let writerMembers = [];
 let writerEditingMemberId = null;
 try{
@@ -4137,7 +4221,7 @@ writerChatStyle.addEventListener('change', () => {
   const discord = writerChatStyle.value === 'discord';
   writerMessageSide.disabled = discord;
   writerChatText.placeholder = discord ? '프로필형 채팅 내용을 입력합니다.' : '말풍선 내용을 입력합니다.';
-  writerAddBubble.textContent = discord ? '채팅 넣기' : '말풍선 넣기';
+  writerAddBubble.textContent = writerSelectedBubbleItem?.isConnected ? '말풍선 수정' : (discord ? '채팅 넣기' : '말풍선 넣기');
 });
 writerChatFontSize.addEventListener('change', () => {
   if(!writerSelectedChatGroup?.isConnected) return;
@@ -4152,6 +4236,16 @@ writerAddBubble.addEventListener('click', () => {
   if(!member || !text) return;
   const style = writerChatStyle.value;
   const right = style === 'bubble' && writerMessageSide.value === 'right';
+  if(writerSelectedBubbleItem?.isConnected){
+    const bubble = writerSelectedBubbleItem.querySelector('.writer-inline-chat-bubble');
+    if(bubble) bubble.innerHTML = escapeHtml(text).replace(/\n/g,'<br>');
+    writerChatText.value = '';
+    writerSelectedBubbleItem = null;
+    writerAddBubble.classList.remove('is-editing');
+    writerAddBubble.textContent = style === 'discord' ? '채팅 넣기' : '말풍선 넣기';
+    queueWriterSave();
+    return;
+  }
   const messages = text.split(/\n\s*\n/).map(value => value.trim()).filter(Boolean);
   const messageHtml = writerMessageItemsHtml(messages,style,writerChatTime.value);
   const meaningfulChildren = [...writerCanvas.children].filter(node =>
@@ -4187,11 +4281,14 @@ writerAddBubble.addEventListener('click', () => {
   queueWriterSave();
 });
 writerCanvas.addEventListener('click', event => {
+  const deleteButton = event.target.closest('.writer-bubble-delete');
   const selectedGroup = event.target.closest('.writer-inline-chat');
+  const selectedItem = deleteButton ? null : event.target.closest('.writer-inline-chat-bubble-item');
   writerCanvas.querySelectorAll('.writer-inline-chat.font-size-selected').forEach(group => {
     group.classList.remove('font-size-selected');
   });
   writerSelectedChatGroup = selectedGroup || null;
+  writerSelectedBubbleItem = selectedItem || null;
   if(writerSelectedChatGroup){
     writerSelectedChatGroup.classList.add('font-size-selected');
     if(writerMembers.some(member => member.id === writerSelectedChatGroup.dataset.memberId)){
@@ -4202,9 +4299,19 @@ writerCanvas.addEventListener('click', event => {
     writerChatStyle.value = writerSelectedChatGroup.dataset.style || 'bubble';
     writerChatStyle.dispatchEvent(new Event('change'));
     writerChatFontSize.value = writerSelectedChatGroup.dataset.fontSize || '13';
+    if(writerSelectedBubbleItem){
+      writerChatText.value = writerSelectedBubbleItem.querySelector('.writer-inline-chat-bubble')?.innerText.trim() || '';
+      writerAddBubble.classList.add('is-editing');
+      writerAddBubble.textContent = '말풍선 수정';
+    }else{
+      writerAddBubble.classList.remove('is-editing');
+      writerAddBubble.textContent = writerChatStyle.value === 'discord' ? '채팅 넣기' : '말풍선 넣기';
+    }
     writerInsertMenu.hidden = false;
+  }else{
+    writerAddBubble.classList.remove('is-editing');
+    writerAddBubble.textContent = writerChatStyle.value === 'discord' ? '채팅 넣기' : '말풍선 넣기';
   }
-  const deleteButton = event.target.closest('.writer-bubble-delete');
   if(!deleteButton) return;
   const item = deleteButton.closest('.writer-inline-chat-bubble-item');
   const group = deleteButton.closest('.writer-inline-chat');
@@ -4357,25 +4464,23 @@ writerCanvas.addEventListener('drop', async event => {
   for(const file of imageFiles) await readWriterImage(file);
 });
 
-document.getElementById('writerHtmlSave').addEventListener('click', () => {
-  const title = writerLogName.value.trim() || 'EOE log';
-  const cleanCanvas = writerCanvas.cloneNode(true);
-  cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
-  const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><title>${escapeHtml(title)}</title><body><main>${cleanCanvas.innerHTML}</main></body></html>`;
-  const link = document.createElement('a');
-  link.download = `${title.replace(/[\\/:*?"<>|]/g,'_')}.html`;
-  link.href = URL.createObjectURL(new Blob([html],{type:'text/html'}));
-  link.click();
-  URL.revokeObjectURL(link.href);
-});
 document.getElementById('writerImageSave').addEventListener('click', () => {
   const dark = writerApp.classList.contains('night');
   const logName = writerLogName.value.trim();
+  const cleanCanvas = writerCanvas.cloneNode(true);
+  cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
+  while(cleanCanvas.lastElementChild
+    && cleanCanvas.lastElementChild.matches('p,div')
+    && !cleanCanvas.lastElementChild.textContent.trim()
+    && !cleanCanvas.lastElementChild.querySelector('img,hr,.writer-inline-chat')){
+    cleanCanvas.lastElementChild.remove();
+  }
   const sheet = document.createElement('article');
   sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
+  sheet.style.width = writerExportPreset.value === 'mobile' ? '600px' : '900px';
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   sheet.innerHTML = `
-    <div class="writer-export-body">${writerCanvas.innerHTML}</div>
+    <div class="writer-export-body">${cleanCanvas.innerHTML}</div>
     ${logName ? `<div class="writer-export-log-name">${escapeHtml(logName)}</div>` : ''}`;
   sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
   document.body.appendChild(sheet);
@@ -4394,7 +4499,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
 });
 
 writerCanvas.style.fontFamily = writerFont.value;
-syncWriterPreview();
+writerExportPreset.dispatchEvent(new Event('change'));
 writerMode.dispatchEvent(new Event('change'));
 writerChatStyle.dispatchEvent(new Event('change'));
 </script>
