@@ -3327,8 +3327,25 @@ function updateWriterSelectionToolbar(){
   writerSelectionToolbar.hidden = false;
 }
 
-writerCanvas.addEventListener('mouseup', () => requestAnimationFrame(updateWriterSelectionToolbar));
-writerCanvas.addEventListener('keyup', () => requestAnimationFrame(updateWriterSelectionToolbar));
+let writerSelectionPointerDown = false;
+let writerSelectionFrame = 0;
+function scheduleWriterSelectionToolbar(){
+  cancelAnimationFrame(writerSelectionFrame);
+  writerSelectionFrame = requestAnimationFrame(updateWriterSelectionToolbar);
+}
+writerCanvas.addEventListener('pointerdown', () => {
+  writerSelectionPointerDown = true;
+  writerSelectionToolbar.hidden = true;
+});
+document.addEventListener('pointerup', () => {
+  if(!writerSelectionPointerDown) return;
+  writerSelectionPointerDown = false;
+  scheduleWriterSelectionToolbar();
+});
+document.addEventListener('selectionchange', () => {
+  if(!writerSelectionPointerDown) scheduleWriterSelectionToolbar();
+});
+writerCanvas.addEventListener('keyup', scheduleWriterSelectionToolbar);
 writerCanvas.addEventListener('input', () => {
   writerSelectionToolbar.hidden = true;
 });
