@@ -1435,12 +1435,10 @@
     position:relative;
     display:flex;
     align-items:flex-start;
-    left:50%;
-    width:min(720px,calc(100% + 120px));
-    max-width:none;
+    width:calc(100% - 120px);
+    max-width:600px;
     gap:8px;
-    margin:26px 0;
-    transform:translateX(-50%);
+    margin:26px auto;
     font-family:'Pretendard',sans-serif;
   }
   .writer-inline-chat.right{flex-direction:row-reverse;}
@@ -1708,6 +1706,7 @@
     .writer-save{display:none;}
     .writer-page{margin-top:28px;}
     .writer-member-form,.writer-message-form{grid-template-columns:1fr 1fr;}
+    .writer-inline-chat{width:100%;max-width:100%;}
   }
   @media (max-width:860px){
     body{display:block;overflow:auto;}
@@ -3292,6 +3291,33 @@ writerMemberList.addEventListener('click', event => {
   localStorage.setItem('eoe-writer-members',JSON.stringify(writerMembers));
   renderWriterMembers();
 });
+function mergeAdjacentWriterBubbleGroups(){
+  const groups = [...writerCanvas.querySelectorAll('.writer-inline-chat')];
+  let previousGroup = null;
+  groups.forEach(group => {
+    if(previousGroup?.isConnected
+      && previousGroup.dataset.memberId === group.dataset.memberId
+      && previousGroup.dataset.side === group.dataset.side){
+      const between = document.createRange();
+      between.setStartAfter(previousGroup);
+      between.setEndBefore(group);
+      if(!between.toString().trim()){
+        const target = previousGroup.querySelector('.writer-inline-chat-bubbles');
+        const source = group.querySelector('.writer-inline-chat-bubbles');
+        const groupParent = group.parentElement;
+        while(source.firstChild) target.appendChild(source.firstChild);
+        group.remove();
+        if(groupParent !== writerCanvas
+          && !groupParent.textContent.trim()
+          && !groupParent.querySelector('img, article, .writer-inline-chat')){
+          groupParent.remove();
+        }
+        return;
+      }
+    }
+    previousGroup = group;
+  });
+}
 writerAddBubble.addEventListener('click', () => {
   const member = writerMembers.find(item => item.id === writerMessageSender.value);
   const text = writerChatText.value.trim();
@@ -3330,6 +3356,7 @@ writerAddBubble.addEventListener('click', () => {
     </article>`;
   restoreWriterRange();
   document.execCommand('insertHTML',false,html);
+  mergeAdjacentWriterBubbleGroups();
   writerChatText.value = '';
   writerBubbleReplaceRange = null;
   writerAddBubble.textContent = '말풍선 추가';
