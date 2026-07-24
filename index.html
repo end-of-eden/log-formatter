@@ -1509,6 +1509,10 @@
     grid-template-columns:minmax(82px,1fr) 54px 54px 54px 72px;
     align-items:end;
   }
+  .writer-member-form .writer-alias-field{
+    grid-column:1 / -1;
+    align-items:stretch;
+  }
   .writer-member-form label{
     display:flex;
     flex-direction:column;
@@ -1543,6 +1547,7 @@
     border-top:1px solid #ececef;
   }
   #writerChatText{grid-column:1 / -1;height:72px!important;resize:vertical;}
+  #writerChatFontSize{grid-column:1 / -1;}
   #writerAddBubble{
     grid-column:1 / -1;
     justify-self:center;
@@ -1712,6 +1717,11 @@
     margin:26px auto;
     font-family:'Pretendard',sans-serif;
   }
+  #writerCanvas .writer-inline-chat.font-size-selected{
+    outline:2px solid rgba(192,57,43,.32);
+    outline-offset:6px;
+    border-radius:8px;
+  }
   .writer-inline-chat.right{flex-direction:row-reverse;}
   .writer-inline-chat-body{min-width:0;}
   .writer-inline-chat-body{max-width:calc(100% - 38px);}
@@ -1747,7 +1757,7 @@
     border-radius:18px;
     background:var(--writer-bubble-color,#ececef);
     color:#303236;
-    font-size:13px;
+    font-size:var(--writer-message-font-size,13px);
     line-height:1.5;
     text-align:left;
     white-space:pre-wrap;
@@ -1833,7 +1843,7 @@
     border-radius:0;
     background:transparent;
     color:inherit;
-    font-size:13px;
+    font-size:var(--writer-message-font-size,13px);
     line-height:1.6;
   }
   .writer-inline-chat.discord .writer-inline-chat-bubble::before,
@@ -2144,6 +2154,7 @@
               <label class="writer-color-field">이름색<input type="color" id="writerMemberNameColor" value="#C0392B" title="이름 색상"></label>
               <label class="writer-color-field">말풍선<input type="color" id="writerMemberBubbleColor" value="#ECECEF" title="말풍선 색상"></label>
               <button type="button" id="writerAddMember">멤버 추가</button>
+              <label class="writer-alias-field">본명 / 별칭<input type="text" id="writerMemberAliases" placeholder="예: 성유진, 유진 (쉼표로 구분)"></label>
             </div>
           </section>
           <div class="writer-message-form">
@@ -2151,6 +2162,13 @@
             <select id="writerMessageSide" aria-label="말풍선 위치"><option value="left">왼쪽</option><option value="right">오른쪽</option></select>
             <input type="time" id="writerChatTime" aria-label="메시지 시간">
             <select id="writerChatStyle" aria-label="채팅 표현 방식"><option value="bubble">말풍선형</option><option value="discord">프로필형</option></select>
+            <select id="writerChatFontSize" aria-label="메시지 글자 크기" title="메시지 글자 크기">
+              <option value="11">11px</option><option value="12">12px</option>
+              <option value="13" selected>13px</option><option value="14">14px</option>
+              <option value="15">15px</option><option value="16">16px</option>
+              <option value="18">18px</option><option value="20">20px</option>
+              <option value="22">22px</option><option value="24">24px</option>
+            </select>
             <textarea id="writerChatText" placeholder="말풍선 내용을 입력합니다."></textarea>
             <button type="button" id="writerAddBubble">말풍선 넣기</button>
           </div>
@@ -3596,6 +3614,7 @@ writerImageInput.addEventListener('change', async () => {
 const writerInsertMenu = document.getElementById('writerInsertMenu');
 const writerInsertButton = document.querySelector('[data-writer-action="insert-menu"]');
 const writerMemberName = document.getElementById('writerMemberName');
+const writerMemberAliases = document.getElementById('writerMemberAliases');
 const writerMemberAvatar = document.getElementById('writerMemberAvatar');
 const writerMemberNameColor = document.getElementById('writerMemberNameColor');
 const writerMemberBubbleColor = document.getElementById('writerMemberBubbleColor');
@@ -3611,12 +3630,14 @@ const writerMessageSender = document.getElementById('writerMessageSender');
 const writerMessageSide = document.getElementById('writerMessageSide');
 const writerChatTime = document.getElementById('writerChatTime');
 const writerChatStyle = document.getElementById('writerChatStyle');
+const writerChatFontSize = document.getElementById('writerChatFontSize');
 const writerChatText = document.getElementById('writerChatText');
 const writerAddBubble = document.getElementById('writerAddBubble');
 const writerSelectionToolbar = document.getElementById('writerSelectionToolbar');
 const writerSelectionBubble = document.getElementById('writerSelectionBubble');
 const writerSelectionProfile = document.getElementById('writerSelectionProfile');
 let writerBubbleReplaceRange = null;
+let writerSelectedChatGroup = null;
 let writerMembers = [];
 let writerEditingMemberId = null;
 try{
@@ -3639,6 +3660,7 @@ function saveWriterMembers(){
 function resetWriterMemberForm(){
   writerEditingMemberId = null;
   writerMemberName.value = '';
+  writerMemberAliases.value = '';
   writerMemberAvatar.value = '';
   writerMemberNameColor.value = '#C0392B';
   writerMemberBubbleColor.value = '#ECECEF';
@@ -3824,6 +3846,10 @@ document.getElementById('writerAddMember').addEventListener('click', async () =>
     writerMemberName.focus();
     return;
   }
+  const aliases = [...new Set(writerMemberAliases.value
+    .split(',')
+    .map(value => value.trim())
+    .filter(value => value && value.toLocaleLowerCase() !== name.toLocaleLowerCase()))];
   const editingMember = writerMembers.find(member => member.id === writerEditingMemberId);
   let avatar = editingMember?.avatar || '';
   if(writerMemberAvatar.files?.[0]){
@@ -3837,6 +3863,7 @@ document.getElementById('writerAddMember').addEventListener('click', async () =>
   if(editingMember){
     Object.assign(editingMember,{
       name,
+      aliases,
       avatar,
       nameColor:writerMemberNameColor.value,
       bubbleColor:writerMemberBubbleColor.value
@@ -3845,6 +3872,7 @@ document.getElementById('writerAddMember').addEventListener('click', async () =>
     writerMembers.push({
       id:`${Date.now()}-${Math.random().toString(16).slice(2)}`,
       name,
+      aliases,
       avatar,
       nameColor:writerMemberNameColor.value,
       bubbleColor:writerMemberBubbleColor.value,
@@ -3874,6 +3902,7 @@ writerMemberList.addEventListener('click', event => {
     if(!member) return;
     writerEditingMemberId = member.id;
     writerMemberName.value = member.name;
+    writerMemberAliases.value = Array.isArray(member.aliases) ? member.aliases.join(', ') : '';
     writerMemberNameColor.value = member.nameColor || '#C0392B';
     writerMemberBubbleColor.value = member.bubbleColor || '#ECECEF';
     writerMemberFormTitle.textContent = '멤버 수정';
@@ -3901,6 +3930,9 @@ writerMemberProjectImport.addEventListener('change', async () => {
       const imported = {
         id:existing?.id || `import-${Date.now()}-${index}`,
         name,
+        aliases:Array.isArray(source.aliases)
+          ? [...new Set(source.aliases.map(value => String(value).trim()).filter(Boolean))]
+          : (existing?.aliases || []),
         avatar:typeof source.image === 'string' ? source.image : (existing?.avatar || ''),
         nameColor:source.color || existing?.nameColor || '#C0392B',
         bubbleColor:source.bubbleColor || existing?.bubbleColor || '#ECECEF',
@@ -3919,11 +3951,12 @@ writerMemberProjectImport.addEventListener('change', async () => {
 writerMemberProjectExport.addEventListener('click', () => {
   const preset = {
     __type:'eoe-member-preset',
-    __v:1,
+    __v:2,
     savedAt:new Date().toISOString(),
     members:writerMembers.map(member => ({
       id:member.id,
       name:member.name,
+      aliases:Array.isArray(member.aliases) ? member.aliases : [],
       image:member.avatar || '',
       color:member.nameColor || '#C0392B',
       bubbleColor:member.bubbleColor || '#ECECEF',
@@ -3946,6 +3979,7 @@ function mergeAdjacentWriterBubbleGroups(){
       && previousGroup.dataset.memberId === group.dataset.memberId
       && previousGroup.dataset.side === group.dataset.side
       && previousGroup.dataset.style === group.dataset.style
+      && previousGroup.dataset.fontSize === group.dataset.fontSize
       && previousGroup.dataset.time === group.dataset.time){
       const between = document.createRange();
       between.setStartAfter(previousGroup);
@@ -3983,11 +4017,12 @@ function writerMessageItemsHtml(messages,style,time){
     </div>`).join('');
 }
 
-function writerChatGroupHtml(member,messages,{right=false,style='bubble',time=''}={}){
+function writerChatGroupHtml(member,messages,{right=false,style='bubble',time='',fontSize=13}={}){
   const messageHtml = writerMessageItemsHtml(messages,style,time);
   const discord = style === 'discord';
+  const safeFontSize = Math.min(24,Math.max(11,Number(fontSize) || 13));
   return `
-    <article class="writer-inline-chat${right && !discord ? ' right' : ''}${discord ? ' discord' : ''}" data-member-id="${escapeAttr(member.id)}" data-side="${right && !discord ? 'right' : 'left'}" data-style="${escapeAttr(style)}" data-time="${escapeAttr(time)}" style="--writer-bubble-color:${escapeAttr(member.bubbleColor || '#ECECEF')}" contenteditable="false">
+    <article class="writer-inline-chat${right && !discord ? ' right' : ''}${discord ? ' discord' : ''}" data-member-id="${escapeAttr(member.id)}" data-side="${right && !discord ? 'right' : 'left'}" data-style="${escapeAttr(style)}" data-font-size="${safeFontSize}" data-time="${escapeAttr(time)}" style="--writer-bubble-color:${escapeAttr(member.bubbleColor || '#ECECEF')};--writer-message-font-size:${safeFontSize}px" contenteditable="false">
       ${writerMemberAvatarHtml(member)}
       <div class="writer-inline-chat-body">
         ${discord
@@ -4000,7 +4035,13 @@ function writerChatGroupHtml(member,messages,{right=false,style='bubble',time=''
 
 function parseWriterMessengerText(text){
   if(!writerMembers.length || !text.trim()) return null;
-  const membersByName = new Map(writerMembers.map(member => [member.name.trim().toLocaleLowerCase(),member]));
+  const membersByName = new Map();
+  writerMembers.forEach(member => {
+    [member.name,...(Array.isArray(member.aliases) ? member.aliases : [])].forEach(label => {
+      const normalized = String(label || '').trim().toLocaleLowerCase();
+      if(normalized) membersByName.set(normalized,member);
+    });
+  });
   const segments = [];
   let current = null;
   let recognized = 0;
@@ -4054,7 +4095,8 @@ function insertWriterMessengerSegments(segments){
     return writerChatGroupHtml(segment.member,segment.messages,{
       right:style === 'bubble' && memberIndex % 2 === 1,
       style,
-      time:segment.time || writerChatTime.value
+      time:segment.time || writerChatTime.value,
+      fontSize:writerChatFontSize.value
     });
   }).join('');
   document.execCommand('insertHTML',false,html);
@@ -4068,6 +4110,13 @@ writerChatStyle.addEventListener('change', () => {
   writerMessageSide.disabled = discord;
   writerChatText.placeholder = discord ? '프로필형 채팅 내용을 입력합니다.' : '말풍선 내용을 입력합니다.';
   writerAddBubble.textContent = discord ? '채팅 넣기' : '말풍선 넣기';
+});
+writerChatFontSize.addEventListener('change', () => {
+  if(!writerSelectedChatGroup?.isConnected) return;
+  const safeFontSize = Math.min(24,Math.max(11,Number(writerChatFontSize.value) || 13));
+  writerSelectedChatGroup.dataset.fontSize = String(safeFontSize);
+  writerSelectedChatGroup.style.setProperty('--writer-message-font-size',`${safeFontSize}px`);
+  queueWriterSave();
 });
 writerAddBubble.addEventListener('click', () => {
   const member = writerMembers.find(item => item.id === writerMessageSender.value);
@@ -4086,6 +4135,7 @@ writerAddBubble.addEventListener('click', () => {
     && previousGroup.dataset.memberId === member.id
     && previousGroup.dataset.side === (right ? 'right' : 'left')
     && previousGroup.dataset.style === style
+    && previousGroup.dataset.fontSize === writerChatFontSize.value
     && previousGroup.dataset.time === writerChatTime.value){
     previousGroup.querySelector('.writer-inline-chat-bubbles').insertAdjacentHTML('beforeend',messageHtml);
     writerChatText.value = '';
@@ -4093,7 +4143,12 @@ writerAddBubble.addEventListener('click', () => {
     queueWriterSave();
     return;
   }
-  const html = writerChatGroupHtml(member,messages,{right,style,time:writerChatTime.value});
+  const html = writerChatGroupHtml(member,messages,{
+    right,
+    style,
+    time:writerChatTime.value,
+    fontSize:writerChatFontSize.value
+  });
   restoreWriterRange();
   document.execCommand('insertHTML',false,html);
   mergeAdjacentWriterBubbleGroups();
@@ -4104,6 +4159,23 @@ writerAddBubble.addEventListener('click', () => {
   queueWriterSave();
 });
 writerCanvas.addEventListener('click', event => {
+  const selectedGroup = event.target.closest('.writer-inline-chat');
+  writerCanvas.querySelectorAll('.writer-inline-chat.font-size-selected').forEach(group => {
+    group.classList.remove('font-size-selected');
+  });
+  writerSelectedChatGroup = selectedGroup || null;
+  if(writerSelectedChatGroup){
+    writerSelectedChatGroup.classList.add('font-size-selected');
+    if(writerMembers.some(member => member.id === writerSelectedChatGroup.dataset.memberId)){
+      writerMessageSender.value = writerSelectedChatGroup.dataset.memberId;
+    }
+    writerMessageSide.value = writerSelectedChatGroup.dataset.side || 'left';
+    writerChatTime.value = writerSelectedChatGroup.dataset.time || '';
+    writerChatStyle.value = writerSelectedChatGroup.dataset.style || 'bubble';
+    writerChatStyle.dispatchEvent(new Event('change'));
+    writerChatFontSize.value = writerSelectedChatGroup.dataset.fontSize || '13';
+    writerInsertMenu.hidden = false;
+  }
   const deleteButton = event.target.closest('.writer-bubble-delete');
   if(!deleteButton) return;
   const item = deleteButton.closest('.writer-inline-chat-bubble-item');
@@ -4142,7 +4214,9 @@ writerCategory.addEventListener('change', () => {
   }
 });
 document.addEventListener('click', event => {
-  if(!event.target.closest('.writer-insert-wrap')) writerInsertMenu.hidden = true;
+  if(!event.target.closest('.writer-insert-wrap') && !event.target.closest('.writer-inline-chat')){
+    writerInsertMenu.hidden = true;
+  }
   if(!event.target.closest('.writer-selection-toolbar') && !writerCanvas.contains(event.target)){
     writerSelectionToolbar.hidden = true;
   }
