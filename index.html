@@ -1012,7 +1012,7 @@
     display:flex;
     align-items:center;
     gap:2px;
-    padding:10px 18px 10px max(18px,calc((100vw - 900px) / 2 + 160px));
+    padding:10px 18px 10px max(18px,calc((100vw - 900px) / 2));
     border-bottom:1px solid #ececef;
     background:rgba(255,255,255,.97);
     backdrop-filter:blur(12px);
@@ -3367,7 +3367,7 @@ function syncWriterToolbarAlignment(){
     writerToolbar.style.paddingLeft = '10px';
     return;
   }
-  writerToolbar.style.paddingLeft = `${Math.max(18,writerCanvas.getBoundingClientRect().left)}px`;
+  writerToolbar.style.paddingLeft = `${Math.max(18,writerPreviewSheet.getBoundingClientRect().left)}px`;
 }
 function syncWriterPreview(){
   writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
