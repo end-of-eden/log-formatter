@@ -1351,48 +1351,6 @@
     font:12px 'Pretendard',sans-serif;
   }
   #writerLogName::placeholder{color:#a4a7ad;}
-  .writer-title-color{
-    margin-left:auto;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    color:#777b82;
-    font-size:11px;
-    cursor:pointer;
-  }
-  .writer-title-color input{
-    appearance:none;
-    -webkit-appearance:none;
-    width:20px;
-    height:20px;
-    padding:0;
-    border:0;
-    border-radius:50%;
-    background:#2a9d8f;
-    overflow:hidden;
-    cursor:pointer;
-  }
-  .writer-title-color input::-webkit-color-swatch-wrapper{padding:0;}
-  .writer-title-color input::-webkit-color-swatch{
-    border:0;
-    border-radius:50%;
-  }
-  .writer-title-color input::-moz-color-swatch{
-    border:0;
-    border-radius:50%;
-  }
-  #writerTitle{
-    width:100%;
-    border:0;
-    border-bottom:1px solid #ededf0;
-    border-radius:0;
-    background:transparent;
-    color:#24262a;
-    padding:8px 0 26px;
-    font:400 28px 'Pretendard',sans-serif;
-  }
-  #writerTitle::placeholder{color:#9b9ea4;}
-  #writerTitle:focus{box-shadow:none;border-bottom-color:#d5d6da;}
   #writerCanvas{
     min-height:650px;
     padding:36px 0 100px;
@@ -1494,12 +1452,6 @@
     font-family:'Noto Serif KR',serif;
   }
   .writer-export-sheet.dark{background:#1f2023;color:#ece9e1;}
-  .writer-export-title{
-    margin:0 0 12px;
-    padding:0;
-    border:0;
-    font:500 18px/1.4 'Pretendard',sans-serif;
-  }
   .writer-export-body{font:15px/2.15 'Noto Serif KR',serif;}
   .writer-export-body p{margin:0 0 32px;}
   .writer-export-body img{max-width:100%;height:auto;}
@@ -1512,12 +1464,9 @@
     font:500 12px/1.5 'Pretendard',sans-serif;
   }
   .writer-app.night .writer-page,
-  .writer-app.night #writerTitle,
   .writer-app.night #writerCanvas{color:#ece9e1;}
-  .writer-app.night #writerTitle{border-color:#383a3f;}
   .writer-app.night .writer-category-row select{background:#292b2f;border-color:#3b3d43;color:#ddd;}
   .writer-app.night #writerLogName{background:#292b2f;border-color:#3b3d43;color:#ddd;}
-  .writer-app.night .writer-title-color{color:#c7c4bd;}
   @media (max-width:900px){
     .writer-toolbar{padding:0 10px;}
     .writer-brand{display:none;}
@@ -1643,9 +1592,7 @@
           <option>메신저형</option>
         </select>
         <input id="writerLogName" type="text" placeholder="오른쪽 아래에 표시할 로그 이름" aria-label="로그 이름">
-        <label class="writer-title-color">제목 색상 <input type="color" id="writerTitleColor" value="#2A9D8F" aria-label="저장 이미지 제목 색상"></label>
       </div>
-      <input id="writerTitle" type="text" placeholder="제목을 입력하세요" aria-label="제목">
       <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
     </main>
   </div>
@@ -2797,8 +2744,6 @@ openTool('members');
 document.body.classList.add('writer-active');
 const writerApp = document.getElementById('writerApp');
 const writerCanvas = document.getElementById('writerCanvas');
-const writerTitle = document.getElementById('writerTitle');
-const writerTitleColor = document.getElementById('writerTitleColor');
 const writerLogName = document.getElementById('writerLogName');
 const writerCategory = document.getElementById('writerCategory');
 const writerBlockType = document.getElementById('writerBlockType');
@@ -3108,7 +3053,7 @@ writerCanvas.addEventListener('drop', async event => {
 });
 
 document.getElementById('writerHtmlSave').addEventListener('click', () => {
-  const title = writerTitle.value.trim() || 'EOE log';
+  const title = writerLogName.value.trim() || 'EOE log';
   const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><title>${escapeHtml(title)}</title><body><main>${writerCanvas.innerHTML}</main></body></html>`;
   const link = document.createElement('a');
   link.download = `${title.replace(/[\\/:*?"<>|]/g,'_')}.html`;
@@ -3123,10 +3068,8 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
   sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   sheet.innerHTML = `
-    <h1 class="writer-export-title">${escapeHtml(writerTitle.value.trim() || '제목 없음')}</h1>
     <div class="writer-export-body">${writerCanvas.innerHTML}</div>
     ${logName ? `<div class="writer-export-log-name">${escapeHtml(logName)}</div>` : ''}`;
-  sheet.querySelector('.writer-export-title').style.color = writerTitleColor.value;
   sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
   document.body.appendChild(sheet);
   Promise.resolve(document.fonts?.ready).then(() => html2canvas(sheet,{
@@ -3137,7 +3080,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
     height:sheet.scrollHeight
   })).then(canvas => {
     const link = document.createElement('a');
-    link.download = `${(writerTitle.value.trim() || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
+    link.download = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   }).catch(() => alert('이미지 저장에 실패했어. 삽입한 사진 주소를 확인해줘.')).finally(() => sheet.remove());
