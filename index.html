@@ -1355,13 +1355,25 @@
     font:11px 'Pretendard',sans-serif;
   }
   .writer-chat-menu input[type=color]{
-    width:34px;
-    height:34px;
-    padding:3px;
-    border:1px solid #dfe1e5;
+    appearance:none;
+    -webkit-appearance:none;
+    width:26px;
+    height:26px;
+    padding:0;
+    border:0;
     border-radius:50%;
-    background:#fff;
+    overflow:hidden;
     cursor:pointer;
+    justify-self:center;
+  }
+  .writer-chat-menu input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
+  .writer-chat-menu input[type=color]::-webkit-color-swatch{
+    border:0;
+    border-radius:50%;
+  }
+  .writer-chat-menu input[type=color]::-moz-color-swatch{
+    border:0;
+    border-radius:50%;
   }
   .writer-chat-menu button{
     height:34px;
@@ -1404,6 +1416,7 @@
     color:#9a9ea6;
   }
   .writer-inline-chat{
+    position:relative;
     display:flex;
     align-items:flex-start;
     gap:10px;
@@ -1436,6 +1449,25 @@
     color:#686c73;
     font:700 10px 'Pretendard',sans-serif;
   }
+  .writer-bubble-delete{
+    position:absolute;
+    top:-8px;
+    right:-8px;
+    width:22px;
+    height:22px;
+    padding:0;
+    border:1px solid #dedfe3;
+    border-radius:50%;
+    background:#fff;
+    color:#8b8f96;
+    font:14px/1 'Pretendard',sans-serif;
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .15s;
+  }
+  .writer-inline-chat:hover .writer-bubble-delete,
+  .writer-bubble-delete:focus{opacity:1;}
+  .writer-export-body .writer-bubble-delete{display:none!important;}
   .writer-preview-sheet{
     box-sizing:border-box;
     padding:64px 72px;
@@ -1666,9 +1698,9 @@
         <button class="writer-format writer-margin-button" type="button" id="writerMarginButton">여백</button>
         <div class="writer-margin-menu" id="writerMarginMenu" hidden>
           <label>위 <input type="range" id="exportMarginTop" min="0" max="160" step="4" value="64"><span>64px</span></label>
-          <label>오른쪽 <input type="range" id="exportMarginRight" min="0" max="160" step="4" value="72"><span>72px</span></label>
+          <label>오른쪽 <input type="range" id="exportMarginRight" min="0" max="160" step="4" value="140"><span>140px</span></label>
           <label>아래 <input type="range" id="exportMarginBottom" min="0" max="160" step="4" value="64"><span>64px</span></label>
-          <label>왼쪽 <input type="range" id="exportMarginLeft" min="0" max="160" step="4" value="72"><span>72px</span></label>
+          <label>왼쪽 <input type="range" id="exportMarginLeft" min="0" max="160" step="4" value="140"><span>140px</span></label>
         </div>
       </div>
       <div class="writer-spacer"></div>
@@ -3138,6 +3170,7 @@ document.getElementById('writerAddBubble').addEventListener('click', () => {
     : `<span class="writer-member-avatar writer-inline-chat-avatar-fallback">${escapeHtml(member.name.slice(0,1))}</span>`;
   const html = `
     <article class="writer-inline-chat${right ? ' right' : ''}" contenteditable="false">
+      <button class="writer-bubble-delete" type="button" title="말풍선 삭제" aria-label="말풍선 삭제">×</button>
       ${avatar}
       <div class="writer-inline-chat-body">
         <div class="writer-inline-chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
@@ -3147,6 +3180,16 @@ document.getElementById('writerAddBubble').addEventListener('click', () => {
   restoreWriterRange();
   document.execCommand('insertHTML',false,html);
   writerChatText.value = '';
+  rememberWriterRange();
+  queueWriterSave();
+});
+writerCanvas.addEventListener('click', event => {
+  const deleteButton = event.target.closest('.writer-bubble-delete');
+  if(!deleteButton) return;
+  const bubble = deleteButton.closest('.writer-inline-chat');
+  const trailingSpace = bubble?.nextElementSibling;
+  bubble?.remove();
+  if(trailingSpace?.matches('p') && !trailingSpace.textContent.trim()) trailingSpace.remove();
   rememberWriterRange();
   queueWriterSave();
 });
@@ -3239,7 +3282,9 @@ writerCanvas.addEventListener('drop', async event => {
 
 document.getElementById('writerHtmlSave').addEventListener('click', () => {
   const title = writerLogName.value.trim() || 'EOE log';
-  const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><title>${escapeHtml(title)}</title><body><main>${writerCanvas.innerHTML}</main></body></html>`;
+  const cleanCanvas = writerCanvas.cloneNode(true);
+  cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
+  const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><title>${escapeHtml(title)}</title><body><main>${cleanCanvas.innerHTML}</main></body></html>`;
   const link = document.createElement('a');
   link.download = `${title.replace(/[\\/:*?"<>|]/g,'_')}.html`;
   link.href = URL.createObjectURL(new Blob([html],{type:'text/html'}));
