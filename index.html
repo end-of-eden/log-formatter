@@ -1409,11 +1409,19 @@
     border-radius:50%;
     object-fit:cover;
   }
-  .writer-member-avatar{
+  .writer-member-avatar-frame{
     width:30px;
     height:30px;
     flex:0 0 30px;
     border-radius:50%;
+    overflow:hidden;
+    display:block;
+    background:#ececef;
+  }
+  .writer-member-avatar{
+    display:block;
+    width:100%;
+    height:100%;
     object-fit:cover;
   }
   .writer-member-pill button{
@@ -1467,7 +1475,7 @@
     border:0!important;
     outline:0!important;
     box-shadow:none!important;
-    border-radius:14px;
+    border-radius:18px;
     background:var(--writer-bubble-color,#ececef);
     color:#303236;
     font-size:13px;
@@ -1482,20 +1490,37 @@
   .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
     content:"";
     position:absolute;
-    top:4px;
+    bottom:0;
     left:-7px;
-    width:10px;
-    height:14px;
+    width:18px;
+    height:18px;
     background:var(--writer-bubble-color,#ececef);
+    border-bottom-right-radius:15px;
     border:0!important;
     outline:0!important;
     box-shadow:none!important;
-    clip-path:polygon(100% 0,0 50%,100% 100%);
+  }
+  .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::after{
+    content:"";
+    position:absolute;
+    bottom:-1px;
+    left:-10px;
+    width:10px;
+    height:20px;
+    background:var(--writer-sheet-bg,#fff);
+    border-bottom-right-radius:10px;
   }
   .writer-inline-chat.right .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
     right:-7px;
     left:auto;
-    clip-path:polygon(0 0,100% 50%,0 100%);
+    border-bottom-right-radius:0;
+    border-bottom-left-radius:15px;
+  }
+  .writer-inline-chat.right .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::after{
+    right:-10px;
+    left:auto;
+    border-bottom-right-radius:0;
+    border-bottom-left-radius:10px;
   }
   .writer-inline-chat-time{
     flex:0 0 auto;
@@ -1535,6 +1560,7 @@
   .writer-bubble-delete:focus{opacity:1;}
   .writer-export-body .writer-bubble-delete{display:none!important;}
   .writer-preview-sheet{
+    --writer-sheet-bg:#fff;
     box-sizing:border-box;
     padding:64px 72px;
     background:#fff;
@@ -1575,13 +1601,20 @@
     margin:36px 0;
   }
   #writerCanvas img{max-width:100%;height:auto;border-radius:4px;}
-  #writerCanvas .writer-member-avatar,
-  .writer-export-body .writer-member-avatar{
+  #writerCanvas .writer-member-avatar-frame,
+  .writer-export-body .writer-member-avatar-frame{
     width:30px;
     height:30px;
     border-radius:50%!important;
+    overflow:hidden!important;
+  }
+  #writerCanvas .writer-member-avatar,
+  .writer-export-body .writer-member-avatar{
+    width:100%;
+    height:100%;
+    border-radius:0!important;
     object-fit:cover!important;
-    clip-path:circle(50%)!important;
+    clip-path:none!important;
   }
   #writerCanvas table{
     width:100%;
@@ -1624,7 +1657,7 @@
   }
   .writer-preview-log-name:empty{display:none;}
   .writer-app.night{background:#17181b;color:#eee;}
-  .writer-app.night .writer-preview-sheet{background:#000;}
+  .writer-app.night .writer-preview-sheet{--writer-sheet-bg:#000;background:#000;}
   .writer-app.night .writer-toolbar{background:rgba(31,32,35,.97);border-color:#33353a;}
   .writer-app.night .writer-toolbar select,
   .writer-app.night .writer-format,
@@ -1642,6 +1675,7 @@
   .writer-app.night .writer-color-input-button{background:#34363b;border-color:#4a4c52;color:#e7e5df;}
   .writer-app.night .writer-margin-menu label{color:#e7e5df;}
   .writer-export-sheet{
+    --writer-sheet-bg:#fff;
     position:fixed;
     left:-100000px;
     top:0;
@@ -1651,7 +1685,7 @@
     color:#2d2f33;
     font-family:'Noto Serif KR',serif;
   }
-  .writer-export-sheet.dark{background:#000;color:#ece9e1;}
+  .writer-export-sheet.dark{--writer-sheet-bg:#000;background:#000;color:#ece9e1;}
   .writer-export-body{font:10pt/2.15 'Noto Serif KR',serif;}
   .writer-export-body p{margin:0 0 32px;}
   .writer-export-body > :last-child{margin-bottom:0!important;}
@@ -3284,8 +3318,8 @@ writerAddBubble.addEventListener('click', () => {
     return;
   }
   const avatar = member.avatar
-    ? `<img class="writer-member-avatar" src="${escapeAttr(member.avatar)}" alt="">`
-    : `<span class="writer-member-avatar writer-inline-chat-avatar-fallback">${escapeHtml(member.name.slice(0,1))}</span>`;
+    ? `<span class="writer-member-avatar-frame"><img class="writer-member-avatar" src="${escapeAttr(member.avatar)}" alt=""></span>`
+    : `<span class="writer-member-avatar-frame writer-inline-chat-avatar-fallback">${escapeHtml(member.name.slice(0,1))}</span>`;
   const html = `
     <article class="writer-inline-chat${right ? ' right' : ''}" data-member-id="${escapeAttr(member.id)}" data-side="${right ? 'right' : 'left'}" style="--writer-bubble-color:${escapeAttr(member.bubbleColor)}" contenteditable="false">
       ${avatar}
