@@ -1180,14 +1180,28 @@
   }
   .writer-color-custom{
     display:grid;
-    grid-template-columns:20px 1fr;
+    grid-template-columns:20px 1fr 28px;
     align-items:center;
     gap:8px;
     margin:12px -14px -10px;
     padding:10px 14px;
     border-top:1px solid #ececef;
   }
-  .writer-color-preview{width:20px;height:20px;border-radius:50%;background:#333;}
+  .writer-color-preview{
+    appearance:none;
+    -webkit-appearance:none;
+    width:20px;
+    height:20px;
+    padding:0;
+    border:0;
+    border-radius:50%;
+    background:transparent;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .writer-color-preview::-webkit-color-swatch-wrapper{padding:0;}
+  .writer-color-preview::-webkit-color-swatch{border:0;border-radius:50%;}
+  .writer-color-preview::-moz-color-swatch{border:0;border-radius:50%;}
   .writer-color-value{
     width:100%;
     height:26px;
@@ -1202,6 +1216,26 @@
   .writer-color-value.invalid{
     border-color:#d94b3d;
     outline:2px solid rgba(217,75,61,.12);
+  }
+  .writer-color-eyedropper{
+    display:grid;
+    width:28px;
+    height:26px;
+    place-items:center;
+    padding:0;
+    border:1px solid #dedfe3;
+    border-radius:4px;
+    background:#fff;
+    color:#64676d;
+    cursor:pointer;
+  }
+  .writer-color-eyedropper:hover{background:#f3f3f5;color:#303236;}
+  .writer-color-eyedropper:disabled{cursor:not-allowed;opacity:.35;}
+  .writer-color-eyedropper svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;}
+  .writer-color-rgb{
+    grid-column:2 / 4;
+    color:#96999f;
+    font:10px 'JetBrains Mono',monospace;
   }
   .writer-color-input-button{
     height:24px;
@@ -1949,7 +1983,7 @@
     top:82px;
     display:block;
     width:max-content;
-    margin:0 auto;
+    margin:10px 0 0 10px;
     padding:4px 8px;
     border:1px solid rgba(192,57,43,.18);
     border-radius:999px;
@@ -1998,6 +2032,11 @@
     margin:36px 0;
   }
   #writerCanvas img{max-width:100%;height:auto;border-radius:4px;}
+  #writerCanvas [style*="background-color"],
+  .writer-export-body [style*="background-color"]{
+    -webkit-box-decoration-break:clone;
+    box-decoration-break:clone;
+  }
   #writerCanvas .writer-member-avatar-frame,
   .writer-export-body .writer-member-avatar-frame{
     width:30px;
@@ -2145,6 +2184,8 @@
   .writer-app.night .writer-color-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-color-custom{border-color:#3b3d43;}
   .writer-app.night .writer-color-value{background:#202226;border-color:#4a4c52;color:#e7e5df;}
+  .writer-app.night .writer-color-eyedropper{background:#202226;border-color:#4a4c52;color:#e7e5df;}
+  .writer-app.night .writer-color-eyedropper:hover{background:#35373c;color:#fff;}
   .writer-app.night .writer-margin-menu label{color:#e7e5df;}
   .writer-export-sheet{
     --writer-sheet-bg:#fff;
@@ -2232,7 +2273,9 @@
         <div class="writer-color-menu" id="writerForeMenu" hidden>
           <div class="writer-color-grid"></div>
           <div class="writer-color-custom">
-            <i class="writer-color-preview"></i><input class="writer-color-value" type="text" value="#333333" maxlength="7" spellcheck="false" aria-label="글자 색상 코드">
+            <input class="writer-color-preview" type="color" value="#333333" title="색상 스펙트럼 열기" aria-label="글자 색상 스펙트럼"><input class="writer-color-value" type="text" value="#333333" maxlength="7" spellcheck="false" aria-label="글자 색상 코드">
+            <button class="writer-color-eyedropper" type="button" title="화면에서 색상 선택" aria-label="화면에서 글자 색상 선택"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.8 1.8 14.2 5.2 6.1 13.3 2.7 13.3 2.7 9.9Z"/><path d="m8.8 3.8 3.4 3.4M2.7 13.3 1.5 14.5"/></svg></button>
+            <span class="writer-color-rgb">RGB 51, 51, 51</span>
           </div>
         </div>
       </div>
@@ -2241,7 +2284,9 @@
         <div class="writer-color-menu" id="writerBackMenu" hidden>
           <div class="writer-color-grid"></div>
           <div class="writer-color-custom">
-            <i class="writer-color-preview"></i><input class="writer-color-value" type="text" value="#FFF2A8" maxlength="7" spellcheck="false" aria-label="형광펜 색상 코드">
+            <input class="writer-color-preview" type="color" value="#FFF2A8" title="색상 스펙트럼 열기" aria-label="형광펜 색상 스펙트럼"><input class="writer-color-value" type="text" value="#FFF2A8" maxlength="7" spellcheck="false" aria-label="형광펜 색상 코드">
+            <button class="writer-color-eyedropper" type="button" title="화면에서 색상 선택" aria-label="화면에서 형광펜 색상 선택"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.8 1.8 14.2 5.2 6.1 13.3 2.7 13.3 2.7 9.9Z"/><path d="m8.8 3.8 3.4 3.4M2.7 13.3 1.5 14.5"/></svg></button>
+            <span class="writer-color-rgb">RGB 255, 242, 168</span>
           </div>
         </div>
       </div>
@@ -2309,10 +2354,10 @@
       <div class="writer-margin-wrap">
         <button class="writer-format writer-margin-button" type="button" id="writerMarginButton">여백</button>
         <div class="writer-margin-menu" id="writerMarginMenu" hidden>
-          <label>위 <input type="number" id="exportMarginTop" min="0" max="160" step="1" value="30"><span>30px</span></label>
-          <label>오른쪽 <input type="number" id="exportMarginRight" min="0" max="320" step="1" value="20"><span>20px</span></label>
-          <label>아래 <input type="number" id="exportMarginBottom" min="0" max="160" step="1" value="30"><span>30px</span></label>
-          <label>왼쪽 <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="20"><span>20px</span></label>
+          <label>위 <input type="number" id="exportMarginTop" min="0" max="160" step="1" value="60"><span>60px</span></label>
+          <label>오른쪽 <input type="number" id="exportMarginRight" min="0" max="320" step="1" value="40"><span>40px</span></label>
+          <label>아래 <input type="number" id="exportMarginBottom" min="0" max="160" step="1" value="60"><span>60px</span></label>
+          <label>왼쪽 <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="40"><span>40px</span></label>
         </div>
       </div>
       <button class="writer-format writer-clear-all" type="button" id="writerClearAll">전체 삭제</button>
@@ -3547,10 +3592,10 @@ writerLogName.addEventListener('input',syncWriterPreview);
 writerExportPreset.addEventListener('change', () => {
   const mobile = writerExportPreset.value === 'mobile';
   writerOutputGuides.hidden = !mobile;
-  exportMarginInputs.top.value = '30';
-  exportMarginInputs.right.value = mobile ? '20' : '160';
-  exportMarginInputs.bottom.value = '30';
-  exportMarginInputs.left.value = mobile ? '20' : '160';
+  exportMarginInputs.top.value = mobile ? '60' : '30';
+  exportMarginInputs.right.value = mobile ? '40' : '160';
+  exportMarginInputs.bottom.value = mobile ? '60' : '30';
+  exportMarginInputs.left.value = mobile ? '40' : '160';
   Object.values(exportMarginInputs).forEach(input => {
     input.parentElement.querySelector('span').textContent = `${input.value}px`;
   });
@@ -3679,6 +3724,8 @@ function setupWriterColorPicker(mode,buttonId,menuId,initialColor){
   const grid = menu.querySelector('.writer-color-grid');
   const preview = menu.querySelector('.writer-color-preview');
   const codeInput = menu.querySelector('.writer-color-value');
+  const rgbLabel = menu.querySelector('.writer-color-rgb');
+  const eyedropperButton = menu.querySelector('.writer-color-eyedropper');
   let currentColor = initialColor;
 
   writerPalette.forEach(color => {
@@ -3695,8 +3742,10 @@ function setupWriterColorPicker(mode,buttonId,menuId,initialColor){
   function updatePicker(color){
     currentColor = color || (mode === 'fore' ? '#333333' : 'transparent');
     const visibleColor = currentColor === 'transparent' ? '#FFFFFF' : currentColor;
-    preview.style.background = visibleColor;
+    preview.value = visibleColor;
     codeInput.value = currentColor === 'transparent' ? '#FFFFFF' : currentColor.toUpperCase();
+    const rgb = visibleColor.match(/[0-9A-F]{2}/gi).map(value => parseInt(value,16));
+    rgbLabel.textContent = `RGB ${rgb.join(', ')}`;
     trigger.style.setProperty(mode === 'fore' ? '--writer-fore-color' : '--writer-back-color',currentColor);
   }
 
@@ -3743,6 +3792,17 @@ function setupWriterColorPicker(mode,buttonId,menuId,initialColor){
     applyTypedColor();
   });
   codeInput.addEventListener('change',applyTypedColor);
+  preview.addEventListener('change', () => applyColor(preview.value.toUpperCase()));
+  eyedropperButton.disabled = !('EyeDropper' in window);
+  eyedropperButton.addEventListener('click', async () => {
+    if(!('EyeDropper' in window)) return;
+    try{
+      const result = await new EyeDropper().open();
+      if(result?.sRGBHex) applyColor(result.sRGBHex.toUpperCase());
+    }catch(error){
+      if(error?.name !== 'AbortError') console.error(error);
+    }
+  });
   updatePicker(initialColor);
 }
 
@@ -4585,11 +4645,89 @@ writerCanvas.addEventListener('drop', async event => {
   for(const file of imageFiles) await readWriterImage(file);
 });
 
+function normalizeWriterExportHighlights(root){
+  const highlighted = [...root.querySelectorAll('[style*="background-color"]')]
+    .map(element => ({element,color:element.style.backgroundColor}))
+    .filter(item => item.color);
+  if(!highlighted.length) return;
+
+  const highlightMap = new Map(highlighted.map(item => [item.element,item.color]));
+  const walker = document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  while(walker.nextNode()) textNodes.push(walker.currentNode);
+  highlighted.forEach(item => item.element.style.backgroundColor = 'transparent');
+
+  textNodes.forEach(textNode => {
+    let parent = textNode.parentElement;
+    while(parent && parent !== root && !highlightMap.has(parent)) parent = parent.parentElement;
+    const color = highlightMap.get(parent);
+    if(!color || !textNode.nodeValue) return;
+    const fragment = document.createDocumentFragment();
+    const parts = textNode.nodeValue.match(/[A-Za-z0-9_]+(?:\s+)?|[^\u0000-\u007F]\s*|./gs) || [];
+    parts.forEach(part => {
+      const span = document.createElement('span');
+      span.style.backgroundColor = color;
+      span.style.webkitBoxDecorationBreak = 'clone';
+      span.style.boxDecorationBreak = 'clone';
+      span.style.paddingBottom = '2px';
+      span.style.paddingRight = '1px';
+      span.style.marginRight = '-1px';
+      span.textContent = part;
+      fragment.appendChild(span);
+    });
+    textNode.replaceWith(fragment);
+  });
+}
+
+function cropWriterCanvasVertical(canvas,backgroundColor,topMargin,bottomMargin,scale){
+  const context = canvas.getContext('2d',{willReadFrequently:true});
+  const pixels = context.getImageData(0,0,canvas.width,canvas.height).data;
+  const hex = backgroundColor.replace('#','');
+  const background = [
+    parseInt(hex.slice(0,2),16),
+    parseInt(hex.slice(2,4),16),
+    parseInt(hex.slice(4,6),16)
+  ];
+  let first = canvas.height;
+  let last = -1;
+  for(let y = 0;y < canvas.height;y += 1){
+    let hasInk = false;
+    for(let x = 0;x < canvas.width;x += 2){
+      const index = (y * canvas.width + x) * 4;
+      if(Math.abs(pixels[index] - background[0]) > 5
+        || Math.abs(pixels[index + 1] - background[1]) > 5
+        || Math.abs(pixels[index + 2] - background[2]) > 5){
+        hasInk = true;
+        break;
+      }
+    }
+    if(hasInk){
+      if(first === canvas.height) first = y;
+      last = y;
+    }
+  }
+  if(last < first) return canvas;
+  const targetTop = Math.round(topMargin * scale);
+  const targetBottom = Math.round(bottomMargin * scale);
+  const contentHeight = last - first + 1;
+  const cropped = document.createElement('canvas');
+  cropped.width = canvas.width;
+  cropped.height = targetTop + contentHeight + targetBottom;
+  const croppedContext = cropped.getContext('2d');
+  croppedContext.fillStyle = backgroundColor;
+  croppedContext.fillRect(0,0,cropped.width,cropped.height);
+  croppedContext.drawImage(
+    canvas,0,first,canvas.width,contentHeight,0,targetTop,canvas.width,contentHeight
+  );
+  return cropped;
+}
+
 document.getElementById('writerImageSave').addEventListener('click', () => {
   const dark = writerApp.classList.contains('night');
   const logName = writerLogName.value.trim();
   const cleanCanvas = writerCanvas.cloneNode(true);
   cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
+  normalizeWriterExportHighlights(cleanCanvas);
   while(cleanCanvas.lastElementChild
     && cleanCanvas.lastElementChild.matches('p,div')
     && !cleanCanvas.lastElementChild.textContent.trim()
@@ -4605,16 +4743,25 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
     ${logName ? `<div class="writer-export-log-name">${escapeHtml(logName)}</div>` : ''}`;
   sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
   document.body.appendChild(sheet);
+  const exportBackground = dark ? '#17181B' : '#FFFFFF';
+  const exportScale = 2;
   Promise.resolve(document.fonts?.ready).then(() => html2canvas(sheet,{
-    backgroundColor:dark ? '#17181B' : '#FFFFFF',
-    scale:2,
+    backgroundColor:exportBackground,
+    scale:exportScale,
     useCORS:true,
     width:sheet.scrollWidth,
     height:sheet.scrollHeight
   })).then(canvas => {
+    const balancedCanvas = cropWriterCanvasVertical(
+      canvas,
+      exportBackground,
+      Number(exportMarginInputs.top.value),
+      Number(exportMarginInputs.bottom.value),
+      exportScale
+    );
     const link = document.createElement('a');
     link.download = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = balancedCanvas.toDataURL('image/png');
     link.click();
   }).catch(() => alert('이미지 저장에 실패했습니다. 삽입한 사진 주소 확인이 필요합니다.')).finally(() => sheet.remove());
 });
