@@ -1341,6 +1341,23 @@
     padding:8px 10px;
     font-size:12px;
   }
+  .writer-title-color{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#777b82;
+    font-size:11px;
+    cursor:pointer;
+  }
+  .writer-title-color input{
+    width:28px;
+    height:28px;
+    padding:2px;
+    border:1px solid #dedfe3;
+    border-radius:50%;
+    background:#fff;
+    cursor:pointer;
+  }
   #writerTitle{
     width:100%;
     border:0;
@@ -1454,20 +1471,14 @@
     font-family:'Noto Serif KR',serif;
   }
   .writer-export-sheet.dark{background:#1f2023;color:#ece9e1;}
-  .writer-export-category{
-    margin-bottom:18px;
-    color:#9b7a27;
-    font:600 11px 'Pretendard',sans-serif;
-    letter-spacing:.3px;
-  }
   .writer-export-title{
-    margin:0 0 28px;
-    padding-bottom:22px;
-    border-bottom:1px solid #e4e1da;
-    font:500 28px/1.35 'Pretendard',sans-serif;
+    margin:0 0 34px;
+    padding-bottom:18px;
+    border-bottom:1px dashed #ddd9d0;
+    font:500 18px/1.4 'Pretendard',sans-serif;
   }
-  .writer-export-body{font:15px/2 'Noto Serif KR',serif;}
-  .writer-export-body p{margin:0 0 28px;}
+  .writer-export-body{font:15px/2.15 'Noto Serif KR',serif;}
+  .writer-export-body p{margin:0 0 32px;}
   .writer-export-body img{max-width:100%;height:auto;}
   .writer-export-body blockquote{margin:28px 0;padding:8px 0 8px 18px;border-left:3px solid var(--gold);}
   .writer-export-body hr{border:0;border-top:1px solid #e2ded5;margin:36px 0;}
@@ -1476,6 +1487,8 @@
   .writer-app.night #writerCanvas{color:#ece9e1;}
   .writer-app.night #writerTitle{border-color:#383a3f;}
   .writer-app.night .writer-category-row select{background:#292b2f;border-color:#3b3d43;color:#ddd;}
+  .writer-app.night .writer-title-color{color:#c7c4bd;}
+  .writer-app.night .writer-title-color input{background:#292b2f;border-color:#3b3d43;}
   @media (max-width:900px){
     .writer-toolbar{padding:0 10px;}
     .writer-brand{display:none;}
@@ -1600,6 +1613,7 @@
           <option>로그형</option>
           <option>메신저형</option>
         </select>
+        <label class="writer-title-color">제목 색상 <input type="color" id="writerTitleColor" value="#2A9D8F" aria-label="저장 이미지 제목 색상"></label>
       </div>
       <input id="writerTitle" type="text" placeholder="제목을 입력하세요" aria-label="제목">
       <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
@@ -2754,6 +2768,7 @@ document.body.classList.add('writer-active');
 const writerApp = document.getElementById('writerApp');
 const writerCanvas = document.getElementById('writerCanvas');
 const writerTitle = document.getElementById('writerTitle');
+const writerTitleColor = document.getElementById('writerTitleColor');
 const writerCategory = document.getElementById('writerCategory');
 const writerBlockType = document.getElementById('writerBlockType');
 const writerBlockButton = document.getElementById('writerBlockButton');
@@ -3011,10 +3026,37 @@ writerCanvas.addEventListener('paste', async event => {
     return;
   }
   event.preventDefault();
-  const text = (event.clipboardData || window.clipboardData).getData('text/plain');
+  const clipboard = event.clipboardData || window.clipboardData;
+  const richHtml = clipboard.getData('text/html');
+  if(richHtml){
+    const parsed = new DOMParser().parseFromString(richHtml,'text/html');
+    parsed.querySelectorAll('script,style,link,meta,iframe,object,embed,form,input,button,textarea,select').forEach(node => node.remove());
+    parsed.querySelectorAll('*').forEach(node => {
+      [...node.attributes].forEach(attribute => {
+        const name = attribute.name.toLowerCase();
+        const value = attribute.value.trim();
+        if(name.startsWith('on') || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))){
+          node.removeAttribute(attribute.name);
+        }
+      });
+      if(node.style){
+        if(['fixed','sticky'].includes(node.style.position)){
+          node.style.position = 'relative';
+          ['top','right','bottom','left','inset'].forEach(property => node.style.removeProperty(property));
+        }
+        node.style.removeProperty('z-index');
+      }
+    });
+    document.execCommand('insertHTML',false,parsed.body.innerHTML);
+    rememberWriterRange();
+    queueWriterSave();
+    return;
+  }
+  const text = clipboard.getData('text/plain');
   const paragraphs = text.split(/\n\s*\n/).map(value => value.trim()).filter(Boolean);
   const html = paragraphs.map(value => `<p>${escapeHtml(value).replace(/\n/g,'<br>')}</p>`).join('');
   document.execCommand('insertHTML',false,html);
+  rememberWriterRange();
   queueWriterSave();
 });
 
@@ -3049,9 +3091,9 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
   sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   sheet.innerHTML = `
-    <div class="writer-export-category">${escapeHtml(writerCategory.value)}</div>
     <h1 class="writer-export-title">${escapeHtml(writerTitle.value.trim() || '제목 없음')}</h1>
     <div class="writer-export-body">${writerCanvas.innerHTML}</div>`;
+  sheet.querySelector('.writer-export-title').style.color = writerTitleColor.value;
   sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
   document.body.appendChild(sheet);
   Promise.resolve(document.fonts?.ready).then(() => html2canvas(sheet,{
