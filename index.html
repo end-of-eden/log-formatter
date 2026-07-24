@@ -1427,14 +1427,15 @@
     position:relative;
     display:flex;
     align-items:flex-start;
-    width:min(100%,420px);
+    width:min(100%,620px);
     max-width:100%;
     gap:8px;
-    margin:10px auto;
+    margin:26px auto;
     font-family:'Pretendard',sans-serif;
   }
   .writer-inline-chat.right{flex-direction:row-reverse;}
   .writer-inline-chat-body{min-width:0;}
+  .writer-inline-chat-body{max-width:calc(100% - 38px);}
   .writer-inline-chat.right .writer-inline-chat-body{display:flex;flex-direction:column;align-items:flex-end;text-align:right;}
   .writer-inline-chat-name{
     margin:0 0 4px;
@@ -1442,18 +1443,28 @@
     line-height:1.4;
     font-weight:600;
   }
-  .writer-inline-chat-bubble-wrap{
+  .writer-inline-chat-bubbles{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .writer-inline-chat.right .writer-inline-chat-bubbles{align-items:flex-end;}
+  .writer-inline-chat-bubble-item{
+    position:relative;
     display:flex;
     align-items:flex-end;
     gap:6px;
+    max-width:100%;
   }
-  .writer-inline-chat.right .writer-inline-chat-bubble-wrap{flex-direction:row-reverse;}
+  .writer-inline-chat.right .writer-inline-chat-bubble-item{flex-direction:row-reverse;}
   .writer-inline-chat-bubble{
+    position:relative;
     display:inline-block;
     padding:8px 12px;
     border:1px solid rgba(0,0,0,.07);
     border-radius:14px;
-    border-bottom-left-radius:4px;
+    background:var(--writer-bubble-color,#ececef);
     color:#303236;
     font-size:13px;
     line-height:1.5;
@@ -1462,8 +1473,24 @@
     word-break:break-word;
   }
   .writer-inline-chat.right .writer-inline-chat-bubble{
-    border-bottom-right-radius:4px;
-    border-bottom-left-radius:14px;
+    text-align:left;
+  }
+  .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
+    content:"";
+    position:absolute;
+    top:9px;
+    left:-9px;
+    width:0;
+    height:0;
+    border-top:7px solid transparent;
+    border-bottom:7px solid transparent;
+    border-right:10px solid var(--writer-bubble-color,#ececef);
+  }
+  .writer-inline-chat.right .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
+    right:-9px;
+    left:auto;
+    border-right:0;
+    border-left:10px solid var(--writer-bubble-color,#ececef);
   }
   .writer-inline-chat-time{
     flex:0 0 auto;
@@ -1480,8 +1507,8 @@
   }
   .writer-bubble-delete{
     position:absolute;
-    top:-8px;
-    right:-8px;
+    top:50%;
+    right:-28px;
     width:22px;
     height:22px;
     padding:0;
@@ -1493,12 +1520,13 @@
     cursor:pointer;
     opacity:0;
     transition:opacity .15s;
+    transform:translateY(-50%);
   }
   .writer-inline-chat:not(.right) .writer-bubble-delete{
     right:auto;
-    left:-8px;
+    left:-28px;
   }
-  .writer-inline-chat:hover .writer-bubble-delete,
+  .writer-inline-chat-bubble-item:hover .writer-bubble-delete,
   .writer-bubble-delete:focus{opacity:1;}
   .writer-export-body .writer-bubble-delete{display:none!important;}
   .writer-preview-sheet{
@@ -1583,7 +1611,7 @@
   }
   .writer-preview-log-name:empty{display:none;}
   .writer-app.night{background:#17181b;color:#eee;}
-  .writer-app.night .writer-preview-sheet{background:#1f2023;}
+  .writer-app.night .writer-preview-sheet{background:#000;}
   .writer-app.night .writer-toolbar{background:rgba(31,32,35,.97);border-color:#33353a;}
   .writer-app.night .writer-toolbar select,
   .writer-app.night .writer-format,
@@ -1610,7 +1638,7 @@
     color:#2d2f33;
     font-family:'Noto Serif KR',serif;
   }
-  .writer-export-sheet.dark{background:#1f2023;color:#ece9e1;}
+  .writer-export-sheet.dark{background:#000;color:#ece9e1;}
   .writer-export-body{font:10pt/2.15 'Noto Serif KR',serif;}
   .writer-export-body p{margin:0 0 32px;}
   .writer-export-body > :last-child{margin-bottom:0!important;}
@@ -3113,7 +3141,6 @@ const writerMessageSender = document.getElementById('writerMessageSender');
 const writerMessageSide = document.getElementById('writerMessageSide');
 const writerChatTime = document.getElementById('writerChatTime');
 const writerChatText = document.getElementById('writerChatText');
-writerChatTime.value = new Date().toTimeString().slice(0,5);
 let writerMembers = [];
 try{
   writerMembers = JSON.parse(localStorage.getItem('eoe-writer-members') || '[]');
@@ -3201,19 +3228,34 @@ document.getElementById('writerAddBubble').addEventListener('click', () => {
   const text = writerChatText.value.trim();
   if(!member || !text) return;
   const right = writerMessageSide.value === 'right';
+  const messages = text.split(/\n\s*\n/).map(value => value.trim()).filter(Boolean);
+  const messageHtml = messages.map(value => `
+    <div class="writer-inline-chat-bubble-item">
+      <button class="writer-bubble-delete" type="button" title="말풍선 삭제" aria-label="말풍선 삭제">×</button>
+      <div class="writer-inline-chat-bubble">${escapeHtml(value).replace(/\n/g,'<br>')}</div>
+      ${writerChatTime.value ? `<time class="writer-inline-chat-time">${escapeHtml(writerChatTime.value)}</time>` : ''}
+    </div>`).join('');
+  const meaningfulChildren = [...writerCanvas.children].filter(node =>
+    !(node.matches('p') && !node.textContent.trim())
+  );
+  const previousGroup = meaningfulChildren.at(-1);
+  if(previousGroup?.matches('.writer-inline-chat')
+    && previousGroup.dataset.memberId === member.id
+    && previousGroup.dataset.side === writerMessageSide.value){
+    previousGroup.querySelector('.writer-inline-chat-bubbles').insertAdjacentHTML('beforeend',messageHtml);
+    writerChatText.value = '';
+    queueWriterSave();
+    return;
+  }
   const avatar = member.avatar
     ? `<img class="writer-member-avatar" src="${escapeAttr(member.avatar)}" alt="">`
     : `<span class="writer-member-avatar writer-inline-chat-avatar-fallback">${escapeHtml(member.name.slice(0,1))}</span>`;
   const html = `
-    <article class="writer-inline-chat${right ? ' right' : ''}" contenteditable="false">
-      <button class="writer-bubble-delete" type="button" title="말풍선 삭제" aria-label="말풍선 삭제">×</button>
+    <article class="writer-inline-chat${right ? ' right' : ''}" data-member-id="${escapeAttr(member.id)}" data-side="${right ? 'right' : 'left'}" style="--writer-bubble-color:${escapeAttr(member.bubbleColor)}" contenteditable="false">
       ${avatar}
       <div class="writer-inline-chat-body">
         <div class="writer-inline-chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
-        <div class="writer-inline-chat-bubble-wrap">
-          <div class="writer-inline-chat-bubble" style="background:${escapeAttr(member.bubbleColor)}">${escapeHtml(text).replace(/\n/g,'<br>')}</div>
-          <time class="writer-inline-chat-time">${escapeHtml(writerChatTime.value)}</time>
-        </div>
+        <div class="writer-inline-chat-bubbles">${messageHtml}</div>
       </div>
     </article><p><br></p>`;
   restoreWriterRange();
@@ -3225,10 +3267,14 @@ document.getElementById('writerAddBubble').addEventListener('click', () => {
 writerCanvas.addEventListener('click', event => {
   const deleteButton = event.target.closest('.writer-bubble-delete');
   if(!deleteButton) return;
-  const bubble = deleteButton.closest('.writer-inline-chat');
-  const trailingSpace = bubble?.nextElementSibling;
-  bubble?.remove();
-  if(trailingSpace?.matches('p') && !trailingSpace.textContent.trim()) trailingSpace.remove();
+  const item = deleteButton.closest('.writer-inline-chat-bubble-item');
+  const group = deleteButton.closest('.writer-inline-chat');
+  item?.remove();
+  if(group && !group.querySelector('.writer-inline-chat-bubble-item')){
+    const trailingSpace = group.nextElementSibling;
+    group.remove();
+    if(trailingSpace?.matches('p') && !trailingSpace.textContent.trim()) trailingSpace.remove();
+  }
   rememberWriterRange();
   queueWriterSave();
 });
@@ -3342,7 +3388,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
   sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
   document.body.appendChild(sheet);
   Promise.resolve(document.fonts?.ready).then(() => html2canvas(sheet,{
-    backgroundColor:dark ? '#1F2023' : '#FFFFFF',
+    backgroundColor:dark ? '#000000' : '#FFFFFF',
     scale:2,
     useCORS:true,
     width:sheet.scrollWidth,
