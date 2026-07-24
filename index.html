@@ -4189,24 +4189,28 @@ writerCanvas.addEventListener('paste', async event => {
   if(richHtml){
     const parsed = new DOMParser().parseFromString(richHtml,'text/html');
     parsed.querySelectorAll('script,style,link,meta,iframe,object,embed,form,input,button,textarea,select').forEach(node => node.remove());
-    parsed.querySelectorAll('*').forEach(node => {
-      [...node.attributes].forEach(attribute => {
-        const name = attribute.name.toLowerCase();
-        const value = attribute.value.trim();
-        if(name === 'bgcolor'
-          || name.startsWith('on')
-          || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))){
-          node.removeAttribute(attribute.name);
-        }
-      });
-      if(node.style){
-        node.style.removeProperty('background');
-        node.style.removeProperty('background-color');
-        if(['fixed','sticky'].includes(node.style.position)){
-          node.style.position = 'relative';
-          ['top','right','bottom','left','inset'].forEach(property => node.style.removeProperty(property));
-        }
-        node.style.removeProperty('z-index');
+    const allowedPasteTags = new Set([
+      'P','DIV','BR','UL','OL','LI','BLOCKQUOTE',
+      'H1','H2','H3','H4','H5','H6',
+      'STRONG','B','SPAN','FONT','IMG'
+    ]);
+    [...parsed.body.querySelectorAll('*')].reverse().forEach(node => {
+      if(!allowedPasteTags.has(node.tagName)){
+        node.replaceWith(...node.childNodes);
+        return;
+      }
+      const keptColor = node.style?.color || node.getAttribute('color') || '';
+      const keptWeight = node.style?.fontWeight || '';
+      const imageSource = node.tagName === 'IMG' ? node.getAttribute('src') || '' : '';
+      const imageAlt = node.tagName === 'IMG' ? node.getAttribute('alt') || '' : '';
+      [...node.attributes].forEach(attribute => node.removeAttribute(attribute.name));
+      if(keptColor) node.style.color = keptColor;
+      if(keptWeight === 'bold' || parseInt(keptWeight,10) >= 600){
+        node.style.fontWeight = keptWeight;
+      }
+      if(node.tagName === 'IMG' && imageSource && !/^javascript:/i.test(imageSource)){
+        node.setAttribute('src',imageSource);
+        node.setAttribute('alt',imageAlt);
       }
     });
     document.execCommand('insertHTML',false,parsed.body.innerHTML);
