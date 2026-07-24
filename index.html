@@ -577,6 +577,227 @@
   #bubble .sep{background:var(--line);}
   #bubble button.clear{border-color:var(--line);color:#6f747d;}
   #bubble button.clear:hover{color:var(--text);border-color:#bfc3ca;}
+  [hidden]{display:none!important;}
+  .messenger-rail{
+    grid-column:1;
+    grid-row:2;
+  }
+  .messenger-section{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+  }
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .section-head label{margin:0;}
+  .section-head span{
+    color:var(--gold);
+    font-size:10px;
+    font-weight:600;
+  }
+  .messenger-section input[type=url]{
+    width:100%;
+    background:#fff;
+    color:var(--text);
+    border:1px solid #dfe1e5;
+    border-radius:8px;
+    padding:10px 12px;
+    font:13px 'Pretendard',sans-serif;
+  }
+  .member-color-row{
+    display:grid;
+    grid-template-columns:auto 34px auto 34px;
+    align-items:center;
+    gap:8px;
+    color:#858a93;
+    font-size:10px;
+  }
+  .member-color-row label{margin:0;}
+  .member-color-row input[type=color]{
+    width:34px;
+    height:30px;
+    border:1px solid #dfe1e5;
+    border-radius:8px;
+    background:#fff;
+    padding:3px;
+    cursor:pointer;
+  }
+  .messenger-primary{
+    background:var(--burgundy);
+    color:#fff;
+    border:1px solid var(--burgundy);
+  }
+  .member-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .member-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    max-width:100%;
+    border:1px solid rgba(166,124,0,.2);
+    border-radius:999px;
+    background:#fff;
+    padding:5px 7px 5px 5px;
+    color:#4f535a;
+    font-size:11px;
+  }
+  .member-chip-avatar{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    background:var(--burgundy-soft);
+    color:var(--burgundy);
+    font:700 10px 'Pretendard',sans-serif;
+  }
+  .member-chip-avatar img{width:100%;height:100%;object-fit:cover;}
+  .member-chip button{
+    appearance:none;
+    border:0;
+    background:transparent;
+    color:#a0a4ab;
+    cursor:pointer;
+    padding:0 2px;
+  }
+  .message-side-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  .side-btn{
+    appearance:none;
+    border:1px solid #dfe1e5;
+    border-radius:8px;
+    background:#fff;
+    color:#858a93;
+    padding:8px;
+    font:600 11px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .side-btn.active{
+    border-color:rgba(192,57,43,.24);
+    background:var(--burgundy-soft);
+    color:var(--burgundy);
+  }
+  #messageText{min-height:110px;}
+  .messenger-actions{
+    display:grid;
+    grid-template-columns:1fr 1.4fr;
+    gap:8px;
+    position:sticky;
+    bottom:0;
+    padding-top:8px;
+    background:linear-gradient(to bottom,transparent 0,#fff 18px);
+  }
+  .messenger-stage{
+    grid-column:2;
+    grid-row:2;
+  }
+  .chat-wrap{
+    width:min(760px,calc(100% - 64px));
+    margin:38px auto 80px;
+  }
+  #chatPaper{
+    min-height:560px;
+    border:1px solid rgba(166,124,0,.25);
+    border-radius:18px;
+    background:#fbf8f1;
+    box-shadow:0 18px 44px rgba(42,44,49,.10),0 2px 8px rgba(42,44,49,.05);
+    overflow:hidden;
+  }
+  .chat-paper-head{
+    min-height:86px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    padding:24px 30px 18px;
+    color:var(--gold);
+    border-bottom:1px solid rgba(166,124,0,.18);
+    background:linear-gradient(135deg,#fffdf8 0,#f8f0e4 100%);
+  }
+  .chat-paper-head span{
+    font:500 10px 'JetBrains Mono',monospace;
+    letter-spacing:1.3px;
+  }
+  .chat-paper-head strong{
+    color:var(--burgundy);
+    font:700 12px 'JetBrains Mono',monospace;
+    letter-spacing:.6px;
+  }
+  #chatOutput{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    min-height:470px;
+    padding:30px;
+  }
+  #chatOutput.chat-empty{
+    display:grid;
+    place-items:center;
+    color:#aca69b;
+    font:italic 13px 'Noto Serif KR',serif;
+  }
+  .chat-row{
+    display:grid;
+    grid-template-columns:38px minmax(0,1fr);
+    gap:10px;
+    align-items:end;
+    max-width:78%;
+  }
+  .chat-row.right{
+    grid-template-columns:minmax(0,1fr) 38px;
+    align-self:flex-end;
+  }
+  .chat-avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    background:#eee5df;
+    color:var(--burgundy);
+    border:1px solid rgba(166,124,0,.18);
+    font:700 12px 'Pretendard',sans-serif;
+  }
+  .chat-avatar img{width:100%;height:100%;object-fit:cover;}
+  .chat-row.right .chat-avatar{grid-column:2;grid-row:1;}
+  .chat-content{min-width:0;}
+  .chat-row.right .chat-content{grid-column:1;grid-row:1;text-align:right;}
+  .chat-name{
+    margin:0 7px 5px;
+    font-size:10px;
+    font-weight:700;
+  }
+  .chat-bubble{
+    display:inline-block;
+    max-width:100%;
+    border:1px solid rgba(0,0,0,.05);
+    border-radius:5px 16px 16px 16px;
+    padding:11px 14px;
+    color:#2e3034;
+    font:13px/1.65 'Pretendard',sans-serif;
+    text-align:left;
+    white-space:pre-wrap;
+    word-break:break-word;
+    cursor:pointer;
+    box-shadow:0 5px 14px rgba(60,52,47,.06);
+  }
+  .chat-row.right .chat-bubble{border-radius:16px 5px 16px 16px;}
+  .chat-time{
+    margin:5px 7px 0;
+    color:#aaa59d;
+    font:9px 'JetBrains Mono',monospace;
+  }
   @media (max-width:860px){
     body{display:block;overflow:auto;}
     .appbar{position:sticky;top:0;}
@@ -584,6 +805,8 @@
     .rail{width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);}
     .stage{height:auto;min-height:70vh;}
     .paper-wrap{width:calc(100% - 28px);margin:22px auto 48px;}
+    .chat-wrap{width:calc(100% - 28px);margin:22px auto 48px;}
+    .chat-row{max-width:90%;}
   }
 </style>
 </head>
@@ -592,14 +815,14 @@
   <header class="appbar">
     <div class="appbar-brand">eden log</div>
     <nav class="appbar-tabs" aria-label="작업 모드">
-      <button class="appbar-tab active" type="button">로그</button>
-      <button class="appbar-tab" type="button" disabled>메신저</button>
+      <button class="appbar-tab active" type="button" data-mode="log">로그</button>
+      <button class="appbar-tab" type="button" data-mode="messenger">메신저</button>
     </nav>
     <div class="appbar-note">내용을 붙여넣고 바로 다듬어 저장하세요</div>
   </header>
 
   <!-- LEFT CONTROL RAIL -->
-  <div class="rail">
+  <div class="rail" id="logRail">
     <div>
       <div class="rail-title">EOE // ARCHIVE UTILITY</div>
       <h1>로그 포맷터</h1>
@@ -737,7 +960,7 @@
   </div>
 
   <!-- RIGHT PAPER STAGE -->
-  <div class="stage">
+  <div class="stage" id="logStage">
     <div class="preview-toolbar">
       <strong>미리보기</strong>
       <span class="preview-status">자동 반영</span>
@@ -753,6 +976,68 @@
       </div>
     </div>
   </div>
+
+  <aside class="rail messenger-rail" id="messengerRail" hidden>
+    <div>
+      <div class="rail-title">EOE // EXCERPT STUDIO</div>
+      <h1>메신저 발췌</h1>
+    </div>
+
+    <section class="field messenger-section">
+      <div class="section-head">
+        <label>01 · 멤버</label>
+        <span id="memberCount">0명</span>
+      </div>
+      <input type="text" id="memberName" placeholder="이름">
+      <input type="url" id="memberAvatar" placeholder="프로필 이미지 주소 (선택)">
+      <div class="member-color-row">
+        <label for="memberNameColor">이름</label>
+        <input type="color" id="memberNameColor" value="#C0392B">
+        <label for="memberBubbleColor">말풍선</label>
+        <input type="color" id="memberBubbleColor" value="#F8EDEA">
+      </div>
+      <button class="btn messenger-primary" id="addMemberBtn" type="button">멤버 추가</button>
+      <div class="member-list" id="memberList"></div>
+    </section>
+
+    <section class="field messenger-section">
+      <label>02 · 메시지 작성</label>
+      <select id="messageSender" aria-label="발신자">
+        <option value="">멤버를 먼저 추가하세요</option>
+      </select>
+      <div class="message-side-row" role="group" aria-label="말풍선 위치">
+        <button class="side-btn active" type="button" data-side="left">왼쪽</button>
+        <button class="side-btn" type="button" data-side="right">오른쪽</button>
+      </div>
+      <textarea id="messageText" placeholder="대화 내용을 입력하세요. Ctrl/⌘ + Enter로 추가"></textarea>
+      <button class="btn messenger-primary" id="addMessageBtn" type="button">메시지 추가</button>
+    </section>
+
+    <div class="messenger-actions">
+      <button class="btn btn-ghost" id="clearMessagesBtn" type="button">대화 지우기</button>
+      <button class="btn messenger-primary" id="downloadChatBtn" type="button">이미지로 저장</button>
+    </div>
+    <div class="hint" id="chatStatus" aria-live="polite"></div>
+  </aside>
+
+  <main class="stage messenger-stage" id="messengerStage" hidden>
+    <div class="preview-toolbar">
+      <strong>메신저 미리보기</strong>
+      <span class="preview-status">기기에 자동 저장</span>
+      <span class="preview-help">말풍선을 눌러 삭제할 수 있습니다</span>
+    </div>
+    <div class="chat-wrap">
+      <section id="chatPaper">
+        <header class="chat-paper-head">
+          <span>SYNAPSE / MESSAGE ARCHIVE</span>
+          <strong>CHAT EXCERPT</strong>
+        </header>
+        <div id="chatOutput" class="chat-empty">
+          멤버를 등록하고 첫 메시지를 추가하세요.
+        </div>
+      </section>
+    </div>
+  </main>
 
   <!-- floating color toolbar -->
   <div id="bubble">
@@ -1219,6 +1504,230 @@ output.addEventListener('paste', (e) => {
     document.execCommand('insertHTML', false, html);
   }
 });
+
+// ---------- workspace modes ----------
+const modeButtons = [...document.querySelectorAll('.appbar-tab[data-mode]')];
+const logRail = document.getElementById('logRail');
+const logStage = document.getElementById('logStage');
+const messengerRail = document.getElementById('messengerRail');
+const messengerStage = document.getElementById('messengerStage');
+const appbarNote = document.querySelector('.appbar-note');
+
+function setWorkspaceMode(mode){
+  const messenger = mode === 'messenger';
+  logRail.hidden = messenger;
+  logStage.hidden = messenger;
+  messengerRail.hidden = !messenger;
+  messengerStage.hidden = !messenger;
+  modeButtons.forEach(button => {
+    button.classList.toggle('active', button.dataset.mode === mode);
+  });
+  appbarNote.textContent = messenger
+    ? '멤버와 대화를 구성해 한 장의 발췌 이미지로 저장하세요'
+    : '내용을 붙여넣고 바로 다듬어 저장하세요';
+  localStorage.setItem('eoe-workspace-mode', mode);
+}
+
+modeButtons.forEach(button => {
+  button.addEventListener('click', () => setWorkspaceMode(button.dataset.mode));
+});
+
+// ---------- messenger excerpt studio ----------
+const memberName = document.getElementById('memberName');
+const memberAvatar = document.getElementById('memberAvatar');
+const memberNameColor = document.getElementById('memberNameColor');
+const memberBubbleColor = document.getElementById('memberBubbleColor');
+const addMemberBtn = document.getElementById('addMemberBtn');
+const memberList = document.getElementById('memberList');
+const memberCount = document.getElementById('memberCount');
+const messageSender = document.getElementById('messageSender');
+const messageText = document.getElementById('messageText');
+const addMessageBtn = document.getElementById('addMessageBtn');
+const clearMessagesBtn = document.getElementById('clearMessagesBtn');
+const downloadChatBtn = document.getElementById('downloadChatBtn');
+const chatOutput = document.getElementById('chatOutput');
+const chatStatus = document.getElementById('chatStatus');
+const sideButtons = [...document.querySelectorAll('.side-btn')];
+
+function readStoredList(key){
+  try{
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value : [];
+  }catch{
+    return [];
+  }
+}
+
+let chatMembers = readStoredList('eoe-chat-members');
+let chatMessages = readStoredList('eoe-chat-messages');
+let messageSide = 'left';
+
+function escapeAttr(value){
+  return escapeHtml(String(value || '')).replace(/"/g,'&quot;');
+}
+
+function memberAvatarHtml(member, className){
+  const initial = escapeHtml((member.name || '?').trim().slice(0,1).toUpperCase());
+  if(member.avatar){
+    return `<span class="${className}"><img src="${escapeAttr(member.avatar)}" alt=""></span>`;
+  }
+  return `<span class="${className}">${initial}</span>`;
+}
+
+function saveChatState(){
+  localStorage.setItem('eoe-chat-members', JSON.stringify(chatMembers));
+  localStorage.setItem('eoe-chat-messages', JSON.stringify(chatMessages));
+}
+
+function renderMembers(){
+  memberCount.textContent = `${chatMembers.length}명`;
+  memberList.innerHTML = chatMembers.map(member => `
+    <span class="member-chip">
+      ${memberAvatarHtml(member, 'member-chip-avatar')}
+      <span>${escapeHtml(member.name)}</span>
+      <button type="button" data-remove-member="${member.id}" aria-label="${escapeAttr(member.name)} 삭제">×</button>
+    </span>
+  `).join('');
+
+  if(chatMembers.length){
+    messageSender.innerHTML = chatMembers.map(member =>
+      `<option value="${member.id}">${escapeHtml(member.name)}</option>`
+    ).join('');
+  }else{
+    messageSender.innerHTML = '<option value="">멤버를 먼저 추가하세요</option>';
+  }
+}
+
+function renderMessages(){
+  if(!chatMessages.length){
+    chatOutput.className = 'chat-empty';
+    chatOutput.textContent = '멤버를 등록하고 첫 메시지를 추가하세요.';
+    return;
+  }
+
+  chatOutput.className = '';
+  chatOutput.innerHTML = chatMessages.map((message, index) => {
+    const member = chatMembers.find(item => item.id === message.memberId);
+    if(!member) return '';
+    const right = message.side === 'right';
+    const avatar = memberAvatarHtml(member, 'chat-avatar');
+    const content = `
+      <div class="chat-content">
+        <div class="chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
+        <div class="chat-bubble" data-message-index="${index}" title="눌러서 삭제" style="background:${escapeAttr(member.bubbleColor)}">${escapeHtml(message.text)}</div>
+        <div class="chat-time">${escapeHtml(message.time)}</div>
+      </div>`;
+    return `<article class="chat-row${right ? ' right' : ''}">${right ? content + avatar : avatar + content}</article>`;
+  }).join('');
+}
+
+addMemberBtn.addEventListener('click', () => {
+  const name = memberName.value.trim();
+  if(!name){
+    memberName.focus();
+    chatStatus.textContent = '멤버 이름을 입력해줘.';
+    return;
+  }
+  chatMembers.push({
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    name,
+    avatar: memberAvatar.value.trim(),
+    nameColor: memberNameColor.value,
+    bubbleColor: memberBubbleColor.value
+  });
+  memberName.value = '';
+  memberAvatar.value = '';
+  chatStatus.textContent = `${name} 멤버를 추가했어.`;
+  saveChatState();
+  renderMembers();
+  renderMessages();
+});
+
+memberList.addEventListener('click', event => {
+  const button = event.target.closest('[data-remove-member]');
+  if(!button) return;
+  const id = button.dataset.removeMember;
+  chatMembers = chatMembers.filter(member => member.id !== id);
+  chatMessages = chatMessages.filter(message => message.memberId !== id);
+  saveChatState();
+  renderMembers();
+  renderMessages();
+});
+
+sideButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    messageSide = button.dataset.side;
+    sideButtons.forEach(item => item.classList.toggle('active', item === button));
+  });
+});
+
+function addChatMessage(){
+  const memberId = messageSender.value;
+  const text = messageText.value.trim();
+  if(!memberId){
+    chatStatus.textContent = '멤버를 먼저 추가해줘.';
+    return;
+  }
+  if(!text){
+    messageText.focus();
+    chatStatus.textContent = '메시지를 입력해줘.';
+    return;
+  }
+  chatMessages.push({
+    memberId,
+    text,
+    side: messageSide,
+    time: new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+  });
+  messageText.value = '';
+  chatStatus.textContent = '메시지를 추가했어.';
+  saveChatState();
+  renderMessages();
+}
+
+addMessageBtn.addEventListener('click', addChatMessage);
+messageText.addEventListener('keydown', event => {
+  if((event.ctrlKey || event.metaKey) && event.key === 'Enter'){
+    event.preventDefault();
+    addChatMessage();
+  }
+});
+
+chatOutput.addEventListener('click', event => {
+  const bubbleTarget = event.target.closest('[data-message-index]');
+  if(!bubbleTarget) return;
+  chatMessages.splice(Number(bubbleTarget.dataset.messageIndex), 1);
+  saveChatState();
+  renderMessages();
+  chatStatus.textContent = '메시지를 삭제했어.';
+});
+
+clearMessagesBtn.addEventListener('click', () => {
+  if(!chatMessages.length) return;
+  if(!confirm('메시지를 전부 지울까?')) return;
+  chatMessages = [];
+  saveChatState();
+  renderMessages();
+  chatStatus.textContent = '대화를 비웠어.';
+});
+
+downloadChatBtn.addEventListener('click', () => {
+  const chatPaper = document.getElementById('chatPaper');
+  chatStatus.textContent = '이미지 생성 중...';
+  html2canvas(chatPaper,{backgroundColor:'#FBF8F1',scale:2,useCORS:true}).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `eoe-chat-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    chatStatus.textContent = '저장 완료.';
+  }).catch(() => {
+    chatStatus.textContent = '이미지 생성에 실패했어. 프로필 이미지 주소를 확인해줘.';
+  });
+});
+
+renderMembers();
+renderMessages();
+setWorkspaceMode(localStorage.getItem('eoe-workspace-mode') || 'log');
 </script>
 </body>
 </html>
