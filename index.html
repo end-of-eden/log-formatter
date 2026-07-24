@@ -1418,7 +1418,8 @@
     color:#8b8f96;
     font:10px/1.5 'Pretendard',sans-serif;
   }
-  .writer-json-import{
+  .writer-preset-actions{display:flex;gap:6px;}
+  .writer-json-action{
     flex:0 0 auto;
     padding:7px 10px;
     border:1px solid #ded3c5;
@@ -1428,7 +1429,13 @@
     font:600 10px 'Pretendard',sans-serif;
     cursor:pointer;
   }
-  .writer-json-import input{display:none;}
+  .writer-json-action input{display:none;}
+  .writer-chat-menu button.writer-json-action{
+    height:auto;
+    border:1px solid #ded3c5;
+    background:#fff;
+    color:var(--burgundy);
+  }
   .writer-registered-members,
   .writer-new-member{
     padding:10px;
@@ -1464,14 +1471,19 @@
     white-space:nowrap;
   }
   .writer-chat-menu #writerCloseMemberPanel{
+    display:grid;
     width:26px;
     height:26px;
+    flex:0 0 26px;
+    place-items:center;
     padding:0;
     border:1px solid #e0e2e5;
     border-radius:7px;
     background:#fff;
     color:#9a9ea6;
     font-size:15px;
+    line-height:1;
+    text-align:center;
   }
   .writer-member-form{
     grid-template-columns:minmax(82px,1fr) 54px 54px 54px 72px;
@@ -1505,14 +1517,19 @@
   }
   #writerChatText{grid-column:1 / -1;height:72px!important;resize:vertical;}
   #writerAddBubble{
-    grid-column:3;
-    justify-self:end;
-    width:auto;
-    min-width:108px;
+    grid-column:1 / -1;
+    justify-self:center;
+    display:flex;
+    width:132px;
+    align-items:center;
+    justify-content:center;
     border:1px solid var(--burgundy);
     border-radius:8px;
+    background:#fff;
+    color:var(--burgundy);
     box-shadow:0 2px 8px rgba(91,21,36,.12);
   }
+  #writerAddBubble:hover{background:#fbf6f1;}
   #writerAddBubble::before{
     content:"+";
     margin-right:6px;
@@ -1897,7 +1914,7 @@
   .writer-app.night .writer-member-row{background:#24262a;border-color:#3b3d43;color:#ece9e1;}
   .writer-app.night .writer-registered-members,
   .writer-app.night .writer-new-member{background:#292b2f;border-color:#3b3d43;}
-  .writer-app.night .writer-json-import,
+  .writer-app.night .writer-json-action,
   .writer-app.night .writer-chat-menu .writer-member-row-actions button,
   .writer-app.night .writer-chat-menu #writerCloseMemberPanel{background:#34363b;border-color:#484b51;color:#d8d9dc;}
   .writer-app.night .writer-selection-toolbar{
@@ -2033,7 +2050,10 @@
             <summary>⭐ 멤버 프리셋</summary>
             <div class="writer-preset-body">
               <span>저장된 프리셋을 불러옵니다.</span>
-              <label class="writer-json-import">JSON 불러오기<input type="file" id="writerMemberProjectImport" accept=".json,application/json"></label>
+              <div class="writer-preset-actions">
+                <label class="writer-json-action">JSON 불러오기<input type="file" id="writerMemberProjectImport" accept=".json,application/json"></label>
+                <button class="writer-json-action" type="button" id="writerMemberProjectExport">JSON 내보내기</button>
+              </div>
             </div>
           </details>
           <section class="writer-registered-members">
@@ -3454,6 +3474,7 @@ const writerMemberBubbleColor = document.getElementById('writerMemberBubbleColor
 const writerMemberList = document.getElementById('writerMemberList');
 const writerMemberCount = document.getElementById('writerMemberCount');
 const writerMemberProjectImport = document.getElementById('writerMemberProjectImport');
+const writerMemberProjectExport = document.getElementById('writerMemberProjectExport');
 const writerNewMemberButton = document.getElementById('writerNewMemberButton');
 const writerNewMemberPanel = document.getElementById('writerNewMemberPanel');
 const writerCloseMemberPanel = document.getElementById('writerCloseMemberPanel');
@@ -3715,7 +3736,7 @@ writerMemberProjectImport.addEventListener('change', async () => {
         avatar:typeof source.image === 'string' ? source.image : (existing?.avatar || ''),
         nameColor:source.color || existing?.nameColor || '#C0392B',
         bubbleColor:source.bubbleColor || existing?.bubbleColor || '#ECECEF',
-        favorite:existing?.favorite || false
+        favorite:Boolean(source.favorite ?? existing?.favorite)
       };
       if(existing) Object.assign(existing,imported);
       else writerMembers.push(imported);
@@ -3726,6 +3747,28 @@ writerMemberProjectImport.addEventListener('change', async () => {
   }finally{
     writerMemberProjectImport.value = '';
   }
+});
+writerMemberProjectExport.addEventListener('click', () => {
+  const preset = {
+    __type:'eoe-member-preset',
+    __v:1,
+    savedAt:new Date().toISOString(),
+    members:writerMembers.map(member => ({
+      id:member.id,
+      name:member.name,
+      image:member.avatar || '',
+      color:member.nameColor || '#C0392B',
+      bubbleColor:member.bubbleColor || '#ECECEF',
+      favorite:Boolean(member.favorite)
+    }))
+  };
+  const date = new Date().toISOString().slice(0,10);
+  const link = document.createElement('a');
+  const source = URL.createObjectURL(new Blob([JSON.stringify(preset)],{type:'application/json'}));
+  link.href = source;
+  link.download = `eoe-member-preset-${date}.json`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(source),0);
 });
 function mergeAdjacentWriterBubbleGroups(){
   const groups = [...writerCanvas.querySelectorAll('.writer-inline-chat')];
