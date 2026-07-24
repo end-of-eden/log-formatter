@@ -1418,10 +1418,22 @@
     color:#8b8f96;
     font:10px/1.5 'Pretendard',sans-serif;
   }
-  .writer-preset-actions{display:flex;gap:6px;}
-  .writer-json-action{
+  .writer-preset-body>span{min-width:0;flex:1;}
+  .writer-preset-actions{
+    display:flex;
     flex:0 0 auto;
-    padding:7px 10px;
+    align-items:center;
+    gap:6px;
+  }
+  .writer-json-action{
+    display:flex;
+    width:auto;
+    height:29px;
+    flex:0 0 auto;
+    box-sizing:border-box;
+    align-items:center;
+    justify-content:center;
+    padding:0 10px;
     border:1px solid #ded3c5;
     border-radius:6px;
     background:#fff;
@@ -1431,10 +1443,12 @@
   }
   .writer-json-action input{display:none;}
   .writer-chat-menu button.writer-json-action{
-    height:auto;
+    width:auto;
+    height:29px;
     border:1px solid #ded3c5;
     background:#fff;
     color:var(--burgundy);
+    white-space:nowrap;
   }
   .writer-registered-members,
   .writer-new-member{
