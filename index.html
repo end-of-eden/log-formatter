@@ -1435,8 +1435,8 @@
     position:relative;
     display:flex;
     align-items:flex-start;
-    width:calc(100% - 120px);
-    max-width:600px;
+    width:calc(100% - 60px);
+    max-width:660px;
     gap:8px;
     margin:26px auto;
     font-family:'Pretendard',sans-serif;
@@ -3368,11 +3368,25 @@ writerCanvas.addEventListener('click', event => {
   if(!deleteButton) return;
   const item = deleteButton.closest('.writer-inline-chat-bubble-item');
   const group = deleteButton.closest('.writer-inline-chat');
-  item?.remove();
-  if(group && !group.querySelector('.writer-inline-chat-bubble-item')){
-    const trailingSpace = group.nextElementSibling;
-    group.remove();
-    if(trailingSpace?.matches('p') && !trailingSpace.textContent.trim()) trailingSpace.remove();
+  if(!item || !group) return;
+  const items = [...group.querySelectorAll('.writer-inline-chat-bubble-item')];
+  const itemIndex = items.indexOf(item);
+  const restoredText = document.createElement('p');
+  restoredText.innerHTML = item.querySelector('.writer-inline-chat-bubble')?.innerHTML || '';
+  if(items.length === 1){
+    group.replaceWith(restoredText);
+  }else if(itemIndex === 0){
+    item.remove();
+    group.before(restoredText);
+  }else if(itemIndex === items.length - 1){
+    item.remove();
+    group.after(restoredText);
+  }else{
+    const trailingGroup = group.cloneNode(true);
+    const trailingItems = [...trailingGroup.querySelectorAll('.writer-inline-chat-bubble-item')];
+    trailingItems.slice(0,itemIndex + 1).forEach(trailingItem => trailingItem.remove());
+    items.slice(itemIndex).forEach(groupItem => groupItem.remove());
+    group.after(restoredText,trailingGroup);
   }
   rememberWriterRange();
   queueWriterSave();
