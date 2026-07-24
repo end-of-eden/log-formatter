@@ -3810,8 +3810,25 @@ document.addEventListener('selectionchange', () => {
   if(!writerSelectionPointerDown) scheduleWriterSelectionToolbar();
 });
 writerCanvas.addEventListener('keyup', scheduleWriterSelectionToolbar);
+function cleanupEmptyBlocksBetweenChats(){
+  const blocks = [...writerCanvas.children];
+  const isEmptyBlock = block =>
+    block.matches('p,div')
+    && !block.textContent.trim()
+    && !block.querySelector('img,hr,.writer-inline-chat');
+  const containsChat = block =>
+    Boolean(block?.matches?.('.writer-inline-chat') || block?.querySelector?.('.writer-inline-chat'));
+
+  blocks.forEach((block,index) => {
+    if(!isEmptyBlock(block)) return;
+    const previous = blocks.slice(0,index).reverse().find(item => !isEmptyBlock(item));
+    const next = blocks.slice(index + 1).find(item => !isEmptyBlock(item));
+    if(containsChat(previous) && containsChat(next)) block.remove();
+  });
+}
 writerCanvas.addEventListener('input', () => {
   writerSelectionToolbar.hidden = true;
+  requestAnimationFrame(cleanupEmptyBlocksBetweenChats);
 });
 function openWriterSelectionAs(style){
   writerChatStyle.value = style;
@@ -4212,6 +4229,7 @@ writerCanvas.addEventListener('click', event => {
     group.after(restoredText,trailingGroup);
   }
   rememberWriterRange();
+  cleanupEmptyBlocksBetweenChats();
   queueWriterSave();
 });
 renderWriterMembers();
