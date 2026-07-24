@@ -1329,7 +1329,7 @@
   .writer-category-row{
     display:flex;
     align-items:center;
-    justify-content:space-between;
+    gap:12px;
     margin-bottom:14px;
   }
   .writer-category-row select{
@@ -1341,7 +1341,18 @@
     padding:8px 10px;
     font-size:12px;
   }
+  #writerLogName{
+    width:min(280px,34vw);
+    border:1px solid #e1e2e5;
+    border-radius:2px;
+    background:#fafafa;
+    color:#555960;
+    padding:8px 10px;
+    font:12px 'Pretendard',sans-serif;
+  }
+  #writerLogName::placeholder{color:#a4a7ad;}
   .writer-title-color{
+    margin-left:auto;
     display:flex;
     align-items:center;
     gap:8px;
@@ -1484,9 +1495,9 @@
   }
   .writer-export-sheet.dark{background:#1f2023;color:#ece9e1;}
   .writer-export-title{
-    margin:0 0 34px;
-    padding-bottom:18px;
-    border-bottom:1px dashed #ddd9d0;
+    margin:0 0 12px;
+    padding:0;
+    border:0;
     font:500 18px/1.4 'Pretendard',sans-serif;
   }
   .writer-export-body{font:15px/2.15 'Noto Serif KR',serif;}
@@ -1494,11 +1505,18 @@
   .writer-export-body img{max-width:100%;height:auto;}
   .writer-export-body blockquote{margin:28px 0;padding:8px 0 8px 18px;border-left:3px solid var(--gold);}
   .writer-export-body hr{border:0;border-top:1px solid #e2ded5;margin:36px 0;}
+  .writer-export-log-name{
+    margin-top:38px;
+    text-align:right;
+    color:#8c8f95;
+    font:500 12px/1.5 'Pretendard',sans-serif;
+  }
   .writer-app.night .writer-page,
   .writer-app.night #writerTitle,
   .writer-app.night #writerCanvas{color:#ece9e1;}
   .writer-app.night #writerTitle{border-color:#383a3f;}
   .writer-app.night .writer-category-row select{background:#292b2f;border-color:#3b3d43;color:#ddd;}
+  .writer-app.night #writerLogName{background:#292b2f;border-color:#3b3d43;color:#ddd;}
   .writer-app.night .writer-title-color{color:#c7c4bd;}
   @media (max-width:900px){
     .writer-toolbar{padding:0 10px;}
@@ -1624,6 +1642,7 @@
           <option>로그형</option>
           <option>메신저형</option>
         </select>
+        <input id="writerLogName" type="text" placeholder="오른쪽 아래에 표시할 로그 이름" aria-label="로그 이름">
         <label class="writer-title-color">제목 색상 <input type="color" id="writerTitleColor" value="#2A9D8F" aria-label="저장 이미지 제목 색상"></label>
       </div>
       <input id="writerTitle" type="text" placeholder="제목을 입력하세요" aria-label="제목">
@@ -2780,6 +2799,7 @@ const writerApp = document.getElementById('writerApp');
 const writerCanvas = document.getElementById('writerCanvas');
 const writerTitle = document.getElementById('writerTitle');
 const writerTitleColor = document.getElementById('writerTitleColor');
+const writerLogName = document.getElementById('writerLogName');
 const writerCategory = document.getElementById('writerCategory');
 const writerBlockType = document.getElementById('writerBlockType');
 const writerBlockButton = document.getElementById('writerBlockButton');
@@ -3098,12 +3118,14 @@ document.getElementById('writerHtmlSave').addEventListener('click', () => {
 });
 document.getElementById('writerImageSave').addEventListener('click', () => {
   const dark = writerApp.classList.contains('night');
+  const logName = writerLogName.value.trim();
   const sheet = document.createElement('article');
   sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   sheet.innerHTML = `
     <h1 class="writer-export-title">${escapeHtml(writerTitle.value.trim() || '제목 없음')}</h1>
-    <div class="writer-export-body">${writerCanvas.innerHTML}</div>`;
+    <div class="writer-export-body">${writerCanvas.innerHTML}</div>
+    ${logName ? `<div class="writer-export-log-name">${escapeHtml(logName)}</div>` : ''}`;
   sheet.querySelector('.writer-export-title').style.color = writerTitleColor.value;
   sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
   document.body.appendChild(sheet);
