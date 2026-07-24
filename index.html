@@ -1427,13 +1427,13 @@
     position:relative;
     display:flex;
     align-items:flex-start;
-    width:max-content;
-    max-width:84%;
+    width:min(100%,420px);
+    max-width:100%;
     gap:8px;
-    margin:20px 0;
+    margin:10px auto;
     font-family:'Pretendard',sans-serif;
   }
-  .writer-inline-chat.right{margin-left:auto;flex-direction:row-reverse;}
+  .writer-inline-chat.right{flex-direction:row-reverse;}
   .writer-inline-chat-body{min-width:0;}
   .writer-inline-chat.right .writer-inline-chat-body{display:flex;flex-direction:column;align-items:flex-end;text-align:right;}
   .writer-inline-chat-name{
