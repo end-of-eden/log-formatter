@@ -1384,6 +1384,37 @@
     font:500 12px/1.5 'Pretendard',sans-serif;
   }
   .writer-preview-log-name:empty{display:none;}
+  .writer-messenger-workspace{
+    width:100%;
+    min-height:calc(100vh - 150px);
+    display:grid;
+    grid-template-columns:380px minmax(0,1fr);
+    border-top:1px solid #e1e2e5;
+    background:#f2f3f5;
+  }
+  .writer-messenger-workspace .messenger-rail{
+    grid-column:1;
+    grid-row:1;
+    height:calc(100vh - 150px);
+    min-height:640px;
+  }
+  .writer-messenger-workspace .messenger-stage{
+    grid-column:2;
+    grid-row:1;
+    height:calc(100vh - 150px);
+    min-height:640px;
+  }
+  .writer-app.messenger-active .writer-page{
+    margin-top:18px;
+    margin-bottom:18px;
+  }
+  .writer-app.messenger-active .writer-toolbar{display:none;}
+  .writer-app.messenger-active .writer-category-row{margin-bottom:0;}
+  #memberAvatarFile{
+    width:100%;
+    color:#777c85;
+    font:11px 'Pretendard',sans-serif;
+  }
   .writer-app.night{background:#17181b;color:#eee;}
   .writer-app.night .writer-preview-sheet{background:#1f2023;}
   .writer-app.night .writer-toolbar{background:rgba(31,32,35,.97);border-color:#33353a;}
@@ -1434,6 +1465,14 @@
     .writer-brand{display:none;}
     .writer-save{display:none;}
     .writer-page{margin-top:28px;}
+    .writer-messenger-workspace{grid-template-columns:1fr;}
+    .writer-messenger-workspace .messenger-rail,
+    .writer-messenger-workspace .messenger-stage{
+      grid-column:1;
+      grid-row:auto;
+      height:auto;
+      min-height:0;
+    }
   }
   @media (max-width:860px){
     body{display:block;overflow:auto;}
@@ -1550,6 +1589,7 @@
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
     </main>
+    <section class="writer-messenger-workspace" id="writerMessengerWorkspace" hidden></section>
   </div>
 
   <header class="appbar">
@@ -1727,6 +1767,7 @@
       </div>
       <input type="text" id="memberName" placeholder="이름">
       <input type="url" id="memberAvatar" placeholder="프로필 이미지 주소 (선택)">
+      <input type="file" id="memberAvatarFile" accept="image/*" aria-label="프로필 사진 파일">
       <div class="member-color-row">
         <label for="memberNameColor">이름</label>
         <input type="color" id="memberNameColor" value="#C0392B">
@@ -2344,6 +2385,7 @@ modeButtons.forEach(button => {
 // ---------- messenger excerpt studio ----------
 const memberName = document.getElementById('memberName');
 const memberAvatar = document.getElementById('memberAvatar');
+const memberAvatarFile = document.getElementById('memberAvatarFile');
 const memberNameColor = document.getElementById('memberNameColor');
 const memberBubbleColor = document.getElementById('memberBubbleColor');
 const addMemberBtn = document.getElementById('addMemberBtn');
@@ -2387,6 +2429,30 @@ function memberAvatarHtml(member, className){
     return `<span class="${className}"><img src="${escapeAttr(member.avatar)}" alt=""></span>`;
   }
   return `<span class="${className}">${initial}</span>`;
+}
+
+function prepareAvatarFile(file){
+  return new Promise((resolve,reject) => {
+    const source = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const context = canvas.getContext('2d');
+      const side = Math.min(image.naturalWidth,image.naturalHeight);
+      const x = (image.naturalWidth - side) / 2;
+      const y = (image.naturalHeight - side) / 2;
+      context.drawImage(image,x,y,side,side,0,0,256,256);
+      URL.revokeObjectURL(source);
+      resolve(canvas.toDataURL('image/jpeg',.86));
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(source);
+      reject(new Error('avatar image load failed'));
+    };
+    image.src = source;
+  });
 }
 
 function saveChatState(){
@@ -2461,22 +2527,33 @@ function renderMessages(){
   }).join('');
 }
 
-addMemberBtn.addEventListener('click', () => {
+addMemberBtn.addEventListener('click', async () => {
   const name = memberName.value.trim();
   if(!name){
     memberName.focus();
     chatStatus.textContent = '멤버 이름을 입력해줘.';
     return;
   }
+  let avatar = memberAvatar.value.trim();
+  const avatarFile = memberAvatarFile.files?.[0];
+  if(avatarFile){
+    try{
+      avatar = await prepareAvatarFile(avatarFile);
+    }catch{
+      chatStatus.textContent = '프로필 사진을 읽지 못했어.';
+      return;
+    }
+  }
   chatMembers.push({
     id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     name,
-    avatar: memberAvatar.value.trim(),
+    avatar,
     nameColor: memberNameColor.value,
     bubbleColor: memberBubbleColor.value
   });
   memberName.value = '';
   memberAvatar.value = '';
+  memberAvatarFile.value = '';
   chatStatus.textContent = `${name} 멤버를 추가했어.`;
   saveChatState();
   renderMembers();
@@ -2702,6 +2779,7 @@ const writerCanvas = document.getElementById('writerCanvas');
 const writerLogName = document.getElementById('writerLogName');
 const writerPreviewSheet = document.getElementById('writerPreviewSheet');
 const writerPreviewLogName = document.getElementById('writerPreviewLogName');
+const writerMessengerWorkspace = document.getElementById('writerMessengerWorkspace');
 const writerCategory = document.getElementById('writerCategory');
 const writerFontSize = document.getElementById('writerFontSize');
 const writerFont = document.getElementById('writerFont');
@@ -2720,6 +2798,22 @@ function syncWriterPreview(){
   writerPreviewLogName.textContent = writerLogName.value.trim();
 }
 writerLogName.addEventListener('input',syncWriterPreview);
+
+writerMessengerWorkspace.append(messengerRail,messengerStage);
+messengerRail.hidden = false;
+messengerStage.hidden = false;
+function syncWriterCategory(){
+  const messenger = writerCategory.value === '메신저형';
+  writerApp.classList.toggle('messenger-active',messenger);
+  writerPreviewSheet.hidden = messenger;
+  writerLogName.hidden = messenger;
+  writerMessengerWorkspace.hidden = !messenger;
+  if(messenger){
+    renderMembers();
+    renderMessages();
+  }
+}
+writerCategory.addEventListener('change',syncWriterCategory);
 
 document.querySelectorAll('[data-command]').forEach(button => {
   button.addEventListener('mousedown', event => event.preventDefault());
@@ -3037,6 +3131,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
 
 writerCanvas.style.fontFamily = writerFont.value;
 syncWriterPreview();
+syncWriterCategory();
 writerMode.dispatchEvent(new Event('change'));
 </script>
 </body>
