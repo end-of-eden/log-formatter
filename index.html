@@ -1037,6 +1037,55 @@
   .writer-toolbar button{
     flex:0 0 auto;
   }
+  .writer-block-select{display:none;}
+  .writer-block-wrap{position:relative;flex:0 0 auto;}
+  .writer-block-button{
+    width:86px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 8px;
+    border:0;
+    border-radius:4px;
+    background:transparent;
+    color:#3c3e42;
+    font:12px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-block-button:hover,.writer-block-button[aria-expanded="true"]{background:#f3f3f5;}
+  .writer-block-menu{
+    position:absolute;
+    top:38px;
+    left:0;
+    z-index:300;
+    width:112px;
+    padding:6px 0;
+    border:1px solid #e0e1e4;
+    border-radius:4px;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(32,34,38,.14);
+  }
+  .writer-block-menu button{
+    width:100%;
+    height:auto;
+    display:block;
+    padding:5px 12px;
+    border:0;
+    background:transparent;
+    color:#303236;
+    text-align:left;
+    font-family:'Pretendard',sans-serif;
+    line-height:1.2;
+    cursor:pointer;
+  }
+  .writer-block-menu button:hover{background:#f3f3f5;}
+  .writer-block-menu [data-block-value="h1|30"]{font-size:24px;}
+  .writer-block-menu [data-block-value="h2|24"]{font-size:21px;}
+  .writer-block-menu [data-block-value="h3|20"]{font-size:18px;}
+  .writer-block-menu [data-block-value="p|18"]{font-size:16px;}
+  .writer-block-menu [data-block-value="p|15"]{font-size:14px;}
+  .writer-block-menu [data-block-value="p|13"]{font-size:12px;}
   .writer-sep{
     width:1px;
     height:20px;
@@ -1300,6 +1349,12 @@
   .writer-app.night .writer-insert-menu button{color:#e7e5df;}
   .writer-app.night .writer-insert-menu button:hover{background:#35373c;}
   .writer-app.night .writer-margin-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-block-button{color:#e7e5df;}
+  .writer-app.night .writer-block-button:hover,
+  .writer-app.night .writer-block-button[aria-expanded="true"]{background:#34363b;}
+  .writer-app.night .writer-block-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-block-menu button{color:#e7e5df;}
+  .writer-app.night .writer-block-menu button:hover{background:#34363b;}
   .writer-app.night .writer-margin-menu label{color:#e7e5df;}
   .writer-export-sheet{
     position:fixed;
@@ -1359,14 +1414,25 @@
       <div class="writer-brand">EOE log</div>
       <button class="writer-photo" type="button" data-writer-action="image" title="사진 파일 선택" aria-label="사진"><span class="photo-glyph" aria-hidden="true"></span></button>
       <input type="file" id="writerImageInput" accept="image/*" multiple hidden>
-      <select id="writerBlockType" aria-label="문단 종류">
-        <option value="p|15" data-short="본문2" data-full="본문2 · 15pt">본문2</option>
-        <option value="h1|30" data-short="제목1" data-full="제목1 · 30pt">제목1</option>
-        <option value="h2|24" data-short="제목2" data-full="제목2 · 24pt">제목2</option>
-        <option value="h3|20" data-short="제목3" data-full="제목3 · 20pt">제목3</option>
-        <option value="p|18" data-short="본문1" data-full="본문1 · 18pt">본문1</option>
-        <option value="p|13" data-short="본문3" data-full="본문3 · 13pt">본문3</option>
-      </select>
+      <div class="writer-block-wrap">
+        <button class="writer-block-button" id="writerBlockButton" type="button" aria-haspopup="listbox" aria-expanded="false">본문2 <span aria-hidden="true">⌄</span></button>
+        <div class="writer-block-menu" id="writerBlockMenu" role="listbox" hidden>
+          <button type="button" role="option" data-block-value="h1|30">제목1</button>
+          <button type="button" role="option" data-block-value="h2|24">제목2</button>
+          <button type="button" role="option" data-block-value="h3|20">제목3</button>
+          <button type="button" role="option" data-block-value="p|18">본문1</button>
+          <button type="button" role="option" data-block-value="p|15">본문2</button>
+          <button type="button" role="option" data-block-value="p|13">본문3</button>
+        </div>
+        <select class="writer-block-select" id="writerBlockType" aria-label="문단 종류" tabindex="-1">
+          <option value="p|15">본문2</option>
+          <option value="h1|30">제목1</option>
+          <option value="h2|24">제목2</option>
+          <option value="h3|20">제목3</option>
+          <option value="p|18">본문1</option>
+          <option value="p|13">본문3</option>
+        </select>
+      </div>
       <select id="writerFont" aria-label="글꼴">
         <option value="'Pretendard', sans-serif">프리텐다드</option>
         <option value="'Noto Sans KR', sans-serif">노토 산스</option>
@@ -2584,6 +2650,8 @@ const writerCanvas = document.getElementById('writerCanvas');
 const writerTitle = document.getElementById('writerTitle');
 const writerCategory = document.getElementById('writerCategory');
 const writerBlockType = document.getElementById('writerBlockType');
+const writerBlockButton = document.getElementById('writerBlockButton');
+const writerBlockMenu = document.getElementById('writerBlockMenu');
 const writerFont = document.getElementById('writerFont');
 const writerColor = document.getElementById('writerColor');
 const writerMode = document.getElementById('writerMode');
@@ -2597,19 +2665,27 @@ const exportMarginInputs = {
 };
 function queueWriterSave(){}
 
-function setWriterBlockLabels(mode){
-  [...writerBlockType.options].forEach(option => {
-    option.textContent = option.dataset[mode];
+writerBlockButton.addEventListener('mousedown', event => event.preventDefault());
+writerBlockButton.addEventListener('click', () => {
+  writerBlockMenu.hidden = !writerBlockMenu.hidden;
+  writerBlockButton.setAttribute('aria-expanded',String(!writerBlockMenu.hidden));
+});
+writerBlockMenu.querySelectorAll('[data-block-value]').forEach(button => {
+  button.addEventListener('mousedown', event => event.preventDefault());
+  button.addEventListener('click', () => {
+    writerBlockType.value = button.dataset.blockValue;
+    writerBlockButton.firstChild.textContent = `${button.textContent} `;
+    writerBlockType.dispatchEvent(new Event('change'));
+    writerBlockMenu.hidden = true;
+    writerBlockButton.setAttribute('aria-expanded','false');
   });
-}
-writerBlockType.addEventListener('pointerdown', () => setWriterBlockLabels('full'));
-writerBlockType.addEventListener('keydown', event => {
-  if(['Enter',' ','ArrowDown','ArrowUp'].includes(event.key)) setWriterBlockLabels('full');
 });
-writerBlockType.addEventListener('click', () => {
-  setTimeout(() => setWriterBlockLabels('short'),0);
+document.addEventListener('click', event => {
+  if(!event.target.closest('.writer-block-wrap')){
+    writerBlockMenu.hidden = true;
+    writerBlockButton.setAttribute('aria-expanded','false');
+  }
 });
-writerBlockType.addEventListener('blur', () => setWriterBlockLabels('short'));
 
 document.querySelectorAll('[data-command]').forEach(button => {
   button.addEventListener('mousedown', event => event.preventDefault());
@@ -2629,7 +2705,6 @@ writerBlockType.addEventListener('change', () => {
   if(block?.nodeType === Node.TEXT_NODE) block = block.parentElement;
   block = block?.closest?.('h1,h2,h3,p,div,blockquote');
   if(block && writerCanvas.contains(block)) block.style.fontSize = `${pointSize}pt`;
-  setWriterBlockLabels('short');
   queueWriterSave();
 });
 writerFont.addEventListener('change', () => {
