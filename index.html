@@ -1120,6 +1120,30 @@
     cursor:pointer;
   }
   .writer-insert-menu button:hover{background:#f4f4f6;}
+  .writer-margin-wrap{position:relative;flex:0 0 auto;}
+  .writer-margin-button{width:auto;min-width:38px;font-size:10px;}
+  .writer-margin-menu{
+    position:absolute;
+    top:38px;
+    right:0;
+    width:250px;
+    padding:12px;
+    border:1px solid #e0e1e4;
+    border-radius:6px;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(32,34,38,.14);
+  }
+  .writer-margin-menu label{
+    display:grid;
+    grid-template-columns:42px 1fr 42px;
+    align-items:center;
+    gap:8px;
+    margin:7px 0;
+    color:#63676f;
+    font-size:11px;
+  }
+  .writer-margin-menu input{width:100%;accent-color:var(--burgundy);}
+  .writer-margin-menu span{text-align:right;font:10px 'JetBrains Mono',monospace;}
   .writer-save{
     appearance:none;
     border:1px solid #dedfe3;
@@ -1242,6 +1266,36 @@
   .writer-app.night .writer-insert-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-insert-menu button{color:#e7e5df;}
   .writer-app.night .writer-insert-menu button:hover{background:#35373c;}
+  .writer-app.night .writer-margin-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-margin-menu label{color:#e7e5df;}
+  .writer-export-sheet{
+    position:fixed;
+    left:-100000px;
+    top:0;
+    width:900px;
+    box-sizing:border-box;
+    background:#fff;
+    color:#2d2f33;
+    font-family:'Noto Serif KR',serif;
+  }
+  .writer-export-sheet.dark{background:#1f2023;color:#ece9e1;}
+  .writer-export-category{
+    margin-bottom:18px;
+    color:#9b7a27;
+    font:600 11px 'Pretendard',sans-serif;
+    letter-spacing:.3px;
+  }
+  .writer-export-title{
+    margin:0 0 28px;
+    padding-bottom:22px;
+    border-bottom:1px solid #e4e1da;
+    font:500 28px/1.35 'Pretendard',sans-serif;
+  }
+  .writer-export-body{font:15px/2 'Noto Serif KR',serif;}
+  .writer-export-body p{margin:0 0 28px;}
+  .writer-export-body img{max-width:100%;height:auto;}
+  .writer-export-body blockquote{margin:28px 0;padding:8px 0 8px 18px;border-left:3px solid var(--gold);}
+  .writer-export-body hr{border:0;border-top:1px solid #e2ded5;margin:36px 0;}
   .writer-app.night .writer-page,
   .writer-app.night #writerTitle,
   .writer-app.night #writerCanvas{color:#ece9e1;}
@@ -1310,6 +1364,15 @@
       </div>
       <button class="writer-format" type="button" data-command="insertUnorderedList" title="목록">☷</button>
       <button class="writer-format" type="button" data-command="insertHorizontalRule" title="구분선">―</button>
+      <div class="writer-margin-wrap">
+        <button class="writer-format writer-margin-button" type="button" id="writerMarginButton">여백</button>
+        <div class="writer-margin-menu" id="writerMarginMenu" hidden>
+          <label>위 <input type="range" id="exportMarginTop" min="0" max="160" step="4" value="64"><span>64px</span></label>
+          <label>오른쪽 <input type="range" id="exportMarginRight" min="0" max="160" step="4" value="72"><span>72px</span></label>
+          <label>아래 <input type="range" id="exportMarginBottom" min="0" max="160" step="4" value="64"><span>64px</span></label>
+          <label>왼쪽 <input type="range" id="exportMarginLeft" min="0" max="160" step="4" value="72"><span>72px</span></label>
+        </div>
+      </div>
       <div class="writer-spacer"></div>
       <select id="writerMode" aria-label="편집 모드">
         <option value="default">기본모드</option>
@@ -2484,6 +2547,14 @@ const writerBlockType = document.getElementById('writerBlockType');
 const writerFont = document.getElementById('writerFont');
 const writerColor = document.getElementById('writerColor');
 const writerMode = document.getElementById('writerMode');
+const writerMarginButton = document.getElementById('writerMarginButton');
+const writerMarginMenu = document.getElementById('writerMarginMenu');
+const exportMarginInputs = {
+  top:document.getElementById('exportMarginTop'),
+  right:document.getElementById('exportMarginRight'),
+  bottom:document.getElementById('exportMarginBottom'),
+  left:document.getElementById('exportMarginLeft')
+};
 function queueWriterSave(){}
 
 document.querySelectorAll('[data-command]').forEach(button => {
@@ -2603,6 +2674,18 @@ writerInsertMenu.addEventListener('click', event => {
 document.addEventListener('click', event => {
   if(!event.target.closest('.writer-insert-wrap')) writerInsertMenu.hidden = true;
 });
+writerMarginButton.addEventListener('click', event => {
+  event.stopPropagation();
+  writerMarginMenu.hidden = !writerMarginMenu.hidden;
+});
+Object.values(exportMarginInputs).forEach(input => {
+  input.addEventListener('input', () => {
+    input.parentElement.querySelector('span').textContent = `${input.value}px`;
+  });
+});
+document.addEventListener('click', event => {
+  if(!event.target.closest('.writer-margin-wrap')) writerMarginMenu.hidden = true;
+});
 
 writerCanvas.addEventListener('paste', async event => {
   const imageFiles = [...(event.clipboardData?.items || [])]
@@ -2649,12 +2732,28 @@ document.getElementById('writerHtmlSave').addEventListener('click', () => {
   URL.revokeObjectURL(link.href);
 });
 document.getElementById('writerImageSave').addEventListener('click', () => {
-  html2canvas(document.querySelector('.writer-page'),{backgroundColor:writerApp.classList.contains('night') ? '#1F2023' : '#FFFFFF',scale:2,useCORS:true}).then(canvas => {
+  const dark = writerApp.classList.contains('night');
+  const sheet = document.createElement('article');
+  sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
+  sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
+  sheet.innerHTML = `
+    <div class="writer-export-category">${escapeHtml(writerCategory.value)}</div>
+    <h1 class="writer-export-title">${escapeHtml(writerTitle.value.trim() || '제목 없음')}</h1>
+    <div class="writer-export-body">${writerCanvas.innerHTML}</div>`;
+  sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
+  document.body.appendChild(sheet);
+  Promise.resolve(document.fonts?.ready).then(() => html2canvas(sheet,{
+    backgroundColor:dark ? '#1F2023' : '#FFFFFF',
+    scale:2,
+    useCORS:true,
+    width:sheet.scrollWidth,
+    height:sheet.scrollHeight
+  })).then(canvas => {
     const link = document.createElement('a');
     link.download = `${(writerTitle.value.trim() || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-  }).catch(() => alert('이미지 저장에 실패했어. 삽입한 사진 주소를 확인해줘.'));
+  }).catch(() => alert('이미지 저장에 실패했어. 삽입한 사진 주소를 확인해줘.')).finally(() => sheet.remove());
 });
 
 writerCanvas.style.fontFamily = writerFont.value;
