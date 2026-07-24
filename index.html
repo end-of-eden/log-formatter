@@ -1841,7 +1841,7 @@
   .writer-inline-chat.right .writer-inline-chat-bubble{
     text-align:left;
   }
-  .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
+  .writer-inline-chat-bubble-item:last-child .writer-inline-chat-bubble::before{
     content:"";
     position:absolute;
     bottom:0;
@@ -1854,7 +1854,7 @@
     outline:0!important;
     box-shadow:none!important;
   }
-  .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::after{
+  .writer-inline-chat-bubble-item:last-child .writer-inline-chat-bubble::after{
     content:"";
     position:absolute;
     bottom:-1px;
@@ -1864,13 +1864,13 @@
     background:var(--writer-sheet-bg,#fff);
     border-bottom-right-radius:10px;
   }
-  .writer-inline-chat.right .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
+  .writer-inline-chat.right .writer-inline-chat-bubble-item:last-child .writer-inline-chat-bubble::before{
     right:-7px;
     left:auto;
     border-bottom-right-radius:0;
     border-bottom-left-radius:15px;
   }
-  .writer-inline-chat.right .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::after{
+  .writer-inline-chat.right .writer-inline-chat-bubble-item:last-child .writer-inline-chat-bubble::after{
     right:-10px;
     left:auto;
     border-bottom-right-radius:0;
