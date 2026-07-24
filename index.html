@@ -1333,7 +1333,7 @@
     gap:8px;
   }
   .writer-message-form{
-    grid-template-columns:1fr 100px;
+    grid-template-columns:1fr 88px 92px;
     margin-top:10px;
     padding-top:10px;
     border-top:1px solid #ececef;
@@ -1342,6 +1342,7 @@
   #writerAddBubble{grid-column:1 / -1;}
   .writer-chat-menu input[type=text],
   .writer-chat-menu input[type=file],
+  .writer-chat-menu input[type=time],
   .writer-chat-menu select,
   .writer-chat-menu textarea{
     width:100%;
@@ -1409,9 +1410,9 @@
     object-fit:cover;
   }
   .writer-member-avatar{
-    width:36px;
-    height:36px;
-    flex:0 0 36px;
+    width:30px;
+    height:30px;
+    flex:0 0 30px;
     border-radius:50%;
     object-fit:cover;
   }
@@ -1426,44 +1427,49 @@
     position:relative;
     display:flex;
     align-items:flex-start;
-    gap:10px;
-    margin:18px 0;
+    width:max-content;
+    max-width:84%;
+    gap:8px;
+    margin:10px 0;
     font-family:'Pretendard',sans-serif;
   }
-  .writer-inline-chat.right{flex-direction:row-reverse;}
-  .writer-inline-chat-body{max-width:72%;}
-  .writer-inline-chat.right .writer-inline-chat-body{text-align:right;}
+  .writer-inline-chat.right{margin-left:auto;flex-direction:row-reverse;}
+  .writer-inline-chat-body{min-width:0;}
+  .writer-inline-chat.right .writer-inline-chat-body{display:flex;flex-direction:column;align-items:flex-end;text-align:right;}
   .writer-inline-chat-name{
-    margin:0 0 5px 2px;
+    margin:0 0 4px;
     font-size:10px;
     line-height:1.4;
     font-weight:600;
   }
+  .writer-inline-chat-bubble-wrap{
+    display:flex;
+    align-items:flex-end;
+    gap:6px;
+  }
+  .writer-inline-chat.right .writer-inline-chat-bubble-wrap{flex-direction:row-reverse;}
   .writer-inline-chat-bubble{
-    position:relative;
     display:inline-block;
-    padding:9px 14px;
-    border-radius:16px;
+    padding:8px 12px;
+    border:1px solid rgba(0,0,0,.07);
+    border-radius:14px;
+    border-bottom-left-radius:4px;
     color:#303236;
-    font-size:10pt;
-    line-height:1.6;
+    font-size:13px;
+    line-height:1.5;
     text-align:left;
     white-space:pre-wrap;
+    word-break:break-word;
   }
-  .writer-inline-chat-bubble::before{
-    content:"";
-    position:absolute;
-    top:3px;
-    left:-4px;
-    width:10px;
-    height:10px;
-    border-radius:2px;
-    background:inherit;
-    transform:rotate(45deg);
+  .writer-inline-chat.right .writer-inline-chat-bubble{
+    border-bottom-right-radius:4px;
+    border-bottom-left-radius:14px;
   }
-  .writer-inline-chat.right .writer-inline-chat-bubble::before{
-    right:-4px;
-    left:auto;
+  .writer-inline-chat-time{
+    flex:0 0 auto;
+    margin-bottom:2px;
+    color:#8c8f95;
+    font:9px/1.2 'Pretendard',sans-serif;
   }
   .writer-inline-chat-avatar-fallback{
     display:grid;
@@ -1714,6 +1720,7 @@
           <div class="writer-message-form">
             <select id="writerMessageSender" aria-label="발화자"><option value="">멤버를 추가하세요</option></select>
             <select id="writerMessageSide" aria-label="말풍선 위치"><option value="left">왼쪽</option><option value="right">오른쪽</option></select>
+            <input type="time" id="writerChatTime" aria-label="메시지 시간">
             <textarea id="writerChatText" placeholder="말풍선 내용을 입력하세요"></textarea>
             <button type="button" id="writerAddBubble">말풍선 추가</button>
           </div>
@@ -3104,7 +3111,9 @@ const writerMemberBubbleColor = document.getElementById('writerMemberBubbleColor
 const writerMemberList = document.getElementById('writerMemberList');
 const writerMessageSender = document.getElementById('writerMessageSender');
 const writerMessageSide = document.getElementById('writerMessageSide');
+const writerChatTime = document.getElementById('writerChatTime');
 const writerChatText = document.getElementById('writerChatText');
+writerChatTime.value = new Date().toTimeString().slice(0,5);
 let writerMembers = [];
 try{
   writerMembers = JSON.parse(localStorage.getItem('eoe-writer-members') || '[]');
@@ -3201,7 +3210,10 @@ document.getElementById('writerAddBubble').addEventListener('click', () => {
       ${avatar}
       <div class="writer-inline-chat-body">
         <div class="writer-inline-chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
-        <div class="writer-inline-chat-bubble" style="background:${escapeAttr(member.bubbleColor)}">${escapeHtml(text).replace(/\n/g,'<br>')}</div>
+        <div class="writer-inline-chat-bubble-wrap">
+          <div class="writer-inline-chat-bubble" style="background:${escapeAttr(member.bubbleColor)}">${escapeHtml(text).replace(/\n/g,'<br>')}</div>
+          <time class="writer-inline-chat-time">${escapeHtml(writerChatTime.value)}</time>
+        </div>
       </div>
     </article><p><br></p>`;
   restoreWriterRange();
