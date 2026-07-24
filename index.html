@@ -3407,8 +3407,16 @@ writerFontSize.addEventListener('change', () => {
   rememberWriterRange();
   queueWriterSave();
 });
-writerFont.addEventListener('change', () => {
+function applyWriterFontFamily(){
   writerCanvas.style.fontFamily = writerFont.value;
+  writerCanvas.querySelectorAll('*').forEach(node => {
+    node.removeAttribute('face');
+    node.style?.removeProperty('font-family');
+  });
+}
+
+writerFont.addEventListener('change', () => {
+  applyWriterFontFamily();
   queueWriterSave();
 });
 writerMode.addEventListener('change', () => {
@@ -4149,6 +4157,7 @@ writerCanvas.addEventListener('paste', async event => {
         const name = attribute.name.toLowerCase();
         const value = attribute.value.trim();
         if(name === 'bgcolor'
+          || name === 'face'
           || name.startsWith('on')
           || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))){
           node.removeAttribute(attribute.name);
@@ -4157,6 +4166,7 @@ writerCanvas.addEventListener('paste', async event => {
       if(node.style){
         node.style.removeProperty('background');
         node.style.removeProperty('background-color');
+        node.style.removeProperty('font-family');
         if(['fixed','sticky'].includes(node.style.position)){
           node.style.position = 'relative';
           ['top','right','bottom','left','inset'].forEach(property => node.style.removeProperty(property));
@@ -4228,7 +4238,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
   }).catch(() => alert('이미지 저장에 실패했습니다. 삽입한 사진 주소 확인이 필요합니다.')).finally(() => sheet.remove());
 });
 
-writerCanvas.style.fontFamily = writerFont.value;
+applyWriterFontFamily();
 syncWriterPreview();
 writerMode.dispatchEvent(new Event('change'));
 writerChatStyle.dispatchEvent(new Event('change'));
