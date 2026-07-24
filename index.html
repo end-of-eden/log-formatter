@@ -1012,7 +1012,7 @@
     display:flex;
     align-items:center;
     gap:2px;
-    padding:10px 18px 10px max(18px,calc((100vw - 1080px) / 2));
+    padding:10px 18px 10px max(18px,calc((100vw - 900px) / 2 + 160px));
     border-bottom:1px solid #ececef;
     background:rgba(255,255,255,.97);
     backdrop-filter:blur(12px);
@@ -3344,6 +3344,7 @@ openTool('members');
 // ---------- full-page archive writer ----------
 document.body.classList.add('writer-active');
 const writerApp = document.getElementById('writerApp');
+const writerToolbar = document.querySelector('.writer-toolbar');
 const writerCanvas = document.getElementById('writerCanvas');
 const writerLogName = document.getElementById('writerLogName');
 const writerPreviewSheet = document.getElementById('writerPreviewSheet');
@@ -3361,11 +3362,20 @@ const exportMarginInputs = {
   left:document.getElementById('exportMarginLeft')
 };
 function queueWriterSave(){}
+function syncWriterToolbarAlignment(){
+  if(window.innerWidth <= 900){
+    writerToolbar.style.paddingLeft = '10px';
+    return;
+  }
+  writerToolbar.style.paddingLeft = `${Math.max(18,writerCanvas.getBoundingClientRect().left)}px`;
+}
 function syncWriterPreview(){
   writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   writerPreviewLogName.textContent = writerLogName.value.trim();
+  requestAnimationFrame(syncWriterToolbarAlignment);
 }
 writerLogName.addEventListener('input',syncWriterPreview);
+window.addEventListener('resize',syncWriterToolbarAlignment,{passive:true});
 
 document.querySelectorAll('[data-command]').forEach(button => {
   button.addEventListener('mousedown', event => event.preventDefault());
