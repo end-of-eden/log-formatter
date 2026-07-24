@@ -377,6 +377,7 @@
     --burgundy-soft:rgba(192,57,43,.09);
     --gold:#a67c00;
     --gold-soft:rgba(166,124,0,.10);
+    --chat-bubble-radius:16px;
     --accent:#c0392b;
     --accent-dim:rgba(192,57,43,.14);
   }
@@ -408,6 +409,11 @@
     font-weight:600;
     letter-spacing:-.2px;
     color:var(--burgundy);
+  }
+  .appbar-context{
+    color:#999da5;
+    font:500 9px 'JetBrains Mono',monospace;
+    letter-spacing:1.2px;
   }
   .appbar-tabs{display:flex;align-self:stretch;gap:4px;}
   .appbar-tab{
@@ -582,6 +588,72 @@
     grid-column:1;
     grid-row:2;
   }
+  .unified-rail .block-composer{order:1;}
+  .unified-rail .tool-shell{order:2;}
+  .unified-rail .tool-panel{order:3;}
+  .unified-rail .messenger-actions{order:4;}
+  .unified-rail #chatStatus{order:5;}
+  .tool-shell{
+    order:2;
+    border:1px solid #ececef;
+    border-radius:12px;
+    background:#fff;
+    overflow:hidden;
+  }
+  .tool-shell-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 13px 9px;
+  }
+  .tool-shell-head strong{font-size:13px;}
+  .tool-shell-head span{color:#9a9ea6;font-size:9px;}
+  .editor-tools{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:3px;
+    padding:5px;
+    border-top:1px solid #f0f0f2;
+    background:#fafafa;
+  }
+  .editor-tool{
+    appearance:none;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:#80858e;
+    min-width:0;
+    padding:7px 2px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    font:500 9px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .editor-tool b{font-size:13px;color:#656a73;}
+  .editor-tool.active{
+    background:#47494e;
+    color:#fff;
+  }
+  .editor-tool.active b{color:#d7b35a;}
+  .editor-tool.save-tool b{color:var(--gold);}
+  .preset-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .theme-preset{
+    appearance:none;
+    border:1px solid #dfe1e5;
+    border-radius:8px;
+    background:#fff;
+    color:#6d727a;
+    padding:9px 5px;
+    font:600 10px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .theme-preset.active{
+    border-color:rgba(166,124,0,.3);
+    background:var(--gold-soft);
+    color:var(--gold);
+  }
   .messenger-section{
     display:flex;
     flex-direction:column;
@@ -736,6 +808,8 @@
     margin:38px auto 80px;
   }
   #chatPaper{
+    --chat-ink:#2e3034;
+    --chat-accent:#c0392b;
     min-height:560px;
     border:1px solid rgba(166,124,0,.25);
     border-radius:18px;
@@ -759,7 +833,7 @@
     letter-spacing:1.3px;
   }
   .chat-paper-head strong{
-    color:var(--burgundy);
+    color:var(--chat-accent);
     font:700 12px 'JetBrains Mono',monospace;
     letter-spacing:.6px;
   }
@@ -812,7 +886,7 @@
     display:inline-block;
     max-width:100%;
     border:1px solid rgba(0,0,0,.05);
-    border-radius:5px 16px 16px 16px;
+    border-radius:5px var(--chat-bubble-radius) var(--chat-bubble-radius) var(--chat-bubble-radius);
     padding:11px 14px;
     color:#2e3034;
     font:13px/1.65 'Pretendard',sans-serif;
@@ -822,7 +896,7 @@
     cursor:pointer;
     box-shadow:0 5px 14px rgba(60,52,47,.06);
   }
-  .chat-row.right .chat-bubble{border-radius:16px 5px 16px 16px;}
+  .chat-row.right .chat-bubble{border-radius:var(--chat-bubble-radius) 5px var(--chat-bubble-radius) var(--chat-bubble-radius);}
   .chat-time{
     margin:5px 7px 0;
     color:#aaa59d;
@@ -832,7 +906,7 @@
     margin:4px 8px;
     padding:4px 0 4px 16px;
     border-left:2px solid rgba(166,124,0,.38);
-    color:#3d3c39;
+    color:var(--chat-ink);
     font:14px/1.9 'Noto Serif KR',serif;
     white-space:pre-wrap;
     cursor:pointer;
@@ -870,16 +944,13 @@
 <body>
 
   <header class="appbar">
-    <div class="appbar-brand">eden log</div>
-    <nav class="appbar-tabs" aria-label="작업 모드">
-      <button class="appbar-tab active" type="button" data-mode="log">로그</button>
-      <button class="appbar-tab" type="button" data-mode="messenger">메신저</button>
-    </nav>
+    <div class="appbar-brand">EOE log</div>
+    <div class="appbar-context">EXCERPT WORKSPACE</div>
     <div class="appbar-note">내용을 붙여넣고 바로 다듬어 저장하세요</div>
   </header>
 
   <!-- LEFT CONTROL RAIL -->
-  <div class="rail" id="logRail">
+  <div class="rail" id="logRail" hidden>
     <div>
       <div class="rail-title">EOE // ARCHIVE UTILITY</div>
       <h1>로그 포맷터</h1>
@@ -1017,7 +1088,7 @@
   </div>
 
   <!-- RIGHT PAPER STAGE -->
-  <div class="stage" id="logStage">
+  <div class="stage" id="logStage" hidden>
     <div class="preview-toolbar">
       <strong>미리보기</strong>
       <span class="preview-status">자동 반영</span>
@@ -1034,13 +1105,13 @@
     </div>
   </div>
 
-  <aside class="rail messenger-rail" id="messengerRail" hidden>
+  <aside class="rail messenger-rail unified-rail" id="messengerRail">
     <div>
       <div class="rail-title">EOE // EXCERPT STUDIO</div>
       <h1>메신저 발췌</h1>
     </div>
 
-    <section class="field messenger-section">
+    <section class="field messenger-section member-panel tool-panel" data-tool-panel="members">
       <div class="section-head">
         <label>01 · 멤버</label>
         <span id="memberCount">0명</span>
@@ -1079,6 +1150,64 @@
       <button class="btn messenger-primary" id="addMessageBtn" type="button">글 추가</button>
     </section>
 
+    <div class="tool-shell">
+      <div class="tool-shell-head">
+        <strong>도구</strong>
+        <span>필요한 설정만 열어두세요</span>
+      </div>
+      <div class="editor-tools" role="tablist" aria-label="편집 도구">
+        <button class="editor-tool active" type="button" data-tool="members"><b>●</b><span>멤버</span></button>
+        <button class="editor-tool" type="button" data-tool="theme"><b>◐</b><span>테마</span></button>
+        <button class="editor-tool" type="button" data-tool="text"><b>가</b><span>텍스트</span></button>
+        <button class="editor-tool" type="button" data-tool="spacing"><b>↔</b><span>여백</span></button>
+        <button class="editor-tool" type="button" data-tool="bubble"><b>▰</b><span>말풍선</span></button>
+        <button class="editor-tool save-tool" type="button" data-tool="save"><b>↓</b><span>저장</span></button>
+      </div>
+    </div>
+
+    <section class="field messenger-section tool-panel" data-tool-panel="theme" hidden>
+      <label>테마</label>
+      <div class="preset-row">
+        <button class="theme-preset active" type="button" data-chat-bg="#FBF8F1" data-chat-accent="#C0392B" data-chat-ink="#2E3034">Archive</button>
+        <button class="theme-preset" type="button" data-chat-bg="#F6F1EB" data-chat-accent="#6D2335" data-chat-ink="#342B2E">Burgundy</button>
+        <button class="theme-preset" type="button" data-chat-bg="#202124" data-chat-accent="#D7B35A" data-chat-ink="#F1EDE4">Night</button>
+      </div>
+    </section>
+
+    <section class="field messenger-section tool-panel" data-tool-panel="text" hidden>
+      <label for="chatFontSize">본문 크기</label>
+      <div class="slider-row">
+        <input type="range" id="chatFontSize" min="11" max="20" value="14">
+        <span class="val" id="chatFontSizeVal">14px</span>
+      </div>
+      <label for="chatLineHeight">줄 간격</label>
+      <div class="slider-row">
+        <input type="range" id="chatLineHeight" min="1.3" max="2.4" step="0.1" value="1.9">
+        <span class="val" id="chatLineHeightVal">1.9</span>
+      </div>
+    </section>
+
+    <section class="field messenger-section tool-panel" data-tool-panel="spacing" hidden>
+      <label for="chatPadding">캔버스 여백</label>
+      <div class="slider-row">
+        <input type="range" id="chatPadding" min="16" max="72" step="2" value="30">
+        <span class="val" id="chatPaddingVal">30px</span>
+      </div>
+      <label for="chatGap">블록 간격</label>
+      <div class="slider-row">
+        <input type="range" id="chatGap" min="6" max="36" step="2" value="18">
+        <span class="val" id="chatGapVal">18px</span>
+      </div>
+    </section>
+
+    <section class="field messenger-section tool-panel" data-tool-panel="bubble" hidden>
+      <label for="bubbleRadius">말풍선 둥글기</label>
+      <div class="slider-row">
+        <input type="range" id="bubbleRadius" min="0" max="28" value="16">
+        <span class="val" id="bubbleRadiusVal">16px</span>
+      </div>
+    </section>
+
     <div class="messenger-actions">
       <button class="btn btn-ghost" id="clearMessagesBtn" type="button">대화 지우기</button>
       <button class="btn messenger-primary" id="downloadChatBtn" type="button">이미지로 저장</button>
@@ -1086,7 +1215,7 @@
     <div class="hint" id="chatStatus" aria-live="polite"></div>
   </aside>
 
-  <main class="stage messenger-stage" id="messengerStage" hidden>
+  <main class="stage messenger-stage" id="messengerStage">
     <div class="preview-toolbar">
       <strong>메신저 미리보기</strong>
       <span class="preview-status">기기에 자동 저장</span>
@@ -1852,10 +1981,72 @@ downloadChatBtn.addEventListener('click', () => {
   });
 });
 
+// ---------- unified tool rail ----------
+const editorTools = [...document.querySelectorAll('.editor-tool')];
+const toolPanels = [...document.querySelectorAll('[data-tool-panel]')];
+const themePresets = [...document.querySelectorAll('.theme-preset')];
+const chatPaper = document.getElementById('chatPaper');
+const chatFontSize = document.getElementById('chatFontSize');
+const chatFontSizeVal = document.getElementById('chatFontSizeVal');
+const chatLineHeight = document.getElementById('chatLineHeight');
+const chatLineHeightVal = document.getElementById('chatLineHeightVal');
+const chatPadding = document.getElementById('chatPadding');
+const chatPaddingVal = document.getElementById('chatPaddingVal');
+const chatGap = document.getElementById('chatGap');
+const chatGapVal = document.getElementById('chatGapVal');
+const bubbleRadius = document.getElementById('bubbleRadius');
+const bubbleRadiusVal = document.getElementById('bubbleRadiusVal');
+
+function openTool(name){
+  if(name === 'save'){
+    downloadChatBtn.click();
+    return;
+  }
+  editorTools.forEach(button => button.classList.toggle('active', button.dataset.tool === name));
+  toolPanels.forEach(panel => {
+    panel.hidden = panel.dataset.toolPanel !== name;
+  });
+}
+
+editorTools.forEach(button => {
+  button.addEventListener('click', () => openTool(button.dataset.tool));
+});
+
+themePresets.forEach(button => {
+  button.addEventListener('click', () => {
+    themePresets.forEach(item => item.classList.toggle('active', item === button));
+    chatPaper.style.background = button.dataset.chatBg;
+    chatPaper.style.setProperty('--chat-accent', button.dataset.chatAccent);
+    chatPaper.style.setProperty('--chat-ink', button.dataset.chatInk);
+  });
+});
+
+chatFontSize.addEventListener('input', () => {
+  chatOutput.style.fontSize = `${chatFontSize.value}px`;
+  chatFontSizeVal.textContent = `${chatFontSize.value}px`;
+});
+chatLineHeight.addEventListener('input', () => {
+  chatOutput.style.lineHeight = chatLineHeight.value;
+  chatLineHeightVal.textContent = chatLineHeight.value;
+});
+chatPadding.addEventListener('input', () => {
+  chatOutput.style.padding = `${chatPadding.value}px`;
+  chatPaddingVal.textContent = `${chatPadding.value}px`;
+});
+chatGap.addEventListener('input', () => {
+  chatOutput.style.gap = `${chatGap.value}px`;
+  chatGapVal.textContent = `${chatGap.value}px`;
+});
+bubbleRadius.addEventListener('input', () => {
+  document.documentElement.style.setProperty('--chat-bubble-radius', `${bubbleRadius.value}px`);
+  bubbleRadiusVal.textContent = `${bubbleRadius.value}px`;
+});
+
 renderMembers();
 renderMessages();
 setBlockType('text');
-setWorkspaceMode(localStorage.getItem('eoe-workspace-mode') || 'log');
+setWorkspaceMode('messenger');
+openTool('members');
 </script>
 </body>
 </html>
