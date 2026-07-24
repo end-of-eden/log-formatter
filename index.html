@@ -4148,11 +4148,15 @@ writerCanvas.addEventListener('paste', async event => {
       [...node.attributes].forEach(attribute => {
         const name = attribute.name.toLowerCase();
         const value = attribute.value.trim();
-        if(name.startsWith('on') || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))){
+        if(name === 'bgcolor'
+          || name.startsWith('on')
+          || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))){
           node.removeAttribute(attribute.name);
         }
       });
       if(node.style){
+        node.style.removeProperty('background');
+        node.style.removeProperty('background-color');
         if(['fixed','sticky'].includes(node.style.position)){
           node.style.position = 'relative';
           ['top','right','bottom','left','inset'].forEach(property => node.style.removeProperty(property));
