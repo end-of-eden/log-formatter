@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LOG FORMATTER — EDEN LOG</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600&family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;600;700&family=Gowun+Batang:wght@400;700&family=Hahmlet:wght@300;400;500;600;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@300;400;500;600;700&family=Song+Myung&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
@@ -1359,18 +1360,24 @@
       <button class="writer-photo" type="button" data-writer-action="image" title="사진 파일 선택" aria-label="사진"><span class="photo-glyph" aria-hidden="true"></span></button>
       <input type="file" id="writerImageInput" accept="image/*" multiple hidden>
       <select id="writerBlockType" aria-label="문단 종류">
-        <option value="p|15">본문2 · 15pt</option>
-        <option value="h1|30">제목1 · 30pt</option>
-        <option value="h2|24">제목2 · 24pt</option>
-        <option value="h3|20">제목3 · 20pt</option>
-        <option value="p|18">본문1 · 18pt</option>
-        <option value="p|13">본문3 · 13pt</option>
+        <option value="p|15" data-short="본문2" data-full="본문2 · 15pt">본문2</option>
+        <option value="h1|30" data-short="제목1" data-full="제목1 · 30pt">제목1</option>
+        <option value="h2|24" data-short="제목2" data-full="제목2 · 24pt">제목2</option>
+        <option value="h3|20" data-short="제목3" data-full="제목3 · 20pt">제목3</option>
+        <option value="p|18" data-short="본문1" data-full="본문1 · 18pt">본문1</option>
+        <option value="p|13" data-short="본문3" data-full="본문3 · 13pt">본문3</option>
       </select>
       <select id="writerFont" aria-label="글꼴">
-        <option value="'Pretendard', sans-serif">기본서체</option>
-        <option value="'Noto Serif KR', serif">Noto Serif</option>
+        <option value="'Pretendard', sans-serif">프리텐다드</option>
+        <option value="'Noto Sans KR', sans-serif">노토 산스</option>
+        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+        <option value="'Gothic A1', sans-serif">고딕 A1</option>
+        <option value="'IBM Plex Sans KR', sans-serif">IBM Plex Sans</option>
+        <option value="'Noto Serif KR', serif">노토 세리프</option>
         <option value="'Nanum Myeongjo', serif">나눔명조</option>
         <option value="'Gowun Batang', serif">고운바탕</option>
+        <option value="'Hahmlet', serif">함렛</option>
+        <option value="'Song Myung', serif">송명</option>
       </select>
       <span class="writer-sep"></span>
       <button class="writer-format strong" type="button" data-command="bold" title="굵게">B</button>
@@ -2590,6 +2597,20 @@ const exportMarginInputs = {
 };
 function queueWriterSave(){}
 
+function setWriterBlockLabels(mode){
+  [...writerBlockType.options].forEach(option => {
+    option.textContent = option.dataset[mode];
+  });
+}
+writerBlockType.addEventListener('pointerdown', () => setWriterBlockLabels('full'));
+writerBlockType.addEventListener('keydown', event => {
+  if(['Enter',' ','ArrowDown','ArrowUp'].includes(event.key)) setWriterBlockLabels('full');
+});
+writerBlockType.addEventListener('click', () => {
+  setTimeout(() => setWriterBlockLabels('short'),0);
+});
+writerBlockType.addEventListener('blur', () => setWriterBlockLabels('short'));
+
 document.querySelectorAll('[data-command]').forEach(button => {
   button.addEventListener('mousedown', event => event.preventDefault());
   button.addEventListener('click', () => {
@@ -2608,6 +2629,7 @@ writerBlockType.addEventListener('change', () => {
   if(block?.nodeType === Node.TEXT_NODE) block = block.parentElement;
   block = block?.closest?.('h1,h2,h3,p,div,blockquote');
   if(block && writerCanvas.contains(block)) block.style.fontSize = `${pointSize}pt`;
+  setWriterBlockLabels('short');
   queueWriterSave();
 });
 writerFont.addEventListener('change', () => {
