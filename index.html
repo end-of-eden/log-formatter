@@ -1010,15 +1010,16 @@
     z-index:100;
     display:flex;
     align-items:center;
-    gap:5px;
-    padding:0 max(18px,calc((100vw - 1080px) / 2));
+    gap:2px;
+    padding:10px 18px 10px max(18px,calc((100vw - 1080px) / 2));
     border-bottom:1px solid #ececef;
     background:rgba(255,255,255,.97);
     backdrop-filter:blur(12px);
-    overflow-x:auto;
+    overflow-x:hidden;
+    flex-wrap:wrap;
   }
   .writer-brand{
-    margin-right:12px;
+    margin-right:6px;
     color:var(--burgundy);
     font:700 13px 'JetBrains Mono',monospace;
     white-space:nowrap;
@@ -1029,7 +1030,7 @@
     border:0;
     background:transparent;
     color:#3c3e42;
-    padding:7px 8px;
+    padding:7px 5px;
     font-size:12px;
   }
   .writer-toolbar button{
@@ -1038,7 +1039,7 @@
   .writer-sep{
     width:1px;
     height:20px;
-    margin:0 4px;
+    margin:0 2px;
     background:#ececef;
   }
   .writer-icon,.writer-format,.writer-photo{
@@ -1055,9 +1056,9 @@
   }
   .writer-icon:hover,.writer-format:hover,.writer-photo:hover{background:#f3f3f5;}
   .writer-photo{
-    min-width:42px;
-    font-size:11px;
-    font-weight:600;
+    min-width:30px;
+    font-size:14px;
+    font-weight:400;
   }
   .writer-format.strong{font-weight:800;}
   .writer-format.italic{font-style:italic;}
@@ -1324,7 +1325,7 @@
   <div class="writer-app" id="writerApp">
     <header class="writer-toolbar" aria-label="글 서식 도구">
       <div class="writer-brand">EOE log</div>
-      <button class="writer-photo" type="button" data-writer-action="image" title="사진 파일 선택">사진</button>
+      <button class="writer-photo" type="button" data-writer-action="image" title="사진 파일 선택" aria-label="사진">🖼</button>
       <input type="file" id="writerImageInput" accept="image/*" multiple hidden>
       <select id="writerBlockType" aria-label="문단 종류">
         <option value="p">본문</option>
@@ -1351,7 +1352,6 @@
       <button class="writer-format align-visual align-justify" type="button" data-command="justifyFull" title="양쪽 정렬"><i></i><i></i><i></i><i></i></button>
       <span class="writer-sep"></span>
       <button class="writer-format" type="button" data-command="formatBlock" data-value="blockquote" title="인용">“ ”</button>
-      <button class="writer-format" type="button" data-writer-action="emoji" title="윈도우 이모티콘">☺</button>
       <div class="writer-insert-wrap">
         <button class="writer-format writer-insert-button" type="button" data-writer-action="insert-menu" title="삽입/수정">삽입/수정</button>
         <div class="writer-insert-menu" id="writerInsertMenu" hidden>
@@ -2637,10 +2637,6 @@ writerImageInput.addEventListener('change', async () => {
     if(file.type.startsWith('image/')) await readWriterImage(file);
   }
   writerImageInput.value = '';
-});
-document.querySelector('[data-writer-action="emoji"]').addEventListener('click', () => {
-  writerCanvas.focus();
-  alert('Windows 이모티콘 창은 Windows 키 + . 를 눌러 열 수 있어.');
 });
 const writerInsertMenu = document.getElementById('writerInsertMenu');
 document.querySelector('[data-writer-action="insert-menu"]').addEventListener('click', event => {
