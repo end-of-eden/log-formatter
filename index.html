@@ -1000,7 +1000,7 @@
   body.writer-active>#bubble{display:none!important;}
   .writer-app{
     min-height:100vh;
-    background:#fff;
+    background:#f1f2f4;
     color:#222;
     font-family:'Pretendard',sans-serif;
   }
@@ -1323,14 +1323,14 @@
     color:#fff;
   }
   .writer-page{
-    width:min(1080px,calc(100% - 36px));
-    margin:46px auto 120px;
+    width:min(900px,calc(100% - 36px));
+    margin:32px auto 120px;
   }
   .writer-category-row{
     display:flex;
     align-items:center;
     gap:12px;
-    margin-bottom:14px;
+    margin-bottom:16px;
   }
   .writer-category-row select{
     width:170px;
@@ -1351,12 +1351,19 @@
     font:12px 'Pretendard',sans-serif;
   }
   #writerLogName::placeholder{color:#a4a7ad;}
+  .writer-preview-sheet{
+    min-height:720px;
+    box-sizing:border-box;
+    padding:64px 72px;
+    background:#fff;
+    box-shadow:0 4px 22px rgba(28,31,36,.08);
+  }
   #writerCanvas{
-    min-height:650px;
-    padding:36px 0 100px;
+    min-height:560px;
+    padding:0;
     outline:none;
     color:#2d2f33;
-    font:15px/2 'Noto Serif KR',serif;
+    font:15px/2.15 'Noto Serif KR',serif;
     white-space:normal;
   }
   #writerCanvas.dragging-image{
@@ -1369,7 +1376,7 @@
     color:#b3b5ba;
     pointer-events:none;
   }
-  #writerCanvas p{margin:0 0 28px;}
+  #writerCanvas p{margin:0 0 32px;}
   #writerCanvas h1{margin:44px 0 20px;line-height:1.35;}
   #writerCanvas h2{margin:40px 0 18px;line-height:1.4;}
   #writerCanvas h3{margin:34px 0 16px;line-height:1.45;}
@@ -1418,7 +1425,15 @@
     text-align:center;
     font-weight:500;
   }
-  .writer-app.night{background:#1f2023;color:#eee;}
+  .writer-preview-log-name{
+    margin-top:38px;
+    text-align:right;
+    color:#8c8f95;
+    font:500 12px/1.5 'Pretendard',sans-serif;
+  }
+  .writer-preview-log-name:empty{display:none;}
+  .writer-app.night{background:#17181b;color:#eee;}
+  .writer-app.night .writer-preview-sheet{background:#1f2023;}
   .writer-app.night .writer-toolbar{background:rgba(31,32,35,.97);border-color:#33353a;}
   .writer-app.night .writer-toolbar select,
   .writer-app.night .writer-format,
@@ -1452,7 +1467,7 @@
     font-family:'Noto Serif KR',serif;
   }
   .writer-export-sheet.dark{background:#1f2023;color:#ece9e1;}
-  .writer-export-body{font:15px/2.15 'Noto Serif KR',serif;}
+  .writer-export-body{min-height:560px;font:15px/2.15 'Noto Serif KR',serif;}
   .writer-export-body p{margin:0 0 32px;}
   .writer-export-body img{max-width:100%;height:auto;}
   .writer-export-body blockquote{margin:28px 0;padding:8px 0 8px 18px;border-left:3px solid var(--gold);}
@@ -1593,7 +1608,10 @@
         </select>
         <input id="writerLogName" type="text" placeholder="오른쪽 아래에 표시할 로그 이름" aria-label="로그 이름">
       </div>
-      <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
+      <section class="writer-preview-sheet" id="writerPreviewSheet" aria-label="저장 이미지 미리보기">
+        <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
+        <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
+      </section>
     </main>
   </div>
 
@@ -2745,6 +2763,8 @@ document.body.classList.add('writer-active');
 const writerApp = document.getElementById('writerApp');
 const writerCanvas = document.getElementById('writerCanvas');
 const writerLogName = document.getElementById('writerLogName');
+const writerPreviewSheet = document.getElementById('writerPreviewSheet');
+const writerPreviewLogName = document.getElementById('writerPreviewLogName');
 const writerCategory = document.getElementById('writerCategory');
 const writerBlockType = document.getElementById('writerBlockType');
 const writerBlockButton = document.getElementById('writerBlockButton');
@@ -2760,6 +2780,11 @@ const exportMarginInputs = {
   left:document.getElementById('exportMarginLeft')
 };
 function queueWriterSave(){}
+function syncWriterPreview(){
+  writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
+  writerPreviewLogName.textContent = writerLogName.value.trim();
+}
+writerLogName.addEventListener('input',syncWriterPreview);
 
 writerBlockButton.addEventListener('mousedown', event => event.preventDefault());
 writerBlockButton.addEventListener('click', () => {
@@ -2984,6 +3009,7 @@ writerMarginButton.addEventListener('click', event => {
 Object.values(exportMarginInputs).forEach(input => {
   input.addEventListener('input', () => {
     input.parentElement.querySelector('span').textContent = `${input.value}px`;
+    syncWriterPreview();
   });
 });
 document.addEventListener('click', event => {
@@ -3087,6 +3113,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
 });
 
 writerCanvas.style.fontFamily = writerFont.value;
+syncWriterPreview();
 writerMode.dispatchEvent(new Event('change'));
 </script>
 </body>
