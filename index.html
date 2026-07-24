@@ -1366,12 +1366,127 @@
     font:12px 'Pretendard',sans-serif;
   }
   #writerLogName::placeholder{color:#a4a7ad;}
-  .writer-member-form,.writer-message-form{
-    display:grid;
-    grid-template-columns:1.1fr 1.1fr 34px 34px auto;
+  .writer-member-form,.writer-message-form{display:grid;align-items:center;gap:8px;}
+  .writer-member-heading{
+    display:flex;
     align-items:center;
-    gap:8px;
+    gap:6px;
+    margin-bottom:10px;
+    color:#30343a;
+    font:700 12px 'Pretendard',sans-serif;
   }
+  .writer-member-count{
+    display:grid;
+    min-width:20px;
+    height:20px;
+    place-items:center;
+    padding:0 6px;
+    border-radius:999px;
+    background:#f0f1f3;
+    color:#969aa1;
+    font:600 10px 'Pretendard',sans-serif;
+  }
+  .writer-member-presets{
+    margin-bottom:10px;
+    border:1px solid #e0e2e5;
+    border-radius:9px;
+    background:#f7f7f8;
+  }
+  .writer-member-presets summary{
+    position:relative;
+    padding:12px 34px 12px 13px;
+    color:#34383f;
+    font:700 11px 'Pretendard',sans-serif;
+    cursor:pointer;
+    list-style:none;
+  }
+  .writer-member-presets summary::-webkit-details-marker{display:none;}
+  .writer-member-presets summary::after{
+    content:"⌄";
+    position:absolute;
+    top:10px;
+    right:13px;
+    color:#9da1a8;
+  }
+  .writer-member-presets[open] summary::after{transform:rotate(180deg);}
+  .writer-preset-body{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:0 12px 12px;
+    color:#8b8f96;
+    font:10px/1.5 'Pretendard',sans-serif;
+  }
+  .writer-json-import{
+    flex:0 0 auto;
+    padding:7px 10px;
+    border:1px solid #d9dce1;
+    border-radius:6px;
+    background:#fff;
+    color:#555a62;
+    font:600 10px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-json-import input{display:none;}
+  .writer-registered-members,
+  .writer-new-member{
+    padding:10px;
+    border:1px solid #e2e3e6;
+    border-radius:9px;
+    background:#fff;
+  }
+  .writer-new-member{margin-top:10px;}
+  .writer-member-section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .writer-member-section-head strong{
+    display:block;
+    color:#34383f;
+    font:700 11px 'Pretendard',sans-serif;
+  }
+  .writer-member-section-head small{
+    display:block;
+    margin-top:2px;
+    color:#aaaeb5;
+    font:9px/1.35 'Pretendard',sans-serif;
+  }
+  .writer-member-section-head .writer-new-member-button{
+    width:auto;
+    height:30px;
+    padding:0 11px;
+    border-radius:8px;
+    background:#41454c;
+    white-space:nowrap;
+  }
+  .writer-chat-menu #writerCloseMemberPanel{
+    width:26px;
+    height:26px;
+    padding:0;
+    border:1px solid #e0e2e5;
+    border-radius:7px;
+    background:#fff;
+    color:#9a9ea6;
+    font-size:15px;
+  }
+  .writer-member-form{
+    grid-template-columns:1fr 72px 72px;
+  }
+  .writer-member-form .writer-member-name-field{grid-column:1 / -1;}
+  .writer-member-form label{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    color:#858990;
+    font:600 9px 'Pretendard',sans-serif;
+  }
+  .writer-member-form .writer-avatar-field{grid-column:1 / -1;}
+  .writer-member-form .writer-avatar-field input{height:auto;padding:6px;}
+  .writer-member-form #writerAddMember{grid-column:1 / -1;}
   .writer-message-form{
     grid-template-columns:1fr 88px 92px;
     margin-top:10px;
@@ -1428,27 +1543,75 @@
   }
   .writer-member-list{
     display:flex;
-    flex-wrap:wrap;
+    max-height:158px;
+    flex-direction:column;
     gap:6px;
-    margin-top:10px;
+    overflow:auto;
+    scrollbar-width:thin;
   }
-  .writer-member-pill{
-    display:inline-flex;
+  .writer-member-row{
+    display:flex;
     align-items:center;
-    gap:6px;
-    padding:4px 8px 4px 4px;
-    border:1px solid #e1e2e5;
-    border-radius:999px;
-    background:#fafafa;
-    color:#555960;
-    font-size:11px;
+    gap:8px;
+    min-height:42px;
+    padding:5px 6px;
+    border-radius:8px;
+    background:#f6f6f7;
+    color:#34383f;
+    font:600 11px 'Pretendard',sans-serif;
   }
-  .writer-member-pill img{
-    width:24px;
-    height:24px;
+  .writer-member-row-avatar{
+    display:grid;
+    width:30px;
+    height:30px;
+    flex:0 0 30px;
+    place-items:center;
     border-radius:50%;
+    overflow:hidden;
+    background:#e6e7e9;
+    color:#777b82;
+    font-size:10px;
+  }
+  .writer-member-row-avatar img{
+    width:100%;
+    height:100%;
     object-fit:cover;
   }
+  .writer-member-row-name{
+    min-width:0;
+    flex:1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .writer-member-color-dot{
+    width:9px;
+    height:9px;
+    flex:0 0 9px;
+    border-radius:2px;
+    background:var(--member-color);
+  }
+  .writer-member-row-actions{display:flex;gap:4px;}
+  .writer-empty-members{
+    padding:20px 8px;
+    color:#a0a4ab;
+    text-align:center;
+    font:10px 'Pretendard',sans-serif;
+  }
+  .writer-chat-menu .writer-member-row-actions button{
+    display:grid;
+    width:26px;
+    height:26px;
+    place-items:center;
+    padding:0;
+    border:1px solid #e0e2e5;
+    border-radius:6px;
+    background:#fff;
+    color:#9a9ea6;
+    font-size:11px;
+  }
+  .writer-chat-menu .writer-member-row-actions button:hover{background:#f0f1f3;color:#555a62;}
+  .writer-chat-menu .writer-member-row-actions button.active{color:#d4a514;}
   .writer-member-avatar-frame{
     width:30px;
     height:30px;
@@ -1463,13 +1626,6 @@
     width:100%;
     height:100%;
     object-fit:cover;
-  }
-  .writer-member-pill button{
-    width:18px;
-    height:18px;
-    padding:0;
-    background:transparent;
-    color:#9a9ea6;
   }
   .writer-inline-chat{
     position:relative;
@@ -1704,6 +1860,15 @@
   .writer-app.night .writer-insert-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-insert-menu button{color:#e7e5df;}
   .writer-app.night .writer-insert-menu button:hover{background:#35373c;}
+  .writer-app.night .writer-member-heading,
+  .writer-app.night .writer-member-section-head strong{color:#ece9e1;}
+  .writer-app.night .writer-member-presets,
+  .writer-app.night .writer-member-row{background:#24262a;border-color:#3b3d43;color:#ece9e1;}
+  .writer-app.night .writer-registered-members,
+  .writer-app.night .writer-new-member{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-json-import,
+  .writer-app.night .writer-chat-menu .writer-member-row-actions button,
+  .writer-app.night .writer-chat-menu #writerCloseMemberPanel{background:#34363b;border-color:#484b51;color:#d8d9dc;}
   .writer-app.night .writer-selection-toolbar{
     border-color:#3b3d43;
     background:#292b2f;
@@ -1755,7 +1920,7 @@
     .writer-brand{display:none;}
     .writer-save{display:none;}
     .writer-page{margin-top:28px;}
-    .writer-member-form,.writer-message-form{grid-template-columns:1fr 1fr;}
+    .writer-message-form{grid-template-columns:1fr 1fr;}
     .writer-inline-chat{width:100%;max-width:100%;}
   }
   @media (max-width:860px){
@@ -1833,14 +1998,34 @@
       <div class="writer-insert-wrap">
         <button class="writer-format writer-insert-button" type="button" data-writer-action="insert-menu" title="말풍선"><span class="writer-bubble-glyph" aria-hidden="true"></span>말풍선</button>
         <div class="writer-insert-menu writer-chat-menu" id="writerInsertMenu" hidden>
-          <div class="writer-member-form">
-            <input type="text" id="writerMemberName" placeholder="멤버 이름">
-            <input type="file" id="writerMemberAvatar" accept="image/*" title="프로필 사진">
-            <input type="color" id="writerMemberNameColor" value="#C0392B" title="이름 색상">
-            <input type="color" id="writerMemberBubbleColor" value="#ECECEF" title="말풍선 색상">
-            <button type="button" id="writerAddMember">추가</button>
-          </div>
-          <div class="writer-member-list" id="writerMemberList"></div>
+          <div class="writer-member-heading">멤버 <span class="writer-member-count" id="writerMemberCount">0</span></div>
+          <details class="writer-member-presets">
+            <summary>⭐ 멤버 프리셋</summary>
+            <div class="writer-preset-body">
+              <span>채팅 발췌기 백업의 멤버를 가져올 수 있어요.</span>
+              <label class="writer-json-import">JSON 불러오기<input type="file" id="writerMemberProjectImport" accept=".json,application/json"></label>
+            </div>
+          </details>
+          <section class="writer-registered-members">
+            <div class="writer-member-section-head">
+              <div><strong>등록된 멤버</strong><small>클릭 없이 발화자 목록에 바로 반영돼요</small></div>
+              <button class="writer-new-member-button" type="button" id="writerNewMemberButton">+ 새 멤버</button>
+            </div>
+            <div class="writer-member-list" id="writerMemberList"></div>
+          </section>
+          <section class="writer-new-member" id="writerNewMemberPanel" hidden>
+            <div class="writer-member-section-head">
+              <div><strong id="writerMemberFormTitle">새 멤버</strong><small>이름만 입력해도 추가할 수 있어요</small></div>
+              <button type="button" id="writerCloseMemberPanel" aria-label="멤버 입력 닫기">×</button>
+            </div>
+            <div class="writer-member-form">
+              <label class="writer-member-name-field">이름<input type="text" id="writerMemberName" placeholder="예) 세븐"></label>
+              <label class="writer-avatar-field">프로필 이미지<input type="file" id="writerMemberAvatar" accept="image/*" title="프로필 사진"></label>
+              <label>이름 색상<input type="color" id="writerMemberNameColor" value="#C0392B" title="이름 색상"></label>
+              <label>말풍선 색상<input type="color" id="writerMemberBubbleColor" value="#ECECEF" title="말풍선 색상"></label>
+              <button type="button" id="writerAddMember">멤버 추가</button>
+            </div>
+          </section>
           <div class="writer-message-form">
             <select id="writerMessageSender" aria-label="발화자"><option value="">멤버를 추가하세요</option></select>
             <select id="writerMessageSide" aria-label="말풍선 위치"><option value="left">왼쪽</option><option value="right">오른쪽</option></select>
@@ -3237,6 +3422,12 @@ const writerMemberAvatar = document.getElementById('writerMemberAvatar');
 const writerMemberNameColor = document.getElementById('writerMemberNameColor');
 const writerMemberBubbleColor = document.getElementById('writerMemberBubbleColor');
 const writerMemberList = document.getElementById('writerMemberList');
+const writerMemberCount = document.getElementById('writerMemberCount');
+const writerMemberProjectImport = document.getElementById('writerMemberProjectImport');
+const writerNewMemberButton = document.getElementById('writerNewMemberButton');
+const writerNewMemberPanel = document.getElementById('writerNewMemberPanel');
+const writerCloseMemberPanel = document.getElementById('writerCloseMemberPanel');
+const writerMemberFormTitle = document.getElementById('writerMemberFormTitle');
 const writerMessageSender = document.getElementById('writerMessageSender');
 const writerMessageSide = document.getElementById('writerMessageSide');
 const writerChatTime = document.getElementById('writerChatTime');
@@ -3246,6 +3437,7 @@ const writerSelectionToolbar = document.getElementById('writerSelectionToolbar')
 const writerSelectionBubble = document.getElementById('writerSelectionBubble');
 let writerBubbleReplaceRange = null;
 let writerMembers = [];
+let writerEditingMemberId = null;
 try{
   writerMembers = JSON.parse(localStorage.getItem('eoe-writer-members') || '[]');
   if(!Array.isArray(writerMembers)) writerMembers = [];
@@ -3253,16 +3445,47 @@ try{
   writerMembers = [];
 }
 
+function saveWriterMembers(){
+  try{
+    localStorage.setItem('eoe-writer-members',JSON.stringify(writerMembers));
+    return true;
+  }catch{
+    alert('멤버 사진 용량이 너무 커서 저장하지 못했어.');
+    return false;
+  }
+}
+
+function resetWriterMemberForm(){
+  writerEditingMemberId = null;
+  writerMemberName.value = '';
+  writerMemberAvatar.value = '';
+  writerMemberNameColor.value = '#C0392B';
+  writerMemberBubbleColor.value = '#ECECEF';
+  writerMemberFormTitle.textContent = '새 멤버';
+  document.getElementById('writerAddMember').textContent = '멤버 추가';
+}
+
 function renderWriterMembers(){
-  writerMemberList.innerHTML = writerMembers.map(member => `
-    <span class="writer-member-pill">
-      ${member.avatar ? `<img src="${escapeAttr(member.avatar)}" alt="">` : ''}
-      <span>${escapeHtml(member.name)}</span>
-      <button type="button" data-writer-member-remove="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 삭제">×</button>
-    </span>`).join('');
+  const sortedMembers = [...writerMembers].sort((a,b) => Number(Boolean(b.favorite)) - Number(Boolean(a.favorite)));
+  writerMemberCount.textContent = writerMembers.length;
+  writerMemberList.innerHTML = sortedMembers.length ? sortedMembers.map(member => `
+    <div class="writer-member-row">
+      <span class="writer-member-row-avatar">
+        ${member.avatar ? `<img src="${escapeAttr(member.avatar)}" alt="">` : escapeHtml(member.name.slice(0,1))}
+      </span>
+      <i class="writer-member-color-dot" style="--member-color:${escapeAttr(member.nameColor || '#C0392B')}"></i>
+      <span class="writer-member-row-name">${escapeHtml(member.name)}</span>
+      <span class="writer-member-row-actions">
+        <button class="${member.favorite ? 'active' : ''}" type="button" data-writer-member-favorite="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 즐겨찾기">★</button>
+        <button type="button" data-writer-member-edit="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 수정">✎</button>
+        <button type="button" data-writer-member-remove="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 삭제">×</button>
+      </span>
+    </div>`).join('') : '<div class="writer-empty-members">등록된 멤버가 없어요.</div>';
+  const selectedMember = writerMessageSender.value;
   writerMessageSender.innerHTML = writerMembers.length
-    ? writerMembers.map(member => `<option value="${escapeAttr(member.id)}">${escapeHtml(member.name)}</option>`).join('')
+    ? sortedMembers.map(member => `<option value="${escapeAttr(member.id)}">${escapeHtml(member.name)}</option>`).join('')
     : '<option value="">멤버를 추가하세요</option>';
+  if(writerMembers.some(member => member.id === selectedMember)) writerMessageSender.value = selectedMember;
 }
 
 function resizeWriterAvatar(file){
@@ -3367,13 +3590,23 @@ writerInsertButton.addEventListener('click', event => {
   prepareWriterBubbleSelection();
 });
 writerInsertMenu.addEventListener('click', event => event.stopPropagation());
+writerNewMemberButton.addEventListener('click', () => {
+  resetWriterMemberForm();
+  writerNewMemberPanel.hidden = false;
+  writerMemberName.focus();
+});
+writerCloseMemberPanel.addEventListener('click', () => {
+  resetWriterMemberForm();
+  writerNewMemberPanel.hidden = true;
+});
 document.getElementById('writerAddMember').addEventListener('click', async () => {
   const name = writerMemberName.value.trim();
   if(!name){
     writerMemberName.focus();
     return;
   }
-  let avatar = '';
+  const editingMember = writerMembers.find(member => member.id === writerEditingMemberId);
+  let avatar = editingMember?.avatar || '';
   if(writerMemberAvatar.files?.[0]){
     try{
       avatar = await resizeWriterAvatar(writerMemberAvatar.files[0]);
@@ -3382,24 +3615,87 @@ document.getElementById('writerAddMember').addEventListener('click', async () =>
       return;
     }
   }
-  writerMembers.push({
-    id:`${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    name,
-    avatar,
-    nameColor:writerMemberNameColor.value,
-    bubbleColor:writerMemberBubbleColor.value
-  });
-  localStorage.setItem('eoe-writer-members',JSON.stringify(writerMembers));
-  writerMemberName.value = '';
-  writerMemberAvatar.value = '';
+  if(editingMember){
+    Object.assign(editingMember,{
+      name,
+      avatar,
+      nameColor:writerMemberNameColor.value,
+      bubbleColor:writerMemberBubbleColor.value
+    });
+  }else{
+    writerMembers.push({
+      id:`${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      name,
+      avatar,
+      nameColor:writerMemberNameColor.value,
+      bubbleColor:writerMemberBubbleColor.value,
+      favorite:false
+    });
+  }
+  if(!saveWriterMembers()) return;
+  resetWriterMemberForm();
+  writerNewMemberPanel.hidden = true;
   renderWriterMembers();
 });
 writerMemberList.addEventListener('click', event => {
-  const button = event.target.closest('[data-writer-member-remove]');
-  if(!button) return;
-  writerMembers = writerMembers.filter(member => member.id !== button.dataset.writerMemberRemove);
-  localStorage.setItem('eoe-writer-members',JSON.stringify(writerMembers));
-  renderWriterMembers();
+  const favoriteButton = event.target.closest('[data-writer-member-favorite]');
+  const editButton = event.target.closest('[data-writer-member-edit]');
+  const removeButton = event.target.closest('[data-writer-member-remove]');
+  if(favoriteButton){
+    const member = writerMembers.find(item => item.id === favoriteButton.dataset.writerMemberFavorite);
+    if(member){
+      member.favorite = !member.favorite;
+      saveWriterMembers();
+      renderWriterMembers();
+    }
+    return;
+  }
+  if(editButton){
+    const member = writerMembers.find(item => item.id === editButton.dataset.writerMemberEdit);
+    if(!member) return;
+    writerEditingMemberId = member.id;
+    writerMemberName.value = member.name;
+    writerMemberNameColor.value = member.nameColor || '#C0392B';
+    writerMemberBubbleColor.value = member.bubbleColor || '#ECECEF';
+    writerMemberFormTitle.textContent = '멤버 수정';
+    document.getElementById('writerAddMember').textContent = '수정 완료';
+    writerNewMemberPanel.hidden = false;
+    writerMemberName.focus();
+    return;
+  }
+  if(removeButton){
+    writerMembers = writerMembers.filter(member => member.id !== removeButton.dataset.writerMemberRemove);
+    saveWriterMembers();
+    renderWriterMembers();
+  }
+});
+writerMemberProjectImport.addEventListener('change', async () => {
+  const file = writerMemberProjectImport.files?.[0];
+  if(!file) return;
+  try{
+    const project = JSON.parse(await file.text());
+    if(!Array.isArray(project.members)) throw new Error('members');
+    project.members.forEach((source,index) => {
+      const name = String(source.name || '').trim();
+      if(!name) return;
+      const existing = writerMembers.find(member => member.name.toLowerCase() === name.toLowerCase());
+      const imported = {
+        id:existing?.id || `import-${Date.now()}-${index}`,
+        name,
+        avatar:typeof source.image === 'string' ? source.image : (existing?.avatar || ''),
+        nameColor:source.color || existing?.nameColor || '#C0392B',
+        bubbleColor:source.bubbleColor || existing?.bubbleColor || '#ECECEF',
+        favorite:existing?.favorite || false
+      };
+      if(existing) Object.assign(existing,imported);
+      else writerMembers.push(imported);
+    });
+    if(saveWriterMembers()) renderWriterMembers();
+  }catch{
+    alert('채팅 발췌기 멤버 백업을 읽지 못했어.');
+  }finally{
+    writerMemberProjectImport.value = '';
+  }
 });
 function mergeAdjacentWriterBubbleGroups(){
   const groups = [...writerCanvas.querySelectorAll('.writer-inline-chat')];
