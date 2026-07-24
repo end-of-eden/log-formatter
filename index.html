@@ -1298,8 +1298,6 @@
       <span class="writer-sep"></span>
       <button class="writer-format" type="button" data-command="formatBlock" data-value="blockquote" title="인용">“ ”</button>
       <button class="writer-format" type="button" data-writer-action="emoji" title="윈도우 이모티콘">☺</button>
-      <button class="writer-format" type="button" data-writer-action="table" title="표">▦</button>
-      <button class="writer-format" type="button" data-writer-action="link" title="링크">⌕</button>
       <div class="writer-insert-wrap">
         <button class="writer-format writer-insert-button" type="button" data-writer-action="insert-menu" title="삽입/수정">삽입/수정</button>
         <div class="writer-insert-menu" id="writerInsertMenu" hidden>
@@ -2515,13 +2513,6 @@ writerMode.addEventListener('change', () => {
   writerApp.classList.toggle('night',writerMode.value === 'night');
 });
 
-document.querySelector('[data-writer-action="link"]').addEventListener('click', () => {
-  const url = prompt('링크 주소를 입력해줘.');
-  if(!url) return;
-  writerCanvas.focus();
-  document.execCommand('createLink',false,url);
-  queueWriterSave();
-});
 const writerImageInput = document.getElementById('writerImageInput');
 let writerSavedRange = null;
 
@@ -2580,11 +2571,6 @@ document.querySelector('[data-writer-action="emoji"]').addEventListener('click',
   writerCanvas.focus();
   alert('Windows 이모티콘 창은 Windows 키 + . 를 눌러 열 수 있어.');
 });
-document.querySelector('[data-writer-action="table"]').addEventListener('click', () => {
-  writerCanvas.focus();
-  document.execCommand('insertHTML',false,'<table><tbody><tr><td>내용</td><td>내용</td></tr><tr><td>내용</td><td>내용</td></tr></tbody></table><p><br></p>');
-});
-
 const writerInsertMenu = document.getElementById('writerInsertMenu');
 document.querySelector('[data-writer-action="insert-menu"]').addEventListener('click', event => {
   event.stopPropagation();
