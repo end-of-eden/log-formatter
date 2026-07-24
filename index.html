@@ -3141,6 +3141,8 @@ const writerMessageSender = document.getElementById('writerMessageSender');
 const writerMessageSide = document.getElementById('writerMessageSide');
 const writerChatTime = document.getElementById('writerChatTime');
 const writerChatText = document.getElementById('writerChatText');
+const writerAddBubble = document.getElementById('writerAddBubble');
+let writerBubbleReplaceRange = null;
 let writerMembers = [];
 try{
   writerMembers = JSON.parse(localStorage.getItem('eoe-writer-members') || '[]');
@@ -3187,6 +3189,26 @@ writerInsertButton.addEventListener('mousedown', () => rememberWriterRange());
 writerInsertButton.addEventListener('click', event => {
   event.stopPropagation();
   writerInsertMenu.hidden = !writerInsertMenu.hidden;
+  if(writerInsertMenu.hidden){
+    writerBubbleReplaceRange = null;
+    return;
+  }
+  if(writerSavedRange
+    && !writerSavedRange.collapsed
+    && writerCanvas.contains(writerSavedRange.commonAncestorContainer)){
+    writerBubbleReplaceRange = writerSavedRange.cloneRange();
+    const selectedText = writerBubbleReplaceRange.toString().trim();
+    if(selectedText){
+      writerChatText.value = selectedText;
+      writerAddBubble.textContent = '선택 문장을 말풍선으로 변환';
+    }else{
+      writerBubbleReplaceRange = null;
+      writerAddBubble.textContent = '말풍선 추가';
+    }
+  }else{
+    writerBubbleReplaceRange = null;
+    writerAddBubble.textContent = '말풍선 추가';
+  }
 });
 writerInsertMenu.addEventListener('click', event => event.stopPropagation());
 document.getElementById('writerAddMember').addEventListener('click', async () => {
@@ -3223,7 +3245,7 @@ writerMemberList.addEventListener('click', event => {
   localStorage.setItem('eoe-writer-members',JSON.stringify(writerMembers));
   renderWriterMembers();
 });
-document.getElementById('writerAddBubble').addEventListener('click', () => {
+writerAddBubble.addEventListener('click', () => {
   const member = writerMembers.find(item => item.id === writerMessageSender.value);
   const text = writerChatText.value.trim();
   if(!member || !text) return;
@@ -3239,7 +3261,8 @@ document.getElementById('writerAddBubble').addEventListener('click', () => {
     !(node.matches('p') && !node.textContent.trim())
   );
   const previousGroup = meaningfulChildren.at(-1);
-  if(previousGroup?.matches('.writer-inline-chat')
+  if(!writerBubbleReplaceRange
+    && previousGroup?.matches('.writer-inline-chat')
     && previousGroup.dataset.memberId === member.id
     && previousGroup.dataset.side === writerMessageSide.value){
     previousGroup.querySelector('.writer-inline-chat-bubbles').insertAdjacentHTML('beforeend',messageHtml);
@@ -3261,6 +3284,8 @@ document.getElementById('writerAddBubble').addEventListener('click', () => {
   restoreWriterRange();
   document.execCommand('insertHTML',false,html);
   writerChatText.value = '';
+  writerBubbleReplaceRange = null;
+  writerAddBubble.textContent = '말풍선 추가';
   rememberWriterRange();
   queueWriterSave();
 });
