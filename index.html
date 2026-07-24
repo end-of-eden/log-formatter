@@ -3635,12 +3635,39 @@ function resizeWriterAvatar(file){
   });
 }
 
+function writerRangeVisibleText(range){
+  const reader = document.createElement('div');
+  reader.style.cssText = 'position:fixed;left:-100000px;top:0;width:600px;white-space:normal;';
+  reader.appendChild(range.cloneContents());
+  document.body.appendChild(reader);
+  const text = reader.innerText.replace(/\u00a0/g,' ').trim();
+  reader.remove();
+  return text;
+}
+
+function focusWriterEditableTail(){
+  let tail = writerCanvas.lastElementChild;
+  if(!tail?.matches('p') || tail.textContent.trim() || tail.querySelector('img,.writer-inline-chat')){
+    tail = document.createElement('p');
+    tail.innerHTML = '<br>';
+    writerCanvas.appendChild(tail);
+  }
+  const range = document.createRange();
+  range.selectNodeContents(tail);
+  range.collapse(true);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  writerSavedRange = range.cloneRange();
+  writerCanvas.focus();
+}
+
 function prepareWriterBubbleSelection(){
   if(writerSavedRange
     && !writerSavedRange.collapsed
     && writerCanvas.contains(writerSavedRange.commonAncestorContainer)){
     writerBubbleReplaceRange = writerSavedRange.cloneRange();
-    const selectedText = writerBubbleReplaceRange.toString().trim();
+    const selectedText = writerRangeVisibleText(writerBubbleReplaceRange);
     if(selectedText){
       writerChatText.value = selectedText;
       writerAddBubble.textContent = '선택 문장 적용';
@@ -3976,7 +4003,7 @@ function insertWriterMessengerSegments(segments){
   }).join('');
   document.execCommand('insertHTML',false,html);
   mergeAdjacentWriterBubbleGroups();
-  rememberWriterRange();
+  focusWriterEditableTail();
   queueWriterSave();
 }
 
@@ -4006,6 +4033,7 @@ writerAddBubble.addEventListener('click', () => {
     && previousGroup.dataset.time === writerChatTime.value){
     previousGroup.querySelector('.writer-inline-chat-bubbles').insertAdjacentHTML('beforeend',messageHtml);
     writerChatText.value = '';
+    focusWriterEditableTail();
     queueWriterSave();
     return;
   }
@@ -4013,10 +4041,10 @@ writerAddBubble.addEventListener('click', () => {
   restoreWriterRange();
   document.execCommand('insertHTML',false,html);
   mergeAdjacentWriterBubbleGroups();
+  focusWriterEditableTail();
   writerChatText.value = '';
   writerBubbleReplaceRange = null;
   writerAddBubble.textContent = style === 'discord' ? '채팅 넣기' : '말풍선 넣기';
-  rememberWriterRange();
   queueWriterSave();
 });
 writerCanvas.addEventListener('click', event => {
