@@ -1057,8 +1057,37 @@
   .writer-icon:hover,.writer-format:hover,.writer-photo:hover{background:#f3f3f5;}
   .writer-photo{
     min-width:30px;
-    font-size:14px;
-    font-weight:400;
+    display:grid;
+    place-items:center;
+  }
+  .photo-glyph{
+    position:relative;
+    display:block;
+    width:15px;
+    height:12px;
+    overflow:hidden;
+    border:1px solid currentColor;
+    border-radius:2px;
+  }
+  .photo-glyph::before{
+    content:"";
+    position:absolute;
+    top:2px;
+    right:2px;
+    width:3px;
+    height:3px;
+    border-radius:50%;
+    background:currentColor;
+  }
+  .photo-glyph::after{
+    content:"";
+    position:absolute;
+    right:2px;
+    bottom:2px;
+    left:2px;
+    height:6px;
+    background:currentColor;
+    clip-path:polygon(0 100%,34% 28%,55% 68%,72% 42%,100% 100%);
   }
   .writer-format.strong{font-weight:800;}
   .writer-format.italic{font-style:italic;}
@@ -1211,8 +1240,9 @@
     pointer-events:none;
   }
   #writerCanvas p{margin:0 0 28px;}
-  #writerCanvas h2{font-size:24px;margin:40px 0 18px;}
-  #writerCanvas h3{font-size:19px;margin:34px 0 16px;}
+  #writerCanvas h1{margin:44px 0 20px;line-height:1.35;}
+  #writerCanvas h2{margin:40px 0 18px;line-height:1.4;}
+  #writerCanvas h3{margin:34px 0 16px;line-height:1.45;}
   #writerCanvas blockquote{
     margin:28px 0;
     padding:8px 0 8px 18px;
@@ -1325,13 +1355,15 @@
   <div class="writer-app" id="writerApp">
     <header class="writer-toolbar" aria-label="글 서식 도구">
       <div class="writer-brand">EOE log</div>
-      <button class="writer-photo" type="button" data-writer-action="image" title="사진 파일 선택" aria-label="사진">🖼</button>
+      <button class="writer-photo" type="button" data-writer-action="image" title="사진 파일 선택" aria-label="사진"><span class="photo-glyph" aria-hidden="true"></span></button>
       <input type="file" id="writerImageInput" accept="image/*" multiple hidden>
       <select id="writerBlockType" aria-label="문단 종류">
-        <option value="p">본문</option>
-        <option value="h2">제목 1</option>
-        <option value="h3">제목 2</option>
-        <option value="blockquote">인용</option>
+        <option value="p|15">본문2 · 15pt</option>
+        <option value="h1|30">제목1 · 30pt</option>
+        <option value="h2|24">제목2 · 24pt</option>
+        <option value="h3|20">제목3 · 20pt</option>
+        <option value="p|18">본문1 · 18pt</option>
+        <option value="p|13">본문3 · 13pt</option>
       </select>
       <select id="writerFont" aria-label="글꼴">
         <option value="'Pretendard', sans-serif">기본서체</option>
@@ -2568,7 +2600,13 @@ document.querySelectorAll('[data-command]').forEach(button => {
 
 writerBlockType.addEventListener('change', () => {
   writerCanvas.focus();
-  document.execCommand('formatBlock',false,writerBlockType.value);
+  const [tagName,pointSize] = writerBlockType.value.split('|');
+  document.execCommand('formatBlock',false,tagName);
+  const selection = window.getSelection();
+  let block = selection?.anchorNode;
+  if(block?.nodeType === Node.TEXT_NODE) block = block.parentElement;
+  block = block?.closest?.('h1,h2,h3,p,div,blockquote');
+  if(block && writerCanvas.contains(block)) block.style.fontSize = `${pointSize}pt`;
   queueWriterSave();
 });
 writerFont.addEventListener('change', () => {
