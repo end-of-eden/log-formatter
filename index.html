@@ -1462,7 +1462,7 @@
     position:relative;
     display:inline-block;
     padding:8px 12px;
-    border:1px solid rgba(0,0,0,.07);
+    border:0;
     border-radius:14px;
     background:var(--writer-bubble-color,#ececef);
     color:#303236;
@@ -1478,19 +1478,17 @@
   .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
     content:"";
     position:absolute;
-    top:9px;
-    left:-9px;
-    width:0;
-    height:0;
-    border-top:7px solid transparent;
-    border-bottom:7px solid transparent;
-    border-right:10px solid var(--writer-bubble-color,#ececef);
+    top:10px;
+    left:-7px;
+    width:10px;
+    height:14px;
+    background:var(--writer-bubble-color,#ececef);
+    clip-path:polygon(100% 0,0 50%,100% 100%);
   }
   .writer-inline-chat.right .writer-inline-chat-bubble-item:first-child .writer-inline-chat-bubble::before{
-    right:-9px;
+    right:-7px;
     left:auto;
-    border-right:0;
-    border-left:10px solid var(--writer-bubble-color,#ececef);
+    clip-path:polygon(0 0,100% 50%,0 100%);
   }
   .writer-inline-chat-time{
     flex:0 0 auto;
@@ -1570,6 +1568,13 @@
     margin:36px 0;
   }
   #writerCanvas img{max-width:100%;height:auto;border-radius:4px;}
+  #writerCanvas .writer-member-avatar,
+  .writer-export-body .writer-member-avatar{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    object-fit:cover;
+  }
   #writerCanvas table{
     width:100%;
     margin:28px 0;
@@ -3280,7 +3285,7 @@ writerAddBubble.addEventListener('click', () => {
         <div class="writer-inline-chat-name" style="color:${escapeAttr(member.nameColor)}">${escapeHtml(member.name)}</div>
         <div class="writer-inline-chat-bubbles">${messageHtml}</div>
       </div>
-    </article><p><br></p>`;
+    </article>`;
   restoreWriterRange();
   document.execCommand('insertHTML',false,html);
   writerChatText.value = '';
