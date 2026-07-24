@@ -1143,20 +1143,101 @@
   .writer-format.italic{font-style:italic;}
   .writer-format.underline{text-decoration:underline;}
   .writer-format.strike{text-decoration:line-through;}
-  .writer-color{
-    width:28px;
-    height:32px;
-    display:grid;
-    place-items:center;
-    color:var(--burgundy);
-    cursor:pointer;
+  .writer-color-wrap{position:relative;display:flex;flex:0 0 auto;}
+  .writer-color-trigger{
     position:relative;
+    width:28px;
+    min-width:28px;
+    height:32px;
+    border:0;
+    border-radius:5px;
+    background:transparent;
+    color:#303236;
+    font:16px Georgia,serif;
+    cursor:pointer;
   }
-  .writer-color input{
+  .writer-color-trigger:hover,.writer-color-trigger[aria-expanded="true"]{background:#f3f3f5;}
+  .writer-color-trigger.fore::after{
+    content:"";
     position:absolute;
-    width:1px;
+    right:4px;
+    bottom:7px;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--writer-fore-color,#333333);
+  }
+  .writer-color-trigger.back span{
+    display:grid;
+    width:17px;
+    height:17px;
+    place-items:center;
+    margin:auto;
+    border:1px solid #8b8e94;
+    background:var(--writer-back-color,transparent);
+    font:13px Georgia,serif;
+  }
+  .writer-color-menu{
+    position:absolute;
+    top:38px;
+    left:0;
+    z-index:320;
+    width:202px;
+    padding:14px 14px 10px;
+    border:1px solid #e0e1e4;
+    border-radius:4px;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(32,34,38,.14);
+  }
+  .writer-color-grid{
+    display:grid;
+    grid-template-columns:repeat(7,20px);
+    gap:6px;
+  }
+  .writer-swatch{
+    width:20px;
+    height:20px;
+    padding:0;
+    border:0;
+    border-radius:50%;
+    background:var(--swatch);
+    cursor:pointer;
+  }
+  .writer-swatch.clear{
+    position:relative;
+    border:1px solid #d7d9dd;
+    background:#fff;
+  }
+  .writer-swatch.clear::after{
+    content:"";
+    position:absolute;
+    top:9px;
+    left:1px;
+    width:17px;
     height:1px;
-    opacity:0;
+    background:#ef6262;
+    transform:rotate(-45deg);
+  }
+  .writer-color-custom{
+    display:grid;
+    grid-template-columns:20px 1fr 34px;
+    align-items:center;
+    gap:8px;
+    margin:12px -14px -10px;
+    padding:10px 14px;
+    border-top:1px solid #ececef;
+  }
+  .writer-color-preview{width:20px;height:20px;border-radius:50%;background:#333;}
+  .writer-color-value{color:#96999f;font:12px 'Pretendard',sans-serif;}
+  .writer-color-input-button{
+    height:24px;
+    padding:0;
+    border:1px solid #dedfe3;
+    border-radius:2px;
+    background:#fff;
+    color:#64676d;
+    font:11px 'Pretendard',sans-serif;
+    cursor:pointer;
   }
   .writer-spacer{flex:1;}
   .align-visual{
@@ -1355,6 +1436,12 @@
   .writer-app.night .writer-block-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-block-menu button{color:#e7e5df;}
   .writer-app.night .writer-block-menu button:hover{background:#34363b;}
+  .writer-app.night .writer-color-trigger{color:#e7e5df;}
+  .writer-app.night .writer-color-trigger:hover,
+  .writer-app.night .writer-color-trigger[aria-expanded="true"]{background:#34363b;}
+  .writer-app.night .writer-color-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-color-custom{border-color:#3b3d43;}
+  .writer-app.night .writer-color-input-button{background:#34363b;border-color:#4a4c52;color:#e7e5df;}
   .writer-app.night .writer-margin-menu label{color:#e7e5df;}
   .writer-export-sheet{
     position:fixed;
@@ -1450,7 +1537,26 @@
       <button class="writer-format italic" type="button" data-command="italic" title="기울임">I</button>
       <button class="writer-format underline" type="button" data-command="underline" title="밑줄">U</button>
       <button class="writer-format strike" type="button" data-command="strikeThrough" title="취소선">T</button>
-      <label class="writer-color" title="글자색">●<input type="color" id="writerColor" value="#C0392B"></label>
+      <div class="writer-color-wrap" data-color-mode="fore">
+        <button class="writer-color-trigger fore" id="writerForeButton" type="button" title="글자색" aria-label="글자색" aria-expanded="false">T</button>
+        <div class="writer-color-menu" id="writerForeMenu" hidden>
+          <div class="writer-color-grid"></div>
+          <div class="writer-color-custom">
+            <i class="writer-color-preview"></i><span class="writer-color-value">#333333</span>
+            <button class="writer-color-input-button" type="button">입력</button>
+          </div>
+        </div>
+      </div>
+      <div class="writer-color-wrap" data-color-mode="back">
+        <button class="writer-color-trigger back" id="writerBackButton" type="button" title="배경색" aria-label="배경색" aria-expanded="false"><span>T</span></button>
+        <div class="writer-color-menu" id="writerBackMenu" hidden>
+          <div class="writer-color-grid"></div>
+          <div class="writer-color-custom">
+            <i class="writer-color-preview"></i><span class="writer-color-value">#FFF2A8</span>
+            <button class="writer-color-input-button" type="button">입력</button>
+          </div>
+        </div>
+      </div>
       <span class="writer-sep"></span>
       <button class="writer-format align-visual align-left" type="button" data-command="justifyLeft" title="왼쪽 정렬"><i></i><i></i><i></i><i></i></button>
       <button class="writer-format align-visual align-center" type="button" data-command="justifyCenter" title="가운데 정렬"><i></i><i></i><i></i><i></i></button>
@@ -2653,7 +2759,6 @@ const writerBlockType = document.getElementById('writerBlockType');
 const writerBlockButton = document.getElementById('writerBlockButton');
 const writerBlockMenu = document.getElementById('writerBlockMenu');
 const writerFont = document.getElementById('writerFont');
-const writerColor = document.getElementById('writerColor');
 const writerMode = document.getElementById('writerMode');
 const writerMarginButton = document.getElementById('writerMarginButton');
 const writerMarginMenu = document.getElementById('writerMarginMenu');
@@ -2711,11 +2816,6 @@ writerFont.addEventListener('change', () => {
   writerCanvas.style.fontFamily = writerFont.value;
   queueWriterSave();
 });
-writerColor.addEventListener('input', () => {
-  writerCanvas.focus();
-  document.execCommand('foreColor',false,writerColor.value);
-  queueWriterSave();
-});
 writerMode.addEventListener('change', () => {
   writerApp.classList.toggle('night',writerMode.value === 'night');
 });
@@ -2743,6 +2843,86 @@ function restoreWriterRange(){
     selection.addRange(range);
   }
 }
+
+const writerPalette = [
+  null,'#000000','#4A4A4A','#777777','#A6A6A6','#D0D0D0','#FFFFFF',
+  '#F12B2B','#FF8200','#F7C600','#00A878','#087FC7','#7D3DB5','#7890A3',
+  '#FF8B8B','#FFB766','#FFE477','#65CE9B','#65B7E8','#B58ADB','#B7C6D2',
+  '#EF5261','#EF6A4C','#78B82A','#159B00','#119DD0','#626BCD','#8FB3BD',
+  '#8F1F38','#994035','#52772C','#166737','#235A91','#553BB3','#3E6570'
+];
+
+function setupWriterColorPicker(mode,buttonId,menuId,initialColor){
+  const trigger = document.getElementById(buttonId);
+  const menu = document.getElementById(menuId);
+  const grid = menu.querySelector('.writer-color-grid');
+  const preview = menu.querySelector('.writer-color-preview');
+  const valueLabel = menu.querySelector('.writer-color-value');
+  let currentColor = initialColor;
+
+  writerPalette.forEach(color => {
+    const swatch = document.createElement('button');
+    swatch.type = 'button';
+    swatch.className = `writer-swatch${color ? '' : ' clear'}`;
+    swatch.title = color || '색상 없음';
+    if(color) swatch.style.setProperty('--swatch',color);
+    swatch.addEventListener('mousedown', event => event.preventDefault());
+    swatch.addEventListener('click', () => applyColor(color));
+    grid.appendChild(swatch);
+  });
+
+  function updatePicker(color){
+    currentColor = color || (mode === 'fore' ? '#333333' : 'transparent');
+    const visibleColor = currentColor === 'transparent' ? '#FFFFFF' : currentColor;
+    preview.style.background = visibleColor;
+    valueLabel.textContent = currentColor === 'transparent' ? '색상 없음' : currentColor.toUpperCase();
+    trigger.style.setProperty(mode === 'fore' ? '--writer-fore-color' : '--writer-back-color',currentColor);
+  }
+
+  function applyColor(color){
+    restoreWriterRange();
+    const appliedColor = color || (mode === 'fore' ? '#333333' : 'transparent');
+    document.execCommand(mode === 'fore' ? 'foreColor' : 'hiliteColor',false,appliedColor);
+    updatePicker(color);
+    rememberWriterRange();
+    menu.hidden = true;
+    trigger.setAttribute('aria-expanded','false');
+    queueWriterSave();
+  }
+
+  trigger.addEventListener('mousedown', event => {
+    event.preventDefault();
+    rememberWriterRange();
+  });
+  trigger.addEventListener('click', event => {
+    event.stopPropagation();
+    document.querySelectorAll('.writer-color-menu').forEach(other => {
+      if(other !== menu) other.hidden = true;
+    });
+    menu.hidden = !menu.hidden;
+    trigger.setAttribute('aria-expanded',String(!menu.hidden));
+  });
+  menu.addEventListener('click', event => event.stopPropagation());
+  menu.querySelector('.writer-color-input-button').addEventListener('mousedown', event => event.preventDefault());
+  menu.querySelector('.writer-color-input-button').addEventListener('click', () => {
+    const entered = prompt('색상 코드를 입력해줘.',currentColor === 'transparent' ? '#FFFFFF' : currentColor);
+    if(!entered) return;
+    const normalized = entered.trim().toUpperCase();
+    if(!/^#[0-9A-F]{6}$/.test(normalized)){
+      alert('색상 코드는 #333333 형식으로 입력해줘.');
+      return;
+    }
+    applyColor(normalized);
+  });
+  updatePicker(initialColor);
+}
+
+setupWriterColorPicker('fore','writerForeButton','writerForeMenu','#333333');
+setupWriterColorPicker('back','writerBackButton','writerBackMenu','#FFF2A8');
+document.addEventListener('click', () => {
+  document.querySelectorAll('.writer-color-menu').forEach(menu => menu.hidden = true);
+  document.querySelectorAll('.writer-color-trigger').forEach(button => button.setAttribute('aria-expanded','false'));
+});
 
 function insertWriterImageSource(source){
   restoreWriterRange();
