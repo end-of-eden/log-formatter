@@ -2230,11 +2230,9 @@
     #writerImageSave{display:none;}
     #writerMobileImageSave{
       display:block;
-      position:fixed;
-      right:16px;
-      bottom:calc(16px + env(safe-area-inset-bottom,0px));
-      z-index:500;
+      position:static;
       min-width:108px;
+      margin:14px 16px calc(24px + env(safe-area-inset-bottom,0px)) auto;
       padding:12px 18px;
       border-radius:999px;
       box-shadow:0 8px 24px rgba(80,24,18,.28);
@@ -2247,7 +2245,7 @@
       margin-left:28px!important;
       margin-right:28px!important;
     }
-    .writer-page{margin-top:28px;margin-bottom:160px;}
+    .writer-page{margin-top:28px;margin-bottom:0;}
     .writer-inline-chat{width:100%;max-width:100%;}
   }
   @media (max-width:860px){
@@ -2399,7 +2397,6 @@
       </select>
       <button class="writer-save primary" id="writerImageSave" type="button">이미지 저장</button>
     </header>
-    <button class="writer-save primary" id="writerMobileImageSave" type="button">이미지 저장</button>
 
     <main class="writer-page">
       <div class="writer-category-row">
@@ -2417,6 +2414,7 @@
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
     </main>
+    <button class="writer-save primary" id="writerMobileImageSave" type="button">이미지 저장</button>
     <div class="writer-selection-toolbar" id="writerSelectionToolbar" hidden>
       <button type="button" id="writerSelectionBubble">
         <span class="writer-bubble-glyph" aria-hidden="true"></span>
