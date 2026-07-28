@@ -4798,20 +4798,6 @@ function saveWriterImage(event){
     const blob = await new Promise((resolve,reject) => {
       balancedCanvas.toBlob(result => result ? resolve(result) : reject(new Error('이미지 변환 실패')),'image/png');
     });
-    const userAgent = navigator.userAgent || '';
-    const platform = navigator.userAgentData?.platform || navigator.platform || '';
-    const windows = /Windows NT/i.test(userAgent) || /Windows|Win32|Win64/i.test(platform);
-    const ipadOS = /Macintosh/i.test(userAgent) && navigator.maxTouchPoints > 1;
-    const mobile = !windows && (/Android|iPhone|iPad|iPod/i.test(userAgent) || ipadOS);
-    const file = typeof File === 'function' ? new File([blob],fileName,{type:'image/png'}) : null;
-    if(mobile && file && navigator.share && navigator.canShare?.({files:[file]})){
-      try{
-        await navigator.share({files:[file],title:logName || 'EOE log'});
-        return;
-      }catch(error){
-        if(error?.name === 'AbortError') return;
-      }
-    }
     const link = document.createElement('a');
     const objectUrl = URL.createObjectURL(blob);
     link.download = fileName;
