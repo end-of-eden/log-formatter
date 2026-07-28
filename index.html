@@ -2225,8 +2225,21 @@
   @media (max-width:900px){
     .writer-toolbar{padding:0 10px;}
     .writer-brand{display:none;}
-    .writer-save{display:none;}
-    .writer-page{margin-top:28px;}
+    #writerHtmlSave{display:none;}
+    #writerImageSave{
+      display:block;
+      position:fixed;
+      right:16px;
+      bottom:calc(16px + env(safe-area-inset-bottom,0px));
+      z-index:500;
+      min-width:108px;
+      padding:12px 18px;
+      border-radius:999px;
+      box-shadow:0 8px 24px rgba(80,24,18,.28);
+      touch-action:manipulation;
+    }
+    #writerImageSave:disabled{opacity:.65;cursor:wait;}
+    .writer-page{margin-top:28px;margin-bottom:160px;}
     .writer-inline-chat{width:100%;max-width:100%;}
   }
   @media (max-width:860px){
@@ -4729,8 +4742,13 @@ function cropWriterCanvasVertical(canvas,backgroundColor,topMargin,bottomMargin,
 }
 
 document.getElementById('writerImageSave').addEventListener('click', () => {
+  const saveButton = document.getElementById('writerImageSave');
+  const originalLabel = saveButton.textContent;
+  saveButton.disabled = true;
+  saveButton.textContent = '저장 중…';
   const dark = writerApp.classList.contains('night');
   const logName = writerLogName.value.trim();
+  const fileName = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
   const cleanCanvas = writerCanvas.cloneNode(true);
   cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
   normalizeWriterExportHighlights(cleanCanvas);
@@ -4757,7 +4775,7 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
     useCORS:true,
     width:sheet.scrollWidth,
     height:sheet.scrollHeight
-  })).then(canvas => {
+  })).then(async canvas => {
     const balancedCanvas = cropWriterCanvasVertical(
       canvas,
       exportBackground,
@@ -4765,11 +4783,30 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
       Number(exportMarginInputs.bottom.value),
       exportScale
     );
+    const blob = await new Promise((resolve,reject) => {
+      balancedCanvas.toBlob(result => result ? resolve(result) : reject(new Error('이미지 변환 실패')),'image/png');
+    });
+    const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const file = typeof File === 'function' ? new File([blob],fileName,{type:'image/png'}) : null;
+    if(mobile && file && navigator.share && navigator.canShare?.({files:[file]})){
+      try{
+        await navigator.share({files:[file],title:logName || 'EOE log'});
+        return;
+      }catch(error){
+        if(error?.name === 'AbortError') return;
+      }
+    }
     const link = document.createElement('a');
-    link.download = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
-    link.href = balancedCanvas.toDataURL('image/png');
+    const objectUrl = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.href = objectUrl;
     link.click();
-  }).catch(() => alert('이미지 저장에 실패했습니다. 삽입한 사진 주소 확인이 필요합니다.')).finally(() => sheet.remove());
+    setTimeout(() => URL.revokeObjectURL(objectUrl),1000);
+  }).catch(() => alert('이미지 저장에 실패했습니다. 삽입한 사진 주소 확인이 필요합니다.')).finally(() => {
+    sheet.remove();
+    saveButton.disabled = false;
+    saveButton.textContent = originalLabel;
+  });
 });
 
 writerCanvas.style.fontFamily = writerFont.value;
