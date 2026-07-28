@@ -1924,6 +1924,10 @@
   }
   .writer-inline-chat.discord .writer-inline-chat-bubble::before,
   .writer-inline-chat.discord .writer-inline-chat-bubble::after{display:none;}
+  .writer-preview-sheet[data-export-preset="mobile"] .writer-inline-chat-bubble,
+  .writer-export-sheet.mobile .writer-inline-chat-bubble{
+    font-size:10pt;
+  }
   .writer-inline-chat-avatar-fallback{
     display:grid;
     place-items:center;
@@ -3601,6 +3605,7 @@ function syncWriterToolbarAlignment(){
 }
 function syncWriterPreview(){
   const mobile = writerExportPreset.value === 'mobile';
+  writerPreviewSheet.dataset.exportPreset = writerExportPreset.value;
   const left = exportMarginInputs.left.value;
   const right = exportMarginInputs.right.value;
   writerPreviewSheet.style.padding = mobile
@@ -4766,7 +4771,7 @@ function saveWriterImage(event){
     cleanCanvas.lastElementChild.remove();
   }
   const sheet = document.createElement('article');
-  sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
+  sheet.className = `writer-export-sheet${dark ? ' dark' : ''}${writerExportPreset.value === 'mobile' ? ' mobile' : ''}`;
   sheet.style.width = writerExportPreset.value === 'mobile' ? '600px' : '900px';
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   sheet.innerHTML = `
