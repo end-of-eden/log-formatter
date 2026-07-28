@@ -1412,6 +1412,7 @@
     background:var(--burgundy);
     color:#fff;
   }
+  #writerMobileImageSave{display:none;}
   .writer-page{
     width:min(900px,calc(100% - 36px));
     margin:32px auto 120px;
@@ -2226,7 +2227,8 @@
     .writer-toolbar{padding:0 10px;}
     .writer-brand{display:none;}
     #writerHtmlSave{display:none;}
-    #writerImageSave{
+    #writerImageSave{display:none;}
+    #writerMobileImageSave{
       display:block;
       position:fixed;
       right:16px;
@@ -2238,7 +2240,13 @@
       box-shadow:0 8px 24px rgba(80,24,18,.28);
       touch-action:manipulation;
     }
-    #writerImageSave:disabled{opacity:.65;cursor:wait;}
+    #writerMobileImageSave:disabled{opacity:.65;cursor:wait;}
+    #writerCanvas,
+    .writer-preview-log-name{
+      width:auto!important;
+      margin-left:28px!important;
+      margin-right:28px!important;
+    }
     .writer-page{margin-top:28px;margin-bottom:160px;}
     .writer-inline-chat{width:100%;max-width:100%;}
   }
@@ -2391,6 +2399,7 @@
       </select>
       <button class="writer-save primary" id="writerImageSave" type="button">이미지 저장</button>
     </header>
+    <button class="writer-save primary" id="writerMobileImageSave" type="button">이미지 저장</button>
 
     <main class="writer-page">
       <div class="writer-category-row">
@@ -4741,8 +4750,8 @@ function cropWriterCanvasVertical(canvas,backgroundColor,topMargin,bottomMargin,
   return cropped;
 }
 
-document.getElementById('writerImageSave').addEventListener('click', () => {
-  const saveButton = document.getElementById('writerImageSave');
+function saveWriterImage(event){
+  const saveButton = event.currentTarget;
   const originalLabel = saveButton.textContent;
   saveButton.disabled = true;
   saveButton.textContent = '저장 중…';
@@ -4807,7 +4816,9 @@ document.getElementById('writerImageSave').addEventListener('click', () => {
     saveButton.disabled = false;
     saveButton.textContent = originalLabel;
   });
-});
+}
+document.getElementById('writerImageSave').addEventListener('click',saveWriterImage);
+document.getElementById('writerMobileImageSave').addEventListener('click',saveWriterImage);
 
 writerCanvas.style.fontFamily = writerFont.value;
 writerExportPreset.dispatchEvent(new Event('change'));
