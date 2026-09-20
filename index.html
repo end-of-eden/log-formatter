@@ -4753,6 +4753,22 @@ function cropWriterCanvasVertical(canvas,backgroundColor,topMargin,bottomMargin,
   return cropped;
 }
 
+function copyWriterExportTypography(source,target){
+  const properties = [
+    'font-family','font-size','font-weight','font-style','font-stretch',
+    'font-variant','font-feature-settings','font-variation-settings',
+    'line-height','letter-spacing','word-spacing','text-align','text-transform'
+  ];
+  const sources = [source,...source.querySelectorAll('*')];
+  const targets = [target,...target.querySelectorAll('*')];
+  sources.forEach((element,index) => {
+    const computed = getComputedStyle(element);
+    properties.forEach(property => {
+      targets[index].style.setProperty(property,computed.getPropertyValue(property));
+    });
+  });
+}
+
 function saveWriterImage(event){
   const saveButton = event.currentTarget;
   const originalLabel = saveButton.textContent;
@@ -4762,6 +4778,7 @@ function saveWriterImage(event){
   const logName = writerLogName.value.trim();
   const fileName = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
   const cleanCanvas = writerCanvas.cloneNode(true);
+  copyWriterExportTypography(writerCanvas,cleanCanvas);
   cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
   normalizeWriterExportHighlights(cleanCanvas);
   while(cleanCanvas.lastElementChild
@@ -4777,7 +4794,14 @@ function saveWriterImage(event){
   sheet.innerHTML = `
     <div class="writer-export-body">${cleanCanvas.innerHTML}</div>
     ${logName ? `<div class="writer-export-log-name">${escapeHtml(logName)}</div>` : ''}`;
-  sheet.querySelector('.writer-export-body').style.fontFamily = writerFont.value;
+  const exportBody = sheet.querySelector('.writer-export-body');
+  // Preserve the editor's actual typography, not the last toolbar selection.
+  // Layout dimensions remain controlled by the export preset.
+  for(const property of cleanCanvas.style){
+    if(property.startsWith('font-') || ['line-height','letter-spacing','word-spacing','text-align','text-transform'].includes(property)){
+      exportBody.style.setProperty(property,cleanCanvas.style.getPropertyValue(property));
+    }
+  }
   document.body.appendChild(sheet);
   const exportBackground = dark ? '#17181B' : '#FFFFFF';
   const exportScale = 2;
