@@ -4451,6 +4451,44 @@ writerChatFontSize.addEventListener('change', () => {
   writerSelectedChatGroup.style.setProperty('--writer-message-font-size',`${safeFontSize}px`);
   queueWriterSave();
 });
+function insertWriterBubbleHtml(html){
+  const savedRange = writerBubbleReplaceRange || writerSavedRange;
+  if(savedRange && !writerCanvas.contains(savedRange.commonAncestorContainer)) return false;
+  const template = document.createElement('template');
+  template.innerHTML = html.trim();
+  const group = template.content.firstElementChild;
+  if(!group?.matches('.writer-inline-chat')) return false;
+  const backup = writerCanvas.innerHTML;
+  try{
+    const range = savedRange ? savedRange.cloneRange() : document.createRange();
+    if(!savedRange){
+      range.selectNodeContents(writerCanvas);
+      range.collapse(false);
+    }
+    // Insert through the DOM: insertHTML can discard non-editable chat blocks.
+    range.deleteContents();
+    range.insertNode(group);
+    // Lift the block out of paragraphs/inline formatting, preserving both sides.
+    while(group.parentNode !== writerCanvas){
+      const parent = group.parentNode;
+      const after = parent.cloneNode(false);
+      after.removeAttribute('id');
+      while(group.nextSibling) after.appendChild(group.nextSibling);
+      parent.after(group);
+      if(after.hasChildNodes()) group.after(after);
+      if(!parent.hasChildNodes()) parent.remove();
+    }
+    if(!writerCanvas.contains(group) || !group.querySelector('.writer-inline-chat-bubble')){
+      throw new Error('Chat insertion failed');
+    }
+    return true;
+  }catch(error){
+    writerCanvas.innerHTML = backup;
+    writerSavedRange = null;
+    writerBubbleReplaceRange = null;
+    return false;
+  }
+}
 writerAddBubble.addEventListener('click', () => {
   const member = writerMembers.find(item => item.id === writerMessageSender.value);
   const text = writerChatText.value.trim();
@@ -4492,8 +4530,10 @@ writerAddBubble.addEventListener('click', () => {
     time:writerChatTime.value,
     fontSize:writerChatFontSize.value
   });
-  restoreWriterRange();
-  document.execCommand('insertHTML',false,html);
+  if(!insertWriterBubbleHtml(html)){
+    alert('말풍선을 적용하지 못했습니다. 원문과 입력한 대사는 유지됩니다. 적용할 문장을 다시 선택해 주세요.');
+    return;
+  }
   mergeAdjacentWriterBubbleGroups();
   focusWriterEditableTail();
   writerChatText.value = '';
