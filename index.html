@@ -2009,7 +2009,7 @@
     padding:0;
     outline:none;
     color:#2d2f33;
-    font:10pt/1.6 'Noto Serif KR',serif;
+    font:10pt/1.6 'Pretendard',sans-serif;
     font-weight:300;
     text-align:justify;
     white-space:normal;
@@ -2210,7 +2210,7 @@
     font-family:'Noto Serif KR',serif;
   }
   .writer-export-sheet.dark{--writer-sheet-bg:#17181b;background:#17181b;color:#ece9e1;}
-  .writer-export-body{font:300 10pt/1.6 'Noto Serif KR',serif;text-align:justify;}
+  .writer-export-body{font:300 10pt/1.6 'Pretendard',sans-serif;text-align:justify;}
   .writer-export-body > :first-child{margin-top:0!important;}
   .writer-export-body p{margin:0 0 16px;}
   .writer-export-body > :last-child{margin-bottom:0!important;}
@@ -3704,8 +3704,17 @@ function applyWriterFontToSelection(fontFamily){
   if(!selection?.rangeCount) return;
   const range = selection.getRangeAt(0);
   if(range.collapsed){
-    document.execCommand('styleWithCSS',false,true);
-    document.execCommand('fontName',false,fontFamily);
+    // Without a text selection, the font menu changes the entire document.
+    writerCanvas.style.fontFamily = fontFamily;
+    writerCanvas.querySelectorAll('[style]').forEach(element => {
+      element.style.removeProperty('font-family');
+    });
+    writerCanvas.querySelectorAll('font[face]').forEach(element => {
+      element.removeAttribute('face');
+    });
+    writerCanvas.querySelectorAll('.writer-inline-chat').forEach(element => {
+      element.style.fontFamily = fontFamily;
+    });
     return;
   }
 
