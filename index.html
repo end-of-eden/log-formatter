@@ -3638,7 +3638,52 @@ writerExportPreset.addEventListener('change', () => {
 });
 window.addEventListener('resize',syncWriterToolbarAlignment,{passive:true});
 
+function applyWriterBubbleSelectionFormat(command,value){
+  const selection = window.getSelection();
+  const liveRange = selection?.rangeCount ? selection.getRangeAt(0) : null;
+  const range = liveRange && !liveRange.collapsed && writerCanvas.contains(liveRange.commonAncestorContainer)
+    ? liveRange.cloneRange() : writerSavedRange?.cloneRange();
+  if(!range || range.collapsed || !writerCanvas.contains(range.commonAncestorContainer)) return false;
+  const properties = {fontName:'fontFamily',fontSize:'fontSize',foreColor:'color',hiliteColor:'backgroundColor',
+    bold:'fontWeight',italic:'fontStyle',underline:'textDecorationLine',strikeThrough:'textDecorationLine'};
+  if(!properties[command]) return false;
+  const nodes = [];
+  const walker = document.createTreeWalker(writerCanvas,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+    const node = walker.currentNode;
+    if(!range.intersectsNode(node) || !node.data.length) continue;
+    const start = node === range.startContainer ? range.startOffset : 0;
+    const end = node === range.endContainer ? range.endOffset : node.length;
+    if(end > start) nodes.push({node,start,end});
+  }
+  if(!nodes.some(({node}) => node.parentElement.closest('.writer-inline-chat-bubble'))) return false;
+  const first = getComputedStyle(nodes[0].node.parentElement);
+  if(command === 'bold') value = Number(first.fontWeight) >= 600 ? '400' : '700';
+  if(command === 'italic') value = first.fontStyle === 'italic' ? 'normal' : 'italic';
+  if(command === 'underline') value = 'underline';
+  if(command === 'strikeThrough') value = 'line-through';
+  const spans = [];
+  [...nodes].reverse().forEach(({node,start,end}) => {
+    const selected = start ? node.splitText(start) : node;
+    if(end - start < selected.length) selected.splitText(end - start);
+    const span = document.createElement('span');
+    span.style[properties[command]] = value;
+    selected.before(span);
+    span.appendChild(selected);
+    spans.unshift(span);
+  });
+  const applied = document.createRange();
+  applied.setStartBefore(spans[0]);
+  applied.setEndAfter(spans.at(-1));
+  selection.removeAllRanges();
+  selection.addRange(applied);
+  writerSavedRange = applied.cloneRange();
+  queueWriterSave();
+  return true;
+}
+
 function applyWriterBubbleFormat(command,value){
+  if(applyWriterBubbleSelectionFormat(command,value)) return true;
   const item = writerSelectedBubbleItem?.isConnected ? writerSelectedBubbleItem : null;
   const group = writerSelectedChatGroup?.isConnected ? writerSelectedChatGroup : null;
   const bubbles = item ? [...item.querySelectorAll('.writer-inline-chat-bubble')]
@@ -3685,6 +3730,7 @@ document.querySelectorAll('[data-command]').forEach(button => {
   });
 });
 
+writerFontSize.addEventListener('mousedown',rememberWriterRange);
 writerFontSize.addEventListener('change', () => {
   const pointSize = parseInt(writerFontSize.value,10);
   if(applyWriterBubbleFormat('fontSize',`${pointSize}pt`)) return;
@@ -4606,6 +4652,7 @@ writerAddBubble.addEventListener('click', () => {
 });
 writerCanvas.addEventListener('click', event => {
   const deleteButton = event.target.closest('.writer-bubble-delete');
+  rememberWriterRange();
   const selectedGroup = event.target.closest('.writer-inline-chat');
   const selectedItem = deleteButton ? null : event.target.closest('.writer-inline-chat-bubble-item');
   writerCanvas.querySelectorAll('.writer-inline-chat.font-size-selected').forEach(group => {
@@ -4615,6 +4662,8 @@ writerCanvas.addEventListener('click', event => {
   writerSelectedBubbleItem = selectedItem || null;
   if(writerSelectedChatGroup){
     writerSelectedChatGroup.classList.add('font-size-selected');
+    // Keep dragged text selected instead of opening the whole-bubble editor.
+    if(!deleteButton && writerSavedRange && !writerSavedRange.collapsed) return;
     if(writerMembers.some(member => member.id === writerSelectedChatGroup.dataset.memberId)){
       writerMessageSender.value = writerSelectedChatGroup.dataset.memberId;
     }
