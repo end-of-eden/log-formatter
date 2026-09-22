@@ -1414,7 +1414,7 @@
   }
   #writerMobileImageSave{display:none;}
   .writer-page{
-    width:min(900px,calc(100% - 36px));
+    width:min(600px,calc(100% - 36px));
     margin:32px auto 120px;
   }
   .writer-category-row{
@@ -1926,8 +1926,8 @@
   }
   .writer-inline-chat.discord .writer-inline-chat-bubble::before,
   .writer-inline-chat.discord .writer-inline-chat-bubble::after{display:none;}
-  .writer-preview-sheet[data-export-preset="mobile"] .writer-inline-chat-bubble,
-  .writer-export-sheet.mobile .writer-inline-chat-bubble{
+  .writer-preview-sheet .writer-inline-chat-bubble,
+  .writer-export-sheet .writer-inline-chat-bubble{
     font-size:10pt;
   }
   .writer-inline-chat-avatar-fallback{
@@ -1968,44 +1968,6 @@
     padding:64px 72px;
     background:#fff;
     box-shadow:0 4px 22px rgba(28,31,36,.08);
-  }
-  .writer-output-guides{
-    position:absolute;
-    inset:0;
-    z-index:20;
-    pointer-events:none;
-  }
-  .writer-output-guides::before,
-  .writer-output-guides::after{
-    content:"";
-    position:absolute;
-    top:0;
-    bottom:0;
-    border-left:1px dashed rgba(192,57,43,.42);
-  }
-  .writer-output-guides::before{left:calc(50% - 300px);}
-  .writer-output-guides::after{right:calc(50% - 300px);}
-  .writer-output-guides span{
-    position:sticky;
-    top:82px;
-    display:block;
-    width:max-content;
-    margin:10px 0 0 10px;
-    padding:4px 8px;
-    border:1px solid rgba(192,57,43,.18);
-    border-radius:999px;
-    background:rgba(255,255,255,.9);
-    color:rgba(192,57,43,.72);
-    font:600 9px 'Pretendard',sans-serif;
-  }
-  @media (max-width:940px){
-    .writer-output-guides{display:none;}
-    #writerCanvas{
-      width:100%!important;
-      max-width:100%;
-      margin-left:0!important;
-      margin-right:0!important;
-    }
   }
   #writerCanvas{
     padding:0;
@@ -2246,12 +2208,7 @@
       touch-action:manipulation;
     }
     #writerMobileImageSave:disabled{opacity:.65;cursor:wait;}
-    #writerCanvas,
-    .writer-preview-log-name{
-      width:auto!important;
-      margin-left:28px!important;
-      margin-right:28px!important;
-    }
+
     .writer-page{margin-top:28px;margin-bottom:0;}
     .writer-inline-chat{width:100%;max-width:100%;}
   }
@@ -2399,10 +2356,6 @@
         <option value="default">기본모드</option>
         <option value="night">다크모드</option>
       </select>
-      <select id="writerExportPreset" aria-label="이미지 출력 크기" title="이미지 출력 크기">
-        <option value="mobile" selected>모바일 · 1200px</option>
-        <option value="archive">고화질 · 1800px</option>
-      </select>
       <button class="writer-save primary" id="writerImageSave" type="button">이미지 저장</button>
     </header>
 
@@ -2415,9 +2368,6 @@
         <input id="writerLogName" type="text" placeholder="왼쪽 아래에 표시할 로그 이름" aria-label="로그 이름">
       </div>
       <section class="writer-preview-sheet" id="writerPreviewSheet" aria-label="저장 이미지 미리보기">
-        <div class="writer-output-guides" id="writerOutputGuides" hidden aria-hidden="true">
-          <span>모바일 출력 경계 · 1200px</span>
-        </div>
         <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
@@ -3583,13 +3533,11 @@ const writerToolbar = document.querySelector('.writer-toolbar');
 const writerCanvas = document.getElementById('writerCanvas');
 const writerLogName = document.getElementById('writerLogName');
 const writerPreviewSheet = document.getElementById('writerPreviewSheet');
-const writerOutputGuides = document.getElementById('writerOutputGuides');
 const writerPreviewLogName = document.getElementById('writerPreviewLogName');
 const writerCategory = document.getElementById('writerCategory');
 const writerFontSize = document.getElementById('writerFontSize');
 const writerFont = document.getElementById('writerFont');
 const writerMode = document.getElementById('writerMode');
-const writerExportPreset = document.getElementById('writerExportPreset');
 const writerMarginButton = document.getElementById('writerMarginButton');
 const writerMarginMenu = document.getElementById('writerMarginMenu');
 const writerClearAll = document.getElementById('writerClearAll');
@@ -3608,34 +3556,11 @@ function syncWriterToolbarAlignment(){
   writerToolbar.style.paddingLeft = `${Math.max(18,writerPreviewSheet.getBoundingClientRect().left)}px`;
 }
 function syncWriterPreview(){
-  const mobile = writerExportPreset.value === 'mobile';
-  writerPreviewSheet.dataset.exportPreset = writerExportPreset.value;
-  const left = exportMarginInputs.left.value;
-  const right = exportMarginInputs.right.value;
-  writerPreviewSheet.style.padding = mobile
-    ? `${exportMarginInputs.top.value}px 0 ${exportMarginInputs.bottom.value}px`
-    : `${exportMarginInputs.top.value}px ${right}px ${exportMarginInputs.bottom.value}px ${left}px`;
-  [writerCanvas,writerPreviewLogName].forEach(element => {
-    element.style.width = mobile ? `calc(600px - ${left}px - ${right}px)` : '';
-    element.style.marginLeft = mobile ? `calc(50% - 300px + ${left}px)` : '';
-    element.style.marginRight = mobile ? '0' : '';
-  });
+  writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   writerPreviewLogName.textContent = writerLogName.value.trim();
   requestAnimationFrame(syncWriterToolbarAlignment);
 }
 writerLogName.addEventListener('input',syncWriterPreview);
-writerExportPreset.addEventListener('change', () => {
-  const mobile = writerExportPreset.value === 'mobile';
-  writerOutputGuides.hidden = !mobile;
-  exportMarginInputs.top.value = mobile ? '60' : '30';
-  exportMarginInputs.right.value = mobile ? '40' : '160';
-  exportMarginInputs.bottom.value = mobile ? '60' : '30';
-  exportMarginInputs.left.value = mobile ? '40' : '160';
-  Object.values(exportMarginInputs).forEach(input => {
-    input.parentElement.querySelector('span').textContent = `${input.value}px`;
-  });
-  syncWriterPreview();
-});
 window.addEventListener('resize',syncWriterToolbarAlignment,{passive:true});
 
 function applyWriterBubbleSelectionFormat(command,value){
@@ -4950,8 +4875,8 @@ function saveWriterImage(event){
     cleanCanvas.lastElementChild.remove();
   }
   const sheet = document.createElement('article');
-  sheet.className = `writer-export-sheet${dark ? ' dark' : ''}${writerExportPreset.value === 'mobile' ? ' mobile' : ''}`;
-  sheet.style.width = writerExportPreset.value === 'mobile' ? '600px' : '900px';
+  sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
+  sheet.style.width = '600px';
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   sheet.innerHTML = `
     <div class="writer-export-body">${cleanCanvas.innerHTML}</div>
@@ -5000,7 +4925,7 @@ document.getElementById('writerImageSave').addEventListener('click',saveWriterIm
 document.getElementById('writerMobileImageSave').addEventListener('click',saveWriterImage);
 
 writerCanvas.style.fontFamily = writerFont.value;
-writerExportPreset.dispatchEvent(new Event('change'));
+syncWriterPreview();
 writerMode.dispatchEvent(new Event('change'));
 writerChatStyle.dispatchEvent(new Event('change'));
 </script>
