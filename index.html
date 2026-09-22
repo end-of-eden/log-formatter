@@ -1835,7 +1835,7 @@
     background:var(--writer-bubble-color,#ececef);
     color:#303236;
     font-size:var(--writer-message-font-size,13px);
-    font-weight:400;
+    font-weight:300;
     line-height:1.5;
     text-align:left;
     white-space:pre-wrap;
@@ -1973,9 +1973,9 @@
     padding:0;
     outline:none;
     color:#2d2f33;
-    font:10pt/1.6 'Noto Sans KR',sans-serif;
-    font-weight:400;
-    letter-spacing:-0.035em;
+    font:10pt/1.6 'Pretendard',sans-serif;
+    font-weight:300;
+    letter-spacing:-0.040em;
     text-align:justify;
     white-space:normal;
   }
@@ -2175,7 +2175,7 @@
     font-family:'Noto Serif KR',serif;
   }
   .writer-export-sheet.dark{--writer-sheet-bg:#17181b;background:#17181b;color:#ece9e1;}
-  .writer-export-body{font:400 10pt/1.6 'Noto Sans KR',sans-serif;letter-spacing:-0.035em;text-align:justify;}
+  .writer-export-body{font:300 10pt/1.6 'Pretendard',sans-serif;letter-spacing:-0.040em;text-align:justify;}
   .writer-export-body > :first-child{margin-top:0!important;}
   .writer-export-body p{margin:0 0 16px;}
   .writer-export-body > :last-child{margin-bottom:0!important;}
@@ -2241,8 +2241,8 @@
         <option>30pt</option>
       </select>
       <select id="writerFont" aria-label="글꼴">
-        <option value="'Pretendard', sans-serif">프리텐다드</option>
-        <option value="'Noto Sans KR', sans-serif" selected>노토 산스</option>
+        <option value="'Pretendard', sans-serif" selected>프리텐다드</option>
+        <option value="'Noto Sans KR', sans-serif">노토 산스</option>
         <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
         <option value="'Gothic A1', sans-serif">고딕 A1</option>
         <option value="'IBM Plex Sans KR', sans-serif">IBM Plex Sans</option>
@@ -3583,7 +3583,7 @@ function applyWriterBubbleSelectionFormat(command,value){
   }
   if(!nodes.some(({node}) => node.parentElement.closest('.writer-inline-chat-bubble'))) return false;
   const first = getComputedStyle(nodes[0].node.parentElement);
-  if(command === 'bold') value = Number(first.fontWeight) >= 600 ? '400' : '700';
+  if(command === 'bold') value = Number(first.fontWeight) >= 600 ? '300' : '700';
   if(command === 'italic') value = first.fontStyle === 'italic' ? 'normal' : 'italic';
   if(command === 'underline') value = 'underline';
   if(command === 'strikeThrough') value = 'line-through';
@@ -3624,7 +3624,7 @@ function applyWriterBubbleFormat(command,value){
   const decoration = command === 'underline' ? 'underline' : 'line-through';
   const removeDecoration = first.textDecorationLine.includes(decoration);
   bubbles.forEach(bubble => {
-    if(command === 'bold') bubble.style.fontWeight = bold ? '400' : '700';
+    if(command === 'bold') bubble.style.fontWeight = bold ? '300' : '700';
     else if(command === 'italic') bubble.style.fontStyle = italic ? 'normal' : 'italic';
     else if(command === 'underline' || command === 'strikeThrough'){
       const lines = new Set(getComputedStyle(bubble).textDecorationLine.split(' ').filter(line => line !== 'none'));
