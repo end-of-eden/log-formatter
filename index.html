@@ -4856,6 +4856,30 @@ function copyWriterExportTypography(source,target){
   });
 }
 
+function normalizeWriterExportColors(root){
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 1;
+  const context = canvas.getContext('2d',{willReadFrequently:true});
+  const cache = new Map();
+  const properties = ['color','background-color','border-top-color','border-right-color',
+    'border-bottom-color','border-left-color','outline-color','text-decoration-color'];
+  for(const element of [root,...root.querySelectorAll('*')]){
+    const computed = getComputedStyle(element);
+    for(const property of properties){
+      const value = computed.getPropertyValue(property);
+      if(!/\b(?:oklch|oklab|lch|lab|color)\(/i.test(value)) continue;
+      if(!cache.has(value)){
+        context.clearRect(0,0,1,1);
+        context.fillStyle = value;
+        context.fillRect(0,0,1,1);
+        const [r,g,b,a] = context.getImageData(0,0,1,1).data;
+        cache.set(value,`rgba(${r},${g},${b},${a / 255})`);
+      }
+      element.style.setProperty(property,cache.get(value),'important');
+    }
+  }
+}
+
 function saveWriterImage(event){
   const saveButton = event.currentTarget;
   const originalLabel = saveButton.textContent;
@@ -4890,6 +4914,7 @@ function saveWriterImage(event){
     }
   }
   document.body.appendChild(sheet);
+  normalizeWriterExportColors(sheet);
   const exportBackground = dark ? '#17181B' : '#FFFFFF';
   const exportScale = 2;
   Promise.resolve(document.fonts?.ready).then(() => html2canvas(sheet,{
