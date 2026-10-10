@@ -2361,6 +2361,14 @@
 
     <main class="writer-page">
       <div class="writer-category-row">
+        <label for="writerExportFormat">저장 방식</label>
+        <select id="writerExportFormat" aria-label="저장 방식">
+          <option value="png">PNG · 배경 포함</option>
+          <option value="transparent">PNG · 투명 배경</option>
+          <option value="jpg">JPG · 배경 포함</option>
+        </select>
+      </div>
+      <div class="writer-category-row">
         <select id="writerCategory" aria-label="카테고리">
           <option>로그형</option>
           <option>메신저형</option>
@@ -4800,7 +4808,8 @@ function normalizeWriterExportHighlights(root){
 function cropWriterCanvasVertical(canvas,backgroundColor,topMargin,bottomMargin,scale){
   const context = canvas.getContext('2d',{willReadFrequently:true});
   const pixels = context.getImageData(0,0,canvas.width,canvas.height).data;
-  const hex = backgroundColor.replace('#','');
+  const transparent = backgroundColor === null;
+  const hex = (backgroundColor || '#000000').replace('#','');
   const background = [
     parseInt(hex.slice(0,2),16),
     parseInt(hex.slice(2,4),16),
@@ -4812,9 +4821,9 @@ function cropWriterCanvasVertical(canvas,backgroundColor,topMargin,bottomMargin,
     let hasInk = false;
     for(let x = 0;x < canvas.width;x += 2){
       const index = (y * canvas.width + x) * 4;
-      if(Math.abs(pixels[index] - background[0]) > 5
+      if(transparent ? pixels[index + 3] > 0 : (Math.abs(pixels[index] - background[0]) > 5
         || Math.abs(pixels[index + 1] - background[1]) > 5
-        || Math.abs(pixels[index + 2] - background[2]) > 5){
+        || Math.abs(pixels[index + 2] - background[2]) > 5)){
         hasInk = true;
         break;
       }
@@ -4832,8 +4841,10 @@ function cropWriterCanvasVertical(canvas,backgroundColor,topMargin,bottomMargin,
   cropped.width = canvas.width;
   cropped.height = targetTop + contentHeight + targetBottom;
   const croppedContext = cropped.getContext('2d');
-  croppedContext.fillStyle = backgroundColor;
-  croppedContext.fillRect(0,0,cropped.width,cropped.height);
+  if(!transparent){
+    croppedContext.fillStyle = backgroundColor;
+    croppedContext.fillRect(0,0,cropped.width,cropped.height);
+  }
   croppedContext.drawImage(
     canvas,0,first,canvas.width,contentHeight,0,targetTop,canvas.width,contentHeight
   );
@@ -4884,11 +4895,17 @@ let writerExportInProgress = false;
 async function saveWriterImage(){
   if(writerExportInProgress) return;
   writerExportInProgress = true;
+  const formatControl = document.getElementById('writerExportFormat');
+  const format = formatControl.value;
+  const transparent = format === 'transparent';
+  const extension = format === 'jpg' ? 'jpg' : 'png';
+  const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
+  formatControl.disabled = true;
   const saveButtons = ['writerImageSave','writerMobileImageSave'].map(id => document.getElementById(id));
   const originalLabels = saveButtons.map(button => button.textContent);
   saveButtons.forEach(button => {
     button.disabled = true;
-    button.textContent = 'PNG 생성 중…';
+    button.textContent = `${extension.toUpperCase()} 생성 중…`;
   });
   let sheet;
   try {
@@ -4896,7 +4913,7 @@ async function saveWriterImage(){
   await document.fonts?.ready;
   const dark = writerApp.classList.contains('night');
   const logName = writerLogName.value.trim();
-  const fileName = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.png`;
+  const fileName = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.${extension}`;
   const cleanCanvas = writerCanvas.cloneNode(true);
   copyWriterExportTypography(writerCanvas,cleanCanvas);
   cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
@@ -4910,6 +4927,7 @@ async function saveWriterImage(){
   sheet = document.createElement('article');
   sheet.className = `writer-export-sheet${dark ? ' dark' : ''}`;
   sheet.style.width = '600px';
+  if(transparent) sheet.style.backgroundColor = 'transparent';
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
   sheet.innerHTML = `
     <div class="writer-export-body">${cleanCanvas.innerHTML}</div>
@@ -4925,7 +4943,7 @@ async function saveWriterImage(){
   document.body.appendChild(sheet);
   await Promise.all([...sheet.querySelectorAll('img')].map(image => image.decode()));
   normalizeWriterExportColors(sheet);
-  const exportBackground = dark ? '#17181B' : '#FFFFFF';
+  const exportBackground = transparent ? null : (dark ? '#17181B' : '#FFFFFF');
   const exportScale = 2;
   const canvas = await html2canvas(sheet,{
     backgroundColor:exportBackground,
@@ -4942,7 +4960,7 @@ async function saveWriterImage(){
       exportScale
     );
     const blob = await new Promise((resolve,reject) => {
-      balancedCanvas.toBlob(result => result ? resolve(result) : reject(new Error('이미지 변환 실패')),'image/png');
+      balancedCanvas.toBlob(result => result ? resolve(result) : reject(new Error('이미지 변환 실패')),mimeType,0.95);
     });
     const link = document.createElement('a');
     const objectUrl = URL.createObjectURL(blob);
@@ -4959,6 +4977,7 @@ async function saveWriterImage(){
   } finally {
     sheet?.remove();
     writerExportInProgress = false;
+    formatControl.disabled = false;
     saveButtons.forEach((button,index) => {
       button.disabled = false;
       button.textContent = originalLabels[index];
@@ -4968,6 +4987,12 @@ async function saveWriterImage(){
 document.getElementById('writerImageSave').addEventListener('click',saveWriterImage);
 document.getElementById('writerMobileImageSave').addEventListener('click',saveWriterImage);
 
+document.getElementById('writerExportFormat').addEventListener('change',event => {
+  const label = event.target.value === 'jpg' ? 'JPG 저장' : 'PNG 저장';
+  ['writerImageSave','writerMobileImageSave'].forEach(id => {
+    document.getElementById(id).textContent = label;
+  });
+});
 writerCanvas.style.fontFamily = writerFont.value;
 syncWriterPreview();
 writerMode.dispatchEvent(new Event('change'));
