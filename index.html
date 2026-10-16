@@ -1496,39 +1496,17 @@
   .writer-margin-menu{
     position:absolute;
     top:38px;
-    right:0;
+    left:0;
     z-index:300;
-    width:250px;
+    display:grid;
+    gap:12px;
+    width:260px;
     padding:12px;
     border:1px solid #e0e1e4;
     border-radius:6px;
     background:#fff;
     box-shadow:0 8px 24px rgba(32,34,38,.14);
   }
-  .writer-margin-menu label{
-    display:grid;
-    grid-template-columns:42px 1fr 42px;
-    align-items:center;
-    gap:8px;
-    margin:7px 0;
-    color:#63676f;
-    font-size:11px;
-  }
-  .writer-margin-menu input{
-    width:100%;
-    height:28px;
-    padding:0 8px;
-    border:1px solid #dfe1e5;
-    border-radius:5px;
-    background:#fff;
-    color:#4b4f56;
-    font:11px 'JetBrains Mono',monospace;
-  }
-  .writer-margin-menu input:focus{
-    border-color:rgba(192,57,43,.55);
-    outline:2px solid rgba(192,57,43,.1);
-  }
-  .writer-margin-menu span{text-align:right;font:10px 'JetBrains Mono',monospace;}
   .writer-save{
     appearance:none;
     border:1px solid #dedfe3;
@@ -2314,7 +2292,6 @@
   .writer-app.night .writer-color-value{background:#202226;border-color:#4a4c52;color:#e7e5df;}
   .writer-app.night .writer-color-eyedropper{background:#202226;border-color:#4a4c52;color:#e7e5df;}
   .writer-app.night .writer-color-eyedropper:hover{background:#35373c;color:#fff;}
-  .writer-app.night .writer-margin-menu label{color:#e7e5df;}
   .writer-export-sheet{
     --writer-sheet-bg:#fff;
     position:fixed;
@@ -2553,10 +2530,27 @@
       <div class="writer-margin-wrap">
         <button class="writer-format writer-labeled writer-margin-button" type="button" id="writerMarginButton" title="여백"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/> <path d="M17 3h2a2 2 0 0 1 2 2v2"/> <path d="M21 17v2a2 2 0 0 1-2 2h-2"/> <path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg><span class="writer-label-text">여백</span></button>
         <div class="writer-margin-menu" id="writerMarginMenu" hidden>
-          <label>위 <input type="number" id="exportMarginTop" min="0" max="160" step="1" value="60"><span>60px</span></label>
-          <label>오른쪽 <input type="number" id="exportMarginRight" min="0" max="320" step="1" value="40"><span>40px</span></label>
-          <label>아래 <input type="number" id="exportMarginBottom" min="0" max="160" step="1" value="60"><span>60px</span></label>
-          <label>왼쪽 <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="40"><span>40px</span></label>
+          <div class="writer-spacing-row">
+            <label for="exportMarginTopRange">위 <small>px</small></label>
+            <input type="number" id="exportMarginTop" min="0" max="160" step="1" value="50" aria-label="위 여백 값">
+            <input type="range" id="exportMarginTopRange" min="0" max="160" step="1" value="50" aria-label="위 여백" title="더블클릭하면 기본값 50">
+          </div>
+          <div class="writer-spacing-row">
+            <label for="exportMarginRightRange">오른쪽 <small>px</small></label>
+            <input type="number" id="exportMarginRight" min="0" max="320" step="1" value="40" aria-label="오른쪽 여백 값">
+            <input type="range" id="exportMarginRightRange" min="0" max="320" step="1" value="40" aria-label="오른쪽 여백" title="더블클릭하면 기본값 40">
+          </div>
+          <div class="writer-spacing-row">
+            <label for="exportMarginBottomRange">아래 <small>px</small></label>
+            <input type="number" id="exportMarginBottom" min="0" max="160" step="1" value="50" aria-label="아래 여백 값">
+            <input type="range" id="exportMarginBottomRange" min="0" max="160" step="1" value="50" aria-label="아래 여백" title="더블클릭하면 기본값 50">
+          </div>
+          <div class="writer-spacing-row">
+            <label for="exportMarginLeftRange">왼쪽 <small>px</small></label>
+            <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="40" aria-label="왼쪽 여백 값">
+            <input type="range" id="exportMarginLeftRange" min="0" max="320" step="1" value="40" aria-label="왼쪽 여백" title="더블클릭하면 기본값 40">
+          </div>
+          <p class="writer-spacing-hint">저장 이미지의 바깥 여백입니다. 슬라이더를 더블클릭하면 기본값으로 돌아갑니다.</p>
         </div>
       </div>
       <div class="writer-line-height-wrap">
@@ -5023,11 +5017,32 @@ writerClearAll.addEventListener('click', () => {
   writerInsertMenu.hidden = true;
   queueWriterSave();
 });
+// Each margin has a number field and a slider kept in step; double-click resets.
+function paintWriterRange(range){
+  const min = Number(range.min);
+  const max = Number(range.max);
+  range.style.setProperty('--fill',`${(Number(range.value) - min) / (max - min) * 100}%`);
+}
 Object.values(exportMarginInputs).forEach(input => {
+  const range = document.getElementById(`${input.id}Range`);
+  const fallback = input.defaultValue;
+  const setMargin = value => {
+    const clamped = String(Math.round(Math.min(Number(input.max),Math.max(0,Number(value) || 0))));
+    input.value = clamped;
+    range.value = clamped;
+    paintWriterRange(range);
+    syncWriterPreview();
+  };
   input.addEventListener('input', () => {
-    input.parentElement.querySelector('span').textContent = `${input.value}px`;
+    if(input.value === '') return;
+    range.value = input.value;
+    paintWriterRange(range);
     syncWriterPreview();
   });
+  input.addEventListener('change', () => setMargin(input.value));
+  range.addEventListener('input', () => setMargin(range.value));
+  range.addEventListener('dblclick', () => setMargin(fallback));
+  paintWriterRange(range);
 });
 document.addEventListener('click', event => {
   if(!event.target.closest('.writer-margin-wrap')) writerMarginMenu.hidden = true;
