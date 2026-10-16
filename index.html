@@ -1310,18 +1310,20 @@
     top:38px;
     left:0;
     z-index:300;
+    /* Both fields share the first column, so they line up at the same width. */
     display:grid;
-    gap:8px;
-    width:280px;
-    padding:12px;
+    grid-template-columns:minmax(0,1fr) repeat(4,28px);
+    align-items:center;
+    gap:6px 4px;
+    width:min(340px,calc(100vw - 16px));
+    padding:10px;
     border:1px solid #e0e1e4;
     border-radius:6px;
     background:#fff;
     box-shadow:0 8px 24px rgba(32,34,38,.14);
   }
   .writer-find-menu[hidden]{display:none;}
-  .writer-find-head,.writer-find-nav,.writer-find-actions{display:flex;align-items:center;gap:4px;}
-  .writer-find-head{justify-content:space-between;margin:-4px -4px 0 0;color:#34383f;font:700 12px 'Pretendard',sans-serif;}
+  .writer-find-field{position:relative;min-width:0;}
   #writerFindInput,#writerReplaceInput{
     width:100%;
     min-width:0;
@@ -1333,8 +1335,18 @@
     color:#33363b;
     font:12px 'Pretendard',sans-serif;
   }
+  #writerFindInput{padding-right:52px;}
   #writerFindInput:focus,#writerReplaceInput:focus{border-color:rgba(192,57,43,.55);outline:2px solid rgba(192,57,43,.1);}
-  #writerFindCount{flex:1;color:#8b8f96;font:11px 'Pretendard',sans-serif;}
+  #writerFindCount{
+    position:absolute;
+    top:50%;
+    right:8px;
+    translate:0 -50%;
+    color:#8b8f96;
+    font:11px 'Pretendard',sans-serif;
+    pointer-events:none;
+    white-space:nowrap;
+  }
   .writer-toolbar .writer-find-icon{
     display:grid;
     width:28px;
@@ -1345,27 +1357,28 @@
     border-radius:5px;
     background:transparent;
     color:#5b5f66;
-    font:600 11px 'Pretendard',sans-serif;
     cursor:pointer;
   }
   .writer-toolbar .writer-find-icon:hover{background:#f3f3f5;}
   .writer-toolbar .writer-find-icon:disabled{opacity:.35;cursor:default;}
   .writer-find-icon .lucide{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
   .writer-toolbar .writer-find-case[aria-pressed="true"]{background:var(--burgundy-soft);color:var(--burgundy);}
-  .writer-find-actions button{
-    flex:1;
-    height:30px;
+  .writer-toolbar .writer-find-text{
+    grid-column:span 2;
+    height:32px;
+    padding:0;
     border:1px solid #e0e1e4;
     border-radius:5px;
     background:#fff;
     color:#5b5f66;
     font:600 11px 'Pretendard',sans-serif;
+    white-space:nowrap;
     cursor:pointer;
   }
-  .writer-find-actions button:hover:not(:disabled){background:#f6f6f8;}
-  .writer-find-actions button:disabled{opacity:.45;cursor:default;}
-  #writerReplaceAll{border-color:var(--burgundy);background:var(--burgundy);color:#fff;}
-  #writerReplaceAll:hover:not(:disabled){background:var(--burgundy);opacity:.9;}
+  .writer-toolbar .writer-find-text:hover:not(:disabled){background:#f6f6f8;}
+  .writer-toolbar .writer-find-text:disabled{opacity:.45;cursor:default;}
+  .writer-toolbar #writerReplaceAll{border-color:var(--burgundy);background:var(--burgundy);color:#fff;}
+  .writer-toolbar #writerReplaceAll:hover:not(:disabled){background:var(--burgundy);opacity:.9;}
   ::highlight(writer-find){background:rgba(255,200,40,.45);}
   ::highlight(writer-find-current){background:#ff9f1a;color:#1d1d1f;}
   #writerLineHeightValue{min-width:28px;text-align:left;font:12px 'JetBrains Mono',monospace;}
@@ -2151,9 +2164,8 @@
   .writer-app.night .writer-find-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night #writerFindInput,
   .writer-app.night #writerReplaceInput,
-  .writer-app.night .writer-find-actions button:not(#writerReplaceAll){background:#202226;border-color:#41444a;color:#ece9e1;}
+  .writer-app.night .writer-toolbar .writer-find-text:not(#writerReplaceAll){background:#202226;border-color:#41444a;color:#ece9e1;}
   .writer-app.night .writer-toolbar .writer-find-icon{color:#d8d9dc;}
-  .writer-app.night .writer-find-head{color:#ece9e1;}
   .writer-app.night .writer-toolbar .writer-find-icon:hover{background:#35373c;}
   .writer-app.night .writer-line-height-head{color:#ece9e1;}
   .writer-app.night #writerLineHeightNumber,
@@ -2494,22 +2506,14 @@
       <div class="writer-find-wrap">
         <button class="writer-format" type="button" id="writerFindButton" title="찾기·바꾸기 (Ctrl+F)" aria-label="찾기·바꾸기" aria-expanded="false"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 5H3"/> <path d="M10 12H3"/> <path d="M10 19H3"/> <circle cx="17" cy="15" r="3"/> <path d="m21 19-1.9-1.9"/></svg></button>
         <div class="writer-find-menu" id="writerFindMenu" hidden>
-          <div class="writer-find-head">
-            <strong>찾기·바꾸기</strong>
-            <button class="writer-find-icon" type="button" id="writerFindClose" title="닫기 (Esc)" aria-label="닫기"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/> <path d="m6 6 12 12"/></svg></button>
-          </div>
-          <input type="text" id="writerFindInput" placeholder="찾기" aria-label="찾을 내용" autocomplete="off" spellcheck="false">
-          <div class="writer-find-nav">
-            <span id="writerFindCount" aria-live="polite"></span>
-            <button class="writer-find-icon writer-find-case" type="button" id="writerFindCase" aria-pressed="false" title="대소문자 구분" aria-label="대소문자 구분"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16"/> <path d="M22 9v7"/> <path d="M3.304 13h6.392"/> <circle cx="18.5" cy="12.5" r="3.5"/></svg></button>
-            <button class="writer-find-icon" type="button" id="writerFindPrev" title="이전 (Shift+Enter)" aria-label="이전 결과"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>
-            <button class="writer-find-icon" type="button" id="writerFindNext" title="다음 (Enter)" aria-label="다음 결과"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-          </div>
+          <div class="writer-find-field"><input type="text" id="writerFindInput" placeholder="찾기" aria-label="찾을 내용" autocomplete="off" spellcheck="false"><span id="writerFindCount" aria-live="polite"></span></div>
+          <button class="writer-find-icon writer-find-case" type="button" id="writerFindCase" aria-pressed="false" title="대소문자 구분" aria-label="대소문자 구분"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16"/> <path d="M22 9v7"/> <path d="M3.304 13h6.392"/> <circle cx="18.5" cy="12.5" r="3.5"/></svg></button>
+          <button class="writer-find-icon" type="button" id="writerFindPrev" title="이전 (Shift+Enter)" aria-label="이전 결과"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>
+          <button class="writer-find-icon" type="button" id="writerFindNext" title="다음 (Enter)" aria-label="다음 결과"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <button class="writer-find-icon" type="button" id="writerFindClose" title="닫기 (Esc)" aria-label="닫기"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/> <path d="m6 6 12 12"/></svg></button>
           <input type="text" id="writerReplaceInput" placeholder="바꿀 내용" aria-label="바꿀 내용" autocomplete="off" spellcheck="false">
-          <div class="writer-find-actions">
-            <button type="button" id="writerReplaceOne">바꾸기</button>
-            <button type="button" id="writerReplaceAll">모두 바꾸기</button>
-          </div>
+          <button class="writer-find-text" type="button" id="writerReplaceOne">바꾸기</button>
+          <button class="writer-find-text" type="button" id="writerReplaceAll">모두 바꾸기</button>
         </div>
       </div>
     </header>
