@@ -1399,7 +1399,7 @@
   .writer-line-height-menu[hidden]{display:none;}
   .writer-spacing-row{
     display:grid;
-    grid-template-columns:1fr 72px 28px;
+    grid-template-columns:1fr 84px 28px;
     align-items:center;
     gap:2px 4px;
     color:#34383f;
@@ -1409,14 +1409,56 @@
   .writer-spacing-row input[type=number]{
     width:100%;
     height:28px;
-    padding:0 8px;
+    padding:0 4px 0 8px;
     border:1px solid #dfe1e5;
     border-radius:5px;
     background:#fff;
     color:#4b4f56;
     font:12px 'JetBrains Mono',monospace;
   }
-  .writer-spacing-row input[type=range]{grid-column:1 / -1;width:100%;margin:2px 0 0;accent-color:var(--burgundy);cursor:pointer;}
+  .writer-spacing-row input[type=range]{
+    --track:#e6e7ea;
+    --thumb-bg:#fff;
+    grid-column:1 / -1;
+    width:100%;
+    height:18px;
+    margin:2px 0 0;
+    background:transparent;
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .writer-spacing-row input[type=range]::-webkit-slider-runnable-track{
+    height:4px;
+    border-radius:999px;
+    background:linear-gradient(to right,var(--burgundy) var(--fill,50%),var(--track) var(--fill,50%));
+  }
+  .writer-spacing-row input[type=range]::-webkit-slider-thumb{
+    width:14px;
+    height:14px;
+    margin-top:-5px;
+    border:2px solid var(--burgundy);
+    border-radius:50%;
+    background:var(--thumb-bg);
+    box-shadow:0 1px 3px rgba(32,34,38,.18);
+    transition:transform .12s;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .writer-spacing-row input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);}
+  .writer-spacing-row input[type=range]::-moz-range-track{height:4px;border-radius:999px;background:var(--track);}
+  .writer-spacing-row input[type=range]::-moz-range-progress{height:4px;border-radius:999px;background:var(--burgundy);}
+  .writer-spacing-row input[type=range]::-moz-range-thumb{
+    width:10px;
+    height:10px;
+    border:2px solid var(--burgundy);
+    border-radius:50%;
+    background:var(--thumb-bg);
+    box-shadow:0 1px 3px rgba(32,34,38,.18);
+  }
+  .writer-spacing-row input[type=range]:focus{outline:none;}
+  .writer-spacing-row input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
+  .writer-spacing-row input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
   .writer-toolbar .writer-spacing-reset{
     display:grid;
     width:28px;
@@ -2196,6 +2238,7 @@
   .writer-app.night .writer-toolbar .writer-find-icon{color:#d8d9dc;}
   .writer-app.night .writer-toolbar .writer-find-icon:hover{background:#35373c;}
   .writer-app.night .writer-spacing-row{color:#ece9e1;}
+  .writer-app.night .writer-spacing-row input[type=range]{--track:#3b3d43;--thumb-bg:#292b2f;}
   .writer-app.night .writer-spacing-row input[type=number]{background:#202226;border-color:#41444a;color:#ece9e1;}
   .writer-app.night .writer-toolbar .writer-spacing-reset:hover{background:#35373c;color:#fff;}
   .writer-app.night .writer-tidy-button{background:#24262a;border-color:#3b3d43;color:#d8d9dc;}
@@ -3931,6 +3974,8 @@ function showWriterSpacing(key,value){
   const formatted = formatWriterSpacing(key,value);
   control.range.value = formatted;
   control.number.value = formatted;
+  // WebKit has no filled-track pseudo element, so paint the fill from a variable.
+  control.range.style.setProperty('--fill',`${(formatted - control.min) / (control.max - control.min) * 100}%`);
   if(key === 'lineHeight') writerLineHeightValue.textContent = formatted.includes('.') ? formatted : `${formatted}.0`;
 }
 function writerTextBlocks(){
@@ -3978,6 +4023,7 @@ Object.entries(writerSpacing).forEach(([key,control]) => {
   control.range.addEventListener('input', () => applyWriterSpacing(key,control.range.value));
   control.number.addEventListener('change', () => applyWriterSpacing(key,control.number.value));
 });
+Object.entries(writerSpacing).forEach(([key,control]) => showWriterSpacing(key,control.fallback));
 writerLineHeightMenu.querySelectorAll('[data-spacing-reset]').forEach(button => {
   button.addEventListener('click', () => {
     const key = button.dataset.spacingReset;
