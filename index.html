@@ -1387,23 +1387,27 @@
     top:38px;
     left:0;
     z-index:300;
-    width:240px;
+    display:grid;
+    gap:12px;
+    width:260px;
     padding:12px;
     border:1px solid #e0e1e4;
     border-radius:6px;
     background:#fff;
     box-shadow:0 8px 24px rgba(32,34,38,.14);
   }
-  .writer-line-height-head{
-    display:flex;
+  .writer-line-height-menu[hidden]{display:none;}
+  .writer-spacing-row{
+    display:grid;
+    grid-template-columns:1fr 72px 28px;
     align-items:center;
-    justify-content:space-between;
-    margin-bottom:8px;
+    gap:2px 4px;
     color:#34383f;
     font:700 12px 'Pretendard',sans-serif;
   }
-  #writerLineHeightNumber{
-    width:68px;
+  .writer-spacing-row small{color:#9a9ea6;font:500 10px 'JetBrains Mono',monospace;}
+  .writer-spacing-row input[type=number]{
+    width:100%;
     height:28px;
     padding:0 8px;
     border:1px solid #dfe1e5;
@@ -1412,25 +1416,48 @@
     color:#4b4f56;
     font:12px 'JetBrains Mono',monospace;
   }
-  #writerLineHeight{width:100%;margin:4px 0;accent-color:var(--burgundy);cursor:pointer;}
-  .writer-line-height-scale{
-    display:flex;
-    justify-content:space-between;
-    color:#9a9ea6;
-    font:10px 'JetBrains Mono',monospace;
-  }
-  .writer-toolbar #writerLineHeightReset{
-    width:100%;
-    height:30px;
-    margin-top:10px;
-    border:1px solid #e0e1e4;
+  .writer-spacing-row input[type=range]{grid-column:1 / -1;width:100%;margin:2px 0 0;accent-color:var(--burgundy);cursor:pointer;}
+  .writer-toolbar .writer-spacing-reset{
+    display:grid;
+    width:28px;
+    height:28px;
+    place-items:center;
+    padding:0;
+    border:0;
     border-radius:5px;
+    background:transparent;
+    color:#8b8f96;
+    cursor:pointer;
+  }
+  .writer-toolbar .writer-spacing-reset:hover{background:#f3f3f5;color:#33363b;}
+  .writer-spacing-reset .lucide{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .writer-spacing-hint{margin:-2px 0 0;color:#9a9ea6;font:10px/1.4 'Pretendard',sans-serif;}
+  .writer-status-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:10px;
+    color:#8c8f95;
+    font:11px 'Pretendard',sans-serif;
+  }
+  #writerCharCount{font-variant-numeric:tabular-nums;}
+  .writer-tidy-button{
+    display:flex;
+    flex:0 0 auto;
+    align-items:center;
+    gap:5px;
+    height:28px;
+    padding:0 10px;
+    border:1px solid #dedfe3;
+    border-radius:6px;
     background:#fff;
     color:#5b5f66;
     font:600 11px 'Pretendard',sans-serif;
     cursor:pointer;
   }
-  .writer-toolbar #writerLineHeightReset:hover{background:#f6f6f8;}
+  .writer-tidy-button:hover{background:#f6f6f8;}
+  .writer-tidy-button .lucide{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
   .writer-margin-menu{
     position:absolute;
     top:38px;
@@ -2078,7 +2105,7 @@
   }
   #writerCanvas:empty{min-height:420px;}
   #writerCanvas > :first-child{margin-top:0!important;}
-  #writerCanvas p{margin:0 0 16px;}
+  #writerCanvas p{margin:0 0 var(--writer-paragraph-gap,16px);}
   #writerCanvas > :last-child{margin-bottom:0!important;}
   #writerCanvas h1{margin:44px 0 20px;line-height:1.35;}
   #writerCanvas h2{margin:40px 0 18px;line-height:1.4;}
@@ -2168,9 +2195,11 @@
   .writer-app.night .writer-toolbar .writer-find-text:not(#writerReplaceAll){background:#202226;border-color:#41444a;color:#ece9e1;}
   .writer-app.night .writer-toolbar .writer-find-icon{color:#d8d9dc;}
   .writer-app.night .writer-toolbar .writer-find-icon:hover{background:#35373c;}
-  .writer-app.night .writer-line-height-head{color:#ece9e1;}
-  .writer-app.night #writerLineHeightNumber,
-  .writer-app.night .writer-toolbar #writerLineHeightReset{background:#34363b;border-color:#484b51;color:#d8d9dc;}
+  .writer-app.night .writer-spacing-row{color:#ece9e1;}
+  .writer-app.night .writer-spacing-row input[type=number]{background:#202226;border-color:#41444a;color:#ece9e1;}
+  .writer-app.night .writer-toolbar .writer-spacing-reset:hover{background:#35373c;color:#fff;}
+  .writer-app.night .writer-tidy-button{background:#24262a;border-color:#3b3d43;color:#d8d9dc;}
+  .writer-app.night .writer-tidy-button:hover{background:#2e3035;}
   .writer-app.night .writer-color-trigger::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);}
   .writer-app.night .writer-member-presets summary{color:#ece9e1;}
   .writer-app.night .writer-chat-menu .writer-sheet-close{background:#34363b;color:#d8d9dc;}
@@ -2265,7 +2294,7 @@
   .writer-export-sheet.dark{--writer-sheet-bg:#17181b;background:#17181b;color:#ece9e1;}
   .writer-export-body{font:350 10pt/1.6 'Noto Sans KR',sans-serif;letter-spacing:-0.035em;text-align:justify;}
   .writer-export-body > :first-child{margin-top:0!important;}
-  .writer-export-body p{margin:0 0 16px;}
+  .writer-export-body p{margin:0 0 var(--writer-paragraph-gap,16px);}
   .writer-export-body > :last-child{margin-bottom:0!important;}
   .writer-export-body img{max-width:100%;height:auto;}
   .writer-export-body hr{border:0;border-top:1px solid #e2ded5;margin:36px 0;}
@@ -2326,7 +2355,7 @@
     #writerLineHeightValue{min-width:0;}
     .writer-find-wrap > button{width:28px;padding:0;}
     #writerFindInput,#writerReplaceInput{height:38px;font-size:16px;}
-    #writerLineHeightNumber{font-size:16px;}
+    .writer-spacing-row input[type=number]{font-size:16px;}
     .writer-spacer,.writer-row-break{display:none;}
     #writerMode,#writerClearAll{order:1;}
     .writer-insert-menu.writer-chat-menu{
@@ -2496,12 +2525,27 @@
         </div>
       </div>
       <div class="writer-line-height-wrap">
-        <button class="writer-format writer-labeled writer-line-height-button" type="button" id="writerLineHeightButton" title="행간" aria-label="행간" aria-expanded="false"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h8"/> <path d="M3 12h8"/> <path d="M3 19h8"/> <path d="m15 8 3-3 3 3"/> <path d="m15 16 3 3 3-3"/></svg><span id="writerLineHeightValue">1.6</span></button>
+        <button class="writer-format writer-labeled writer-line-height-button" type="button" id="writerLineHeightButton" title="간격 (행간·자간·문단)" aria-label="간격" aria-expanded="false"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h8"/> <path d="M3 12h8"/> <path d="M3 19h8"/> <path d="m15 8 3-3 3 3"/> <path d="m15 16 3 3 3-3"/></svg><span id="writerLineHeightValue">1.6</span></button>
         <div class="writer-line-height-menu" id="writerLineHeightMenu" hidden>
-          <div class="writer-line-height-head"><strong>행간</strong><input type="number" id="writerLineHeightNumber" min="1" max="3" step="0.05" value="1.6" aria-label="행간 값"></div>
-          <input type="range" id="writerLineHeight" min="1" max="3" step="0.05" value="1.6" aria-label="행간">
-          <div class="writer-line-height-scale"><span>1.0</span><span>2.0</span><span>3.0</span></div>
-          <button type="button" id="writerLineHeightReset">기본값 1.6</button>
+          <div class="writer-spacing-row">
+            <label for="writerLineHeight">행간</label>
+            <input type="number" id="writerLineHeightNumber" min="1" max="3" step="0.05" value="1.6" aria-label="행간 값">
+            <button class="writer-spacing-reset" type="button" data-spacing-reset="lineHeight" title="기본값 1.6" aria-label="행간 기본값"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/> <path d="M3 3v5h5"/></svg></button>
+            <input type="range" id="writerLineHeight" min="1" max="3" step="0.05" value="1.6" aria-label="행간">
+          </div>
+          <div class="writer-spacing-row">
+            <label for="writerLetterSpacing">자간 <small>em</small></label>
+            <input type="number" id="writerLetterSpacingNumber" min="-0.1" max="0.2" step="0.005" value="-0.035" aria-label="자간 값">
+            <button class="writer-spacing-reset" type="button" data-spacing-reset="letterSpacing" title="기본값 -0.035" aria-label="자간 기본값"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/> <path d="M3 3v5h5"/></svg></button>
+            <input type="range" id="writerLetterSpacing" min="-0.1" max="0.2" step="0.005" value="-0.035" aria-label="자간">
+          </div>
+          <div class="writer-spacing-row">
+            <label for="writerParagraphGap">문단 간격 <small>px</small></label>
+            <input type="number" id="writerParagraphGapNumber" min="0" max="48" step="1" value="16" aria-label="문단 간격 값">
+            <button class="writer-spacing-reset" type="button" data-spacing-reset="paragraphGap" title="기본값 16" aria-label="문단 간격 기본값"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/> <path d="M3 3v5h5"/></svg></button>
+            <input type="range" id="writerParagraphGap" min="0" max="48" step="1" value="16" aria-label="문단 간격">
+          </div>
+          <p class="writer-spacing-hint">행간·자간은 선택한 문단에, 선택이 없으면 문서 전체에 적용됩니다. 문단 간격은 항상 문서 전체입니다.</p>
         </div>
       </div>
       <div class="writer-find-wrap">
@@ -2541,6 +2585,10 @@
         <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
+      <div class="writer-status-bar">
+        <span id="writerCharCount" aria-live="polite"></span>
+        <button class="writer-tidy-button" type="button" id="writerTidyButton" title="... → …, 곧은 따옴표 → 둥근 따옴표, 겹친 공백 → 한 칸"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/> <path d="m14 7 3 3"/> <path d="M5 6v4"/> <path d="M19 14v4"/> <path d="M10 2v2"/> <path d="M7 8H3"/> <path d="M21 16h-4"/> <path d="M11 3H9"/></svg><span id="writerTidyLabel">문장부호 정리</span></button>
+      </div>
     </main>
     <button class="writer-save primary" id="writerMobileImageSave" type="button">PNG 저장</button>
     <div class="writer-selection-toolbar" id="writerSelectionToolbar" hidden>
@@ -3859,46 +3907,62 @@ writerFontSize.addEventListener('change', () => {
   queueWriterSave();
 });
 writerFont.addEventListener('mousedown', () => rememberWriterRange());
-const writerLineHeight = document.getElementById('writerLineHeight');
 const writerLineHeightButton = document.getElementById('writerLineHeightButton');
 const writerLineHeightMenu = document.getElementById('writerLineHeightMenu');
-const writerLineHeightNumber = document.getElementById('writerLineHeightNumber');
 const writerLineHeightValue = document.getElementById('writerLineHeightValue');
-const WRITER_DEFAULT_LINE_HEIGHT = 1.6;
-function formatWriterLineHeight(value){
-  return String(Math.round(Math.min(3,Math.max(1,Number(value) || WRITER_DEFAULT_LINE_HEIGHT)) * 100) / 100);
+// perBlock controls follow the text selection; paragraph spacing is document-wide.
+const writerSpacing = {
+  lineHeight:{min:1,max:3,fallback:1.6,property:'line-height',unit:'',perBlock:true},
+  letterSpacing:{min:-0.1,max:0.2,fallback:-0.035,property:'letter-spacing',unit:'em',perBlock:true},
+  paragraphGap:{min:0,max:48,fallback:16,property:'--writer-paragraph-gap',unit:'px',perBlock:false}
+};
+Object.entries(writerSpacing).forEach(([key,control]) => {
+  const id = key[0].toUpperCase() + key.slice(1);
+  control.range = document.getElementById(`writer${id}`);
+  control.number = document.getElementById(`writer${id}Number`);
+});
+function formatWriterSpacing(key,value){
+  const {min,max,fallback} = writerSpacing[key];
+  const number = Number.parseFloat(value);
+  return String(Math.round(Math.min(max,Math.max(min,Number.isFinite(number) ? number : fallback)) * 1000) / 1000);
 }
-function showWriterLineHeight(value){
-  const formatted = formatWriterLineHeight(value);
-  writerLineHeight.value = formatted;
-  writerLineHeightNumber.value = formatted;
-  writerLineHeightValue.textContent = formatted.includes('.') ? formatted : `${formatted}.0`;
+function showWriterSpacing(key,value){
+  const control = writerSpacing[key];
+  const formatted = formatWriterSpacing(key,value);
+  control.range.value = formatted;
+  control.number.value = formatted;
+  if(key === 'lineHeight') writerLineHeightValue.textContent = formatted.includes('.') ? formatted : `${formatted}.0`;
 }
 function writerTextBlocks(){
   return [...writerCanvas.children].filter(block => !block.matches('.writer-inline-chat,hr'));
 }
-function applyWriterLineHeight(value){
-  const formatted = formatWriterLineHeight(value);
+function applyWriterSpacing(key,value){
+  const control = writerSpacing[key];
+  const formatted = formatWriterSpacing(key,value);
+  const css = `${formatted}${control.unit}`;
   const range = writerSavedRange && writerCanvas.contains(writerSavedRange.commonAncestorContainer) ? writerSavedRange : null;
-  if(!range || range.collapsed){
+  if(!control.perBlock || !range || range.collapsed){
     // Like the font menu: no text selection means the whole document.
-    writerCanvas.style.lineHeight = formatted;
-    writerTextBlocks().forEach(block => block.style.removeProperty('line-height'));
+    writerCanvas.style.setProperty(control.property,css);
+    if(control.perBlock) writerTextBlocks().forEach(block => block.style.removeProperty(control.property));
   }else{
     writerTextBlocks().filter(block => range.intersectsNode(block)).forEach(block => {
-      block.style.lineHeight = formatted;
+      block.style.setProperty(control.property,css);
     });
   }
-  showWriterLineHeight(formatted);
+  showWriterSpacing(key,formatted);
   queueWriterSave();
 }
-// Show the line height under the caret so the slider starts from what is on the page.
+// Show the values under the caret so the sliders start from what is on the page.
 document.addEventListener('selectionchange', () => {
   const node = window.getSelection()?.anchorNode;
   if(!node || !writerCanvas.contains(node) || !writerLineHeightMenu.hidden) return;
   let block = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
   while(block && block.parentElement !== writerCanvas) block = block.parentElement;
-  showWriterLineHeight(block?.style.lineHeight || writerCanvas.style.lineHeight || WRITER_DEFAULT_LINE_HEIGHT);
+  Object.entries(writerSpacing).forEach(([key,control]) => {
+    const own = control.perBlock ? block?.style.getPropertyValue(control.property) : '';
+    showWriterSpacing(key,own || writerCanvas.style.getPropertyValue(control.property) || control.fallback);
+  });
 });
 writerLineHeightButton.addEventListener('mousedown', event => {
   event.preventDefault();
@@ -3910,9 +3974,16 @@ writerLineHeightButton.addEventListener('click', event => {
   writerLineHeightButton.setAttribute('aria-expanded',String(!writerLineHeightMenu.hidden));
 });
 writerLineHeightMenu.addEventListener('click', event => event.stopPropagation());
-writerLineHeight.addEventListener('input', () => applyWriterLineHeight(writerLineHeight.value));
-writerLineHeightNumber.addEventListener('change', () => applyWriterLineHeight(writerLineHeightNumber.value));
-document.getElementById('writerLineHeightReset').addEventListener('click', () => applyWriterLineHeight(WRITER_DEFAULT_LINE_HEIGHT));
+Object.entries(writerSpacing).forEach(([key,control]) => {
+  control.range.addEventListener('input', () => applyWriterSpacing(key,control.range.value));
+  control.number.addEventListener('change', () => applyWriterSpacing(key,control.number.value));
+});
+writerLineHeightMenu.querySelectorAll('[data-spacing-reset]').forEach(button => {
+  button.addEventListener('click', () => {
+    const key = button.dataset.spacingReset;
+    applyWriterSpacing(key,writerSpacing[key].fallback);
+  });
+});
 document.addEventListener('click', () => {
   writerLineHeightMenu.hidden = true;
   writerLineHeightButton.setAttribute('aria-expanded','false');
@@ -5136,6 +5207,132 @@ document.addEventListener('keydown', event => {
   openWriterFind(key === 'h');
 });
 
+// ---------- character count & punctuation tidy ----------
+const writerCharCount = document.getElementById('writerCharCount');
+const writerTidyButton = document.getElementById('writerTidyButton');
+const writerTidyLabel = document.getElementById('writerTidyLabel');
+const writerGraphemes = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('ko',{granularity:'grapheme'}) : null;
+const WRITER_NON_TEXT = '.writer-inline-chat-name,.writer-inline-chat-time,.writer-discord-time,.writer-bubble-delete';
+// Only words a reader sees: skip chat names/times and the markup whitespace between blocks.
+function isWriterReadableText(node){
+  const parent = node.parentElement;
+  if(parent.closest(WRITER_NON_TEXT)) return false;
+  if(parent.closest('.writer-inline-chat') && !parent.closest('.writer-inline-chat-bubble')) return false;
+  return parent !== writerCanvas || Boolean(node.data.trim());
+}
+function countWriterCharacters(text){
+  return writerGraphemes ? [...writerGraphemes.segment(text)].length : [...text].length;
+}
+function writerCountableText(range){
+  let text = '';
+  const walker = document.createTreeWalker(writerCanvas,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+    const node = walker.currentNode;
+    if(!isWriterReadableText(node)) continue;
+    if(!range){
+      text += node.data;
+    }else if(range.intersectsNode(node)){
+      const start = node === range.startContainer ? range.startOffset : 0;
+      const end = node === range.endContainer ? range.endOffset : node.length;
+      text += node.data.slice(start,end);
+    }
+  }
+  return text;
+}
+function updateWriterCharCount(){
+  const all = writerCountableText(null);
+  const total = countWriterCharacters(all.replace(/\n/g,''));
+  const compact = countWriterCharacters(all.replace(/\s/g,''));
+  let summary = `글자 수 ${total.toLocaleString()}자 · 공백 제외 ${compact.toLocaleString()}자`;
+  const selection = window.getSelection();
+  const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+  if(range && !range.collapsed && writerCanvas.contains(range.commonAncestorContainer)){
+    summary = `선택 ${countWriterCharacters(writerCountableText(range).replace(/\n/g,'')).toLocaleString()}자 / ${summary}`;
+  }
+  writerCharCount.textContent = summary;
+}
+let writerCountFrame = 0;
+function scheduleWriterCharCount(){
+  cancelAnimationFrame(writerCountFrame);
+  writerCountFrame = requestAnimationFrame(updateWriterCharCount);
+}
+new MutationObserver(scheduleWriterCharCount).observe(writerCanvas,{childList:true,subtree:true,characterData:true});
+document.addEventListener('selectionchange',scheduleWriterCharCount);
+
+let writerTidySnapshot = null;
+let writerTidyTimer = 0;
+function setWriterTidyLabel(text,undo){
+  writerTidyLabel.textContent = text;
+  writerTidyButton.classList.toggle('is-undo',undo);
+}
+function tidyWriterPunctuation(){
+  let changes = 0;
+  let previous = '';
+  let lastBlock = null;
+  const opensQuote = char => !char || /[\s(\[{<「『“‘—–-]/.test(char);
+  const walker = document.createTreeWalker(writerCanvas,NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node => {
+    if(!isWriterReadableText(node)) return;
+    const block = node.parentElement.closest('p,div,h1,h2,h3,h4,h5,h6,.writer-inline-chat-bubble') || writerCanvas;
+    if(block !== lastBlock) previous = '';
+    lastBlock = block;
+    const source = node.data;
+    let output = '';
+    for(let index = 0;index < source.length;index += 1){
+      const char = source[index];
+      let next = char;
+      if(char === '.' && source.startsWith('...',index)){
+        while(source[index + 1] === '.') index += 1;
+        next = '…';
+      }else if((char === ' ' || char === '\u00a0') && (previous === ' ' || previous === '\u00a0')){
+        changes += 1;
+        continue;
+      }else if(char === '"'){
+        next = opensQuote(previous) ? '“' : '”';
+      }else if(char === "'"){
+        next = /[\p{L}\p{N}]/u.test(previous) || !opensQuote(previous) ? '’' : '‘';
+      }
+      if(next !== char) changes += 1;
+      output += next;
+      previous = next;
+    }
+    if(output !== source) node.data = output;
+  });
+  return changes;
+}
+writerTidyButton.addEventListener('click', () => {
+  clearTimeout(writerTidyTimer);
+  if(writerTidySnapshot !== null){
+    writerCanvas.innerHTML = writerTidySnapshot;
+    writerTidySnapshot = null;
+    writerSelectedChatGroup = null;
+    writerSelectedBubbleItem = null;
+    writerSavedRange = null;
+    setWriterTidyLabel('문장부호 정리',false);
+    queueWriterSave();
+    return;
+  }
+  const snapshot = writerCanvas.innerHTML;
+  const changes = tidyWriterPunctuation();
+  if(!changes){
+    setWriterTidyLabel('정리할 곳 없음',false);
+    writerTidyTimer = setTimeout(() => setWriterTidyLabel('문장부호 정리',false),1800);
+    return;
+  }
+  // DOM edits skip the editor's undo stack, so offer a one-step undo here.
+  writerTidySnapshot = snapshot;
+  setWriterTidyLabel(`${changes.toLocaleString()}곳 정리 · 되돌리기`,true);
+  queueWriterSave();
+});
+writerCanvas.addEventListener('input', () => {
+  if(writerTidySnapshot === null) return;
+  writerTidySnapshot = null;
+  setWriterTidyLabel('문장부호 정리',false);
+});
+updateWriterCharCount();
+
 // Keep toolbar popovers inside the viewport whichever way they open.
 const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu,.writer-line-height-menu,.writer-find-menu')];
 function fitWriterPopover(menu){
@@ -5406,6 +5603,8 @@ async function saveWriterImage(){
       exportBody.style.setProperty(property,cleanCanvas.style.getPropertyValue(property));
     }
   }
+  const paragraphGap = writerCanvas.style.getPropertyValue('--writer-paragraph-gap');
+  if(paragraphGap) exportBody.style.setProperty('--writer-paragraph-gap',paragraphGap);
   document.body.appendChild(sheet);
   await Promise.all([...sheet.querySelectorAll('img')].map(image => image.decode()));
   normalizeWriterExportColors(sheet);
