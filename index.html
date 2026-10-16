@@ -1943,12 +1943,6 @@
   #writerCanvas h1{margin:44px 0 20px;line-height:1.35;}
   #writerCanvas h2{margin:40px 0 18px;line-height:1.4;}
   #writerCanvas h3{margin:34px 0 16px;line-height:1.45;}
-  #writerCanvas blockquote{
-    margin:28px 0;
-    padding:8px 0 8px 18px;
-    border-left:3px solid var(--gold);
-    color:#69645c;
-  }
   #writerCanvas hr{
     border:0;
     border-top:1px solid #e2ded5;
@@ -2127,7 +2121,6 @@
   .writer-export-body p{margin:0 0 16px;}
   .writer-export-body > :last-child{margin-bottom:0!important;}
   .writer-export-body img{max-width:100%;height:auto;}
-  .writer-export-body blockquote{margin:28px 0;padding:8px 0 8px 18px;border-left:3px solid var(--gold);}
   .writer-export-body hr{border:0;border-top:1px solid #e2ded5;margin:36px 0;}
   .writer-export-log-name{
     margin-top:38px;
@@ -3617,7 +3610,7 @@ writerFontSize.addEventListener('change', () => {
   if(selection?.isCollapsed){
     let block = selection.anchorNode;
     if(block?.nodeType === Node.TEXT_NODE) block = block.parentElement;
-    block = block?.closest?.('h1,h2,h3,p,div,blockquote');
+    block = block?.closest?.('h1,h2,h3,p,div');
     if(block && writerCanvas.contains(block)) block.style.fontSize = `${pointSize}pt`;
   }else{
     document.execCommand('styleWithCSS',false,false);
