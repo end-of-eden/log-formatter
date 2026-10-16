@@ -1531,29 +1531,32 @@
     width:min(600px,calc(100% - 36px));
     margin:32px auto 120px;
   }
+  /* One compact row above the sheet: selects hug their text, the name field takes the rest. */
   .writer-category-row{
     display:flex;
+    flex-wrap:wrap;
     align-items:center;
-    gap:12px;
-    margin-bottom:16px;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .writer-category-row select,
+  #writerLogName{
+    height:32px;
+    border:1px solid #e1e2e5;
+    border-radius:5px;
+    background:#fafafa;
+    color:#555960;
+    font:12px 'Pretendard',sans-serif;
   }
   .writer-category-row select{
-    width:170px;
-    border:1px solid #e1e2e5;
-    border-radius:2px;
-    background:#fafafa;
-    color:#555960;
-    padding:8px 10px;
-    font-size:12px;
+    flex:0 0 auto;
+    width:auto;
+    padding:0 4px 0 8px;
   }
   #writerLogName{
-    width:min(280px,34vw);
-    border:1px solid #e1e2e5;
-    border-radius:2px;
-    background:#fafafa;
-    color:#555960;
-    padding:8px 10px;
-    font:12px 'Pretendard',sans-serif;
+    flex:1 1 120px;
+    min-width:0;
+    padding:0 10px;
   }
   #writerLogName::placeholder{color:#a4a7ad;}
   .writer-member-form,.writer-message-form{display:grid;align-items:center;gap:8px;}
@@ -2339,8 +2342,6 @@
 
     .writer-page{margin-top:28px;margin-bottom:0;}
     .writer-inline-chat{width:100%;max-width:100%;}
-    #writerLogName{flex:1;min-width:0;width:auto;}
-    .writer-category-row select{flex:0 1 170px;min-width:0;}
   }
   @media (max-width:600px){
     .writer-toolbar{
@@ -2593,15 +2594,12 @@
 
     <main class="writer-page">
       <div class="writer-category-row">
-        <label for="writerExportFormat">저장 방식</label>
-        <select id="writerExportFormat" aria-label="저장 방식">
+        <select id="writerExportFormat" aria-label="저장 방식" title="저장 방식">
           <option value="png">PNG · 배경 포함</option>
           <option value="transparent">PNG · 투명 배경</option>
           <option value="jpg">JPG · 배경 포함</option>
         </select>
-      </div>
-      <div class="writer-category-row">
-        <select id="writerCategory" aria-label="카테고리">
+        <select id="writerCategory" aria-label="카테고리" title="카테고리">
           <option>로그형</option>
           <option>메신저형</option>
         </select>
