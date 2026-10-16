@@ -1066,7 +1066,7 @@
     display:grid;
     place-items:center;
   }
-  .writer-icon .lucide,.writer-format .lucide,.writer-photo .lucide,.writer-color-trigger .lucide,.writer-line-height .lucide,.writer-selection-toolbar .lucide{
+  .writer-icon .lucide,.writer-format .lucide,.writer-photo .lucide,.writer-color-trigger .lucide,.writer-selection-toolbar .lucide{
     display:block;
     flex:0 0 auto;
     width:16px;
@@ -1300,19 +1300,57 @@
     background:#e4e1dc;
   }
   .writer-margin-wrap{position:relative;flex:0 0 auto;}
-  .writer-line-height{
+  .writer-line-height-wrap{position:relative;display:flex;flex:0 0 auto;}
+  #writerLineHeightValue{min-width:28px;text-align:left;font:12px 'JetBrains Mono',monospace;}
+  .writer-line-height-menu{
+    position:absolute;
+    top:38px;
+    left:0;
+    z-index:300;
+    width:240px;
+    padding:12px;
+    border:1px solid #e0e1e4;
+    border-radius:6px;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(32,34,38,.14);
+  }
+  .writer-line-height-head{
     display:flex;
-    flex:0 0 auto;
     align-items:center;
-    height:32px;
-    padding-left:6px;
+    justify-content:space-between;
+    margin-bottom:8px;
+    color:#34383f;
+    font:700 12px 'Pretendard',sans-serif;
+  }
+  #writerLineHeightNumber{
+    width:68px;
+    height:28px;
+    padding:0 8px;
+    border:1px solid #dfe1e5;
     border-radius:5px;
-    color:#313338;
+    background:#fff;
+    color:#4b4f56;
+    font:12px 'JetBrains Mono',monospace;
+  }
+  #writerLineHeight{width:100%;margin:4px 0;accent-color:var(--burgundy);cursor:pointer;}
+  .writer-line-height-scale{
+    display:flex;
+    justify-content:space-between;
+    color:#9a9ea6;
+    font:10px 'JetBrains Mono',monospace;
+  }
+  .writer-toolbar #writerLineHeightReset{
+    width:100%;
+    height:30px;
+    margin-top:10px;
+    border:1px solid #e0e1e4;
+    border-radius:5px;
+    background:#fff;
+    color:#5b5f66;
+    font:600 11px 'Pretendard',sans-serif;
     cursor:pointer;
   }
-  .writer-line-height:hover{background:#f3f3f5;}
-  .writer-line-height .lucide{margin:0;}
-  .writer-toolbar .writer-line-height select{min-width:0;padding-left:3px;cursor:pointer;}
+  .writer-toolbar #writerLineHeightReset:hover{background:#f6f6f8;}
   .writer-margin-menu{
     position:absolute;
     top:38px;
@@ -2040,8 +2078,10 @@
   .writer-app.night .writer-icon,
   .writer-app.night .writer-photo{color:#e7e5df;}
   .writer-app.night .writer-sep{background:#3b3d43;}
-  .writer-app.night .writer-line-height{color:#e7e5df;}
-  .writer-app.night .writer-line-height:hover{background:#2e3035;}
+  .writer-app.night .writer-line-height-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-line-height-head{color:#ece9e1;}
+  .writer-app.night #writerLineHeightNumber,
+  .writer-app.night .writer-toolbar #writerLineHeightReset{background:#34363b;border-color:#484b51;color:#d8d9dc;}
   .writer-app.night .writer-color-trigger::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);}
   .writer-app.night .writer-member-presets summary{color:#ece9e1;}
   .writer-app.night .writer-chat-menu .writer-sheet-close{background:#34363b;color:#d8d9dc;}
@@ -2199,7 +2239,9 @@
     #writerFontSize{grid-column:span 2;}
     #writerFont{grid-column:span 3;}
     .writer-toolbar > select{width:100%;justify-self:stretch;}
-    .writer-line-height{grid-column:span 3;justify-self:start;padding-left:4px;}
+    .writer-line-height-wrap{grid-column:span 3;justify-self:start;}
+    .writer-toolbar > .writer-line-height-wrap > button{width:auto;padding:0 4px;}
+    #writerLineHeightNumber{font-size:16px;}
     .writer-spacer{display:none;}
     .writer-insert-menu.writer-chat-menu{
       position:fixed;
@@ -2364,11 +2406,15 @@
           <label>왼쪽 <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="40"><span>40px</span></label>
         </div>
       </div>
-      <label class="writer-line-height" title="행간"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h8"/> <path d="M3 12h8"/> <path d="M3 19h8"/> <path d="m15 8 3-3 3 3"/> <path d="m15 16 3 3 3-3"/></svg><select id="writerLineHeight" aria-label="행간">
-        <option value="1.2">1.2</option><option value="1.4">1.4</option><option value="1.5">1.5</option>
-        <option value="1.6" selected>1.6</option><option value="1.8">1.8</option><option value="2">2.0</option>
-        <option value="2.2">2.2</option><option value="2.4">2.4</option>
-      </select></label>
+      <div class="writer-line-height-wrap">
+        <button class="writer-format writer-labeled writer-line-height-button" type="button" id="writerLineHeightButton" title="행간" aria-label="행간" aria-expanded="false"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h8"/> <path d="M3 12h8"/> <path d="M3 19h8"/> <path d="m15 8 3-3 3 3"/> <path d="m15 16 3 3 3-3"/></svg><span id="writerLineHeightValue">1.6</span></button>
+        <div class="writer-line-height-menu" id="writerLineHeightMenu" hidden>
+          <div class="writer-line-height-head"><strong>행간</strong><input type="number" id="writerLineHeightNumber" min="1" max="3" step="0.05" value="1.6" aria-label="행간 값"></div>
+          <input type="range" id="writerLineHeight" min="1" max="3" step="0.05" value="1.6" aria-label="행간">
+          <div class="writer-line-height-scale"><span>1.0</span><span>2.0</span><span>3.0</span></div>
+          <button type="button" id="writerLineHeightReset">기본값 1.6</button>
+        </div>
+      </div>
       <div class="writer-spacer"></div>
       <button class="writer-format writer-mode-toggle" type="button" id="writerMode" title="다크모드" aria-label="다크모드" aria-pressed="false"><svg class="lucide icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg><svg class="lucide icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/> <path d="M12 2v2"/> <path d="M12 20v2"/> <path d="m4.93 4.93 1.41 1.41"/> <path d="m17.66 17.66 1.41 1.41"/> <path d="M2 12h2"/> <path d="M20 12h2"/> <path d="m6.34 17.66-1.41 1.41"/> <path d="m19.07 4.93-1.41 1.41"/></svg></button>
       <button class="writer-format writer-clear-all" type="button" id="writerClearAll" title="전체 삭제" aria-label="전체 삭제"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
@@ -3714,22 +3760,62 @@ writerFontSize.addEventListener('change', () => {
 });
 writerFont.addEventListener('mousedown', () => rememberWriterRange());
 const writerLineHeight = document.getElementById('writerLineHeight');
-writerLineHeight.addEventListener('mousedown',rememberWriterRange);
-writerLineHeight.addEventListener('change', () => {
-  restoreWriterRange();
-  const range = window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
-  const blocks = [...writerCanvas.children].filter(block => !block.matches('.writer-inline-chat,hr'));
+const writerLineHeightButton = document.getElementById('writerLineHeightButton');
+const writerLineHeightMenu = document.getElementById('writerLineHeightMenu');
+const writerLineHeightNumber = document.getElementById('writerLineHeightNumber');
+const writerLineHeightValue = document.getElementById('writerLineHeightValue');
+const WRITER_DEFAULT_LINE_HEIGHT = 1.6;
+function formatWriterLineHeight(value){
+  return String(Math.round(Math.min(3,Math.max(1,Number(value) || WRITER_DEFAULT_LINE_HEIGHT)) * 100) / 100);
+}
+function showWriterLineHeight(value){
+  const formatted = formatWriterLineHeight(value);
+  writerLineHeight.value = formatted;
+  writerLineHeightNumber.value = formatted;
+  writerLineHeightValue.textContent = formatted.includes('.') ? formatted : `${formatted}.0`;
+}
+function writerTextBlocks(){
+  return [...writerCanvas.children].filter(block => !block.matches('.writer-inline-chat,hr'));
+}
+function applyWriterLineHeight(value){
+  const formatted = formatWriterLineHeight(value);
+  const range = writerSavedRange && writerCanvas.contains(writerSavedRange.commonAncestorContainer) ? writerSavedRange : null;
   if(!range || range.collapsed){
     // Like the font menu: no text selection means the whole document.
-    writerCanvas.style.lineHeight = writerLineHeight.value;
-    blocks.forEach(block => block.style.removeProperty('line-height'));
+    writerCanvas.style.lineHeight = formatted;
+    writerTextBlocks().forEach(block => block.style.removeProperty('line-height'));
   }else{
-    blocks.filter(block => range.intersectsNode(block)).forEach(block => {
-      block.style.lineHeight = writerLineHeight.value;
+    writerTextBlocks().filter(block => range.intersectsNode(block)).forEach(block => {
+      block.style.lineHeight = formatted;
     });
   }
-  rememberWriterRange();
+  showWriterLineHeight(formatted);
   queueWriterSave();
+}
+// Show the line height under the caret so the slider starts from what is on the page.
+document.addEventListener('selectionchange', () => {
+  const node = window.getSelection()?.anchorNode;
+  if(!node || !writerCanvas.contains(node) || !writerLineHeightMenu.hidden) return;
+  let block = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  while(block && block.parentElement !== writerCanvas) block = block.parentElement;
+  showWriterLineHeight(block?.style.lineHeight || writerCanvas.style.lineHeight || WRITER_DEFAULT_LINE_HEIGHT);
+});
+writerLineHeightButton.addEventListener('mousedown', event => {
+  event.preventDefault();
+  rememberWriterRange();
+});
+writerLineHeightButton.addEventListener('click', event => {
+  event.stopPropagation();
+  writerLineHeightMenu.hidden = !writerLineHeightMenu.hidden;
+  writerLineHeightButton.setAttribute('aria-expanded',String(!writerLineHeightMenu.hidden));
+});
+writerLineHeightMenu.addEventListener('click', event => event.stopPropagation());
+writerLineHeight.addEventListener('input', () => applyWriterLineHeight(writerLineHeight.value));
+writerLineHeightNumber.addEventListener('change', () => applyWriterLineHeight(writerLineHeightNumber.value));
+document.getElementById('writerLineHeightReset').addEventListener('click', () => applyWriterLineHeight(WRITER_DEFAULT_LINE_HEIGHT));
+document.addEventListener('click', () => {
+  writerLineHeightMenu.hidden = true;
+  writerLineHeightButton.setAttribute('aria-expanded','false');
 });
 writerFont.addEventListener('change', () => {
   if(applyWriterBubbleFormat('fontName',writerFont.value)) return;
@@ -4746,7 +4832,7 @@ document.addEventListener('click', event => {
 });
 
 // Keep toolbar popovers inside the viewport whichever way they open.
-const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu')];
+const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu,.writer-line-height-menu')];
 function fitWriterPopover(menu){
   menu.style.translate = '';
   if(menu.hidden || getComputedStyle(menu).position === 'fixed') return;
