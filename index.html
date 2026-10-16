@@ -1404,6 +1404,8 @@
     color:#fff;
   }
   #writerMobileImageSave{display:none;}
+  /* Save sits with its format picker, flush with the sheet's right edge. */
+  .writer-category-row #writerImageSave{height:34px;margin-left:auto;padding:0 16px;font-size:12px;}
   .writer-page{
     width:min(600px,calc(100% - 36px));
     margin:32px auto 120px;
@@ -2411,7 +2413,6 @@
       <div class="writer-spacer"></div>
       <button class="writer-format writer-mode-toggle" type="button" id="writerMode" title="다크모드" aria-label="다크모드" aria-pressed="false"><svg class="lucide icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg><svg class="lucide icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/> <path d="M12 2v2"/> <path d="M12 20v2"/> <path d="m4.93 4.93 1.41 1.41"/> <path d="m17.66 17.66 1.41 1.41"/> <path d="M2 12h2"/> <path d="M20 12h2"/> <path d="m6.34 17.66-1.41 1.41"/> <path d="m19.07 4.93-1.41 1.41"/></svg></button>
       <button class="writer-format writer-clear-all" type="button" id="writerClearAll" title="전체 삭제" aria-label="전체 삭제"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-      <button class="writer-save primary" id="writerImageSave" type="button">PNG 저장</button>
     </header>
 
     <main class="writer-page">
@@ -2422,6 +2423,7 @@
           <option value="transparent">PNG · 투명 배경</option>
           <option value="jpg">JPG · 배경 포함</option>
         </select>
+        <button class="writer-save primary" id="writerImageSave" type="button">PNG 저장</button>
       </div>
       <div class="writer-category-row">
         <select id="writerCategory" aria-label="카테고리">
