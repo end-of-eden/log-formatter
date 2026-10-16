@@ -2370,6 +2370,9 @@
     #writerFindInput,#writerReplaceInput{height:38px;font-size:16px;}
     .writer-spacing-row input[type=number]{font-size:16px;}
     .writer-spacer,.writer-row-break{display:none;}
+    /* Phones: the two selects split the first row, the name field takes the second. */
+    .writer-category-row select{flex:1 1 0;min-width:0;}
+    #writerLogName{flex-basis:100%;}
     #writerMode,#writerClearAll{order:1;}
     .writer-insert-menu.writer-chat-menu{
       position:fixed;
