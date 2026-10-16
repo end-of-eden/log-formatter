@@ -1484,8 +1484,9 @@
     color:#fff;
   }
   #writerMobileImageSave{display:none;}
-  /* Save sits with its format picker, flush with the sheet's right edge. */
-  .writer-category-row #writerImageSave{height:34px;margin-left:auto;padding:0 16px;font-size:12px;}
+  /* Save closes the second toolbar row, its box flush with the sheet's right edge
+     (the icons above align by glyph, which sits 6px inside the button). */
+  .writer-toolbar #writerImageSave{height:32px;margin-right:6px;padding:0 16px;font-size:12px;}
   .writer-page{
     width:min(600px,calc(100% - 36px));
     margin:32px auto 120px;
@@ -2516,6 +2517,8 @@
           <button class="writer-find-text" type="button" id="writerReplaceAll">모두 바꾸기</button>
         </div>
       </div>
+      <div class="writer-spacer"></div>
+      <button class="writer-save primary" id="writerImageSave" type="button">PNG 저장</button>
     </header>
 
     <main class="writer-page">
@@ -2526,7 +2529,6 @@
           <option value="transparent">PNG · 투명 배경</option>
           <option value="jpg">JPG · 배경 포함</option>
         </select>
-        <button class="writer-save primary" id="writerImageSave" type="button">PNG 저장</button>
       </div>
       <div class="writer-category-row">
         <select id="writerCategory" aria-label="카테고리">
