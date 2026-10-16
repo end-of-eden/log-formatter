@@ -1059,19 +1059,14 @@
     cursor:pointer;
   }
   .writer-icon:hover,.writer-format:hover,.writer-photo:hover{background:#f3f3f5;}
-  .writer-clear-all{
-    width:auto;
-    color:#c0392b;
-    font-size:11px;
-    font-weight:600;
-  }
+  .writer-clear-all{color:#c0392b;}
   .writer-clear-all:hover{background:rgba(192,57,43,.08);}
   .writer-photo{
     min-width:30px;
     display:grid;
     place-items:center;
   }
-  .writer-icon .lucide,.writer-format .lucide,.writer-photo .lucide,.writer-selection-toolbar .lucide{
+  .writer-icon .lucide,.writer-format .lucide,.writer-photo .lucide,.writer-color-trigger .lucide,.writer-selection-toolbar .lucide{
     display:block;
     flex:0 0 auto;
     width:16px;
@@ -1083,7 +1078,11 @@
     stroke-linecap:round;
     stroke-linejoin:round;
   }
-  .writer-insert-button .lucide,.writer-selection-toolbar .lucide{width:14px;height:14px;margin:0;}
+  .writer-labeled{width:auto;display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;}
+  .writer-labeled .lucide,.writer-selection-toolbar .lucide{margin:0;}
+  .writer-mode-toggle .icon-sun,
+  .writer-app.night .writer-mode-toggle .icon-moon{display:none;}
+  .writer-app.night .writer-mode-toggle .icon-sun{display:block;}
   .writer-color-wrap{position:relative;display:flex;flex:0 0 auto;}
   .writer-color-trigger{
     position:relative;
@@ -1094,29 +1093,23 @@
     border-radius:5px;
     background:transparent;
     color:#303236;
-    font:16px Georgia,serif;
     cursor:pointer;
   }
+  .writer-color-trigger .lucide{translate:0 -2px;}
   .writer-color-trigger:hover,.writer-color-trigger[aria-expanded="true"]{background:#f3f3f5;}
-  .writer-color-trigger.fore::after{
+  .writer-color-trigger::after{
     content:"";
     position:absolute;
-    right:4px;
-    bottom:7px;
-    width:6px;
-    height:6px;
-    border-radius:50%;
+    right:7px;
+    bottom:4px;
+    left:7px;
+    height:3px;
+    border-radius:1px;
     background:var(--writer-fore-color,#333333);
   }
-  .writer-color-trigger.back span{
-    display:grid;
-    width:17px;
-    height:17px;
-    place-items:center;
-    margin:auto;
-    border:1px solid #8b8e94;
+  .writer-color-trigger.back::after{
     background:var(--writer-back-color,transparent);
-    font:13px Georgia,serif;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);
   }
   .writer-color-menu{
     position:absolute;
@@ -1230,7 +1223,6 @@
   }
   .writer-spacer{flex:1;}
   .writer-insert-wrap{position:relative;flex:0 0 auto;}
-  .writer-insert-button{width:auto;min-width:64px;font-size:10px;display:flex;align-items:center;gap:5px;}
   .writer-insert-menu{
     position:absolute;
     top:38px;
@@ -1257,6 +1249,8 @@
   .writer-insert-menu button:hover{background:#f4f4f6;}
   .writer-insert-menu.writer-chat-menu{
     width:390px;
+    max-height:calc(100vh - 120px);
+    overflow:auto;
     padding:12px;
   }
   .writer-selection-toolbar{
@@ -1295,7 +1289,7 @@
     border-radius:5px;
     background:transparent;
     color:#44484f;
-    font:600 11px 'Pretendard',sans-serif;
+    font:600 12px 'Pretendard',sans-serif;
     cursor:pointer;
   }
   .writer-selection-toolbar button:hover{background:#f1f2f4;}
@@ -1306,7 +1300,6 @@
     background:#e4e1dc;
   }
   .writer-margin-wrap{position:relative;flex:0 0 auto;}
-  .writer-margin-button{width:auto;min-width:38px;font-size:10px;}
   .writer-margin-menu{
     position:absolute;
     top:38px;
@@ -1419,7 +1412,7 @@
     position:relative;
     padding:12px 34px 12px 13px;
     color:#34383f;
-    font:700 11px 'Pretendard',sans-serif;
+    font:700 12px 'Pretendard',sans-serif;
     cursor:pointer;
     list-style:none;
   }
@@ -1439,7 +1432,7 @@
     gap:10px;
     padding:0 12px 12px;
     color:#8b8f96;
-    font:10px/1.5 'Pretendard',sans-serif;
+    font:11px/1.5 'Pretendard',sans-serif;
   }
   .writer-preset-body>span{min-width:0;flex:1;}
   .writer-preset-actions{
@@ -1461,7 +1454,7 @@
     border-radius:6px;
     background:#fff;
     color:var(--burgundy);
-    font:600 10px 'Pretendard',sans-serif;
+    font:600 11px 'Pretendard',sans-serif;
     cursor:pointer;
   }
   .writer-json-action input{display:none;}
@@ -1491,13 +1484,13 @@
   .writer-member-section-head strong{
     display:block;
     color:#34383f;
-    font:700 11px 'Pretendard',sans-serif;
+    font:700 12px 'Pretendard',sans-serif;
   }
   .writer-member-section-head small{
     display:block;
     margin-top:2px;
-    color:#aaaeb5;
-    font:9px/1.35 'Pretendard',sans-serif;
+    color:#9a9ea6;
+    font:10px/1.4 'Pretendard',sans-serif;
   }
   .writer-member-section-head .writer-new-member-button{
     width:auto;
@@ -1535,7 +1528,7 @@
     flex-direction:column;
     gap:5px;
     color:#858990;
-    font:600 9px 'Pretendard',sans-serif;
+    font:600 10px 'Pretendard',sans-serif;
   }
   .writer-member-form .writer-avatar-field{
     display:grid;
@@ -1558,15 +1551,27 @@
     text-align:center;
   }
   .writer-message-form{
-    grid-template-columns:minmax(86px,1fr) 66px 78px 82px;
+    grid-template-columns:1fr 1fr;
     margin-top:10px;
     padding-top:10px;
     border-top:1px solid #ececef;
   }
   #writerChatText{grid-column:1 / -1;height:72px!important;resize:vertical;}
   #writerChatFontSize{grid-column:1 / -1;}
-  .writer-bubble-color-control{grid-column:1 / -1;display:flex;align-items:center;gap:10px;}
+  .writer-bubble-color-control{grid-column:1 / -1;display:flex;align-items:center;gap:10px;color:#858990;font:600 11px 'Pretendard',sans-serif;}
   #writerBubbleColor{width:48px;height:30px;padding:2px;}
+  .writer-chat-menu .writer-sheet-close{
+    display:none;
+    width:32px;
+    height:32px;
+    margin-left:auto;
+    padding:0;
+    border-radius:8px;
+    background:#f1f2f4;
+    color:#6b6f76;
+    font-size:18px;
+    line-height:1;
+  }
   #writerAddBubble{
     grid-column:1 / -1;
     justify-self:center;
@@ -1606,7 +1611,7 @@
     border-radius:5px;
     background:#fff;
     color:#4b4f56;
-    font:11px 'Pretendard',sans-serif;
+    font:12px 'Pretendard',sans-serif;
   }
   .writer-chat-menu input:focus,
   .writer-chat-menu select:focus,
@@ -2022,6 +2027,9 @@
   .writer-app.night .writer-icon,
   .writer-app.night .writer-photo{color:#e7e5df;}
   .writer-app.night .writer-sep{background:#3b3d43;}
+  .writer-app.night .writer-color-trigger::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);}
+  .writer-app.night .writer-member-presets summary{color:#ece9e1;}
+  .writer-app.night .writer-chat-menu .writer-sheet-close{background:#34363b;color:#d8d9dc;}
   .writer-app.night .writer-icon:hover,
   .writer-app.night .writer-format:hover,
   .writer-app.night .writer-photo:hover{
@@ -2153,6 +2161,45 @@
 
     .writer-page{margin-top:28px;margin-bottom:0;}
     .writer-inline-chat{width:100%;max-width:100%;}
+    #writerLogName{flex:1;min-width:0;width:auto;}
+    .writer-category-row select{flex:0 1 170px;min-width:0;}
+  }
+  @media (max-width:600px){
+    .writer-toolbar{
+      min-height:0;
+      padding-top:6px;
+      padding-bottom:6px;
+      /* backdrop-filter would trap the fixed bottom sheet inside the toolbar. */
+      backdrop-filter:none;
+    }
+    .writer-insert-menu.writer-chat-menu{
+      position:fixed;
+      top:auto;
+      right:0;
+      bottom:0;
+      left:0;
+      z-index:400;
+      width:auto;
+      max-height:78vh;
+      max-height:78dvh;
+      padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));
+      border-radius:14px 14px 0 0;
+      box-shadow:0 -10px 30px rgba(32,34,38,.2);
+    }
+    /* 16px keeps iOS from zooming into focused fields. */
+    .writer-chat-menu input[type=text],
+    .writer-chat-menu input[type=time],
+    .writer-chat-menu select,
+    .writer-chat-menu textarea{font-size:16px;height:40px;}
+    .writer-chat-menu .writer-sheet-close{display:grid;place-items:center;}
+    .writer-label-text{display:none;}
+    .writer-toolbar select{min-width:0;padding-right:2px;padding-left:2px;}
+    #writerFontSize{min-width:52px;}
+    #writerFont{max-width:84px;}
+    .writer-member-form{grid-template-columns:repeat(3,1fr);}
+    .writer-member-form label:first-child,
+    .writer-member-form #writerAddMember{grid-column:1 / -1;width:100%;}
+    .writer-preset-body{flex-wrap:wrap;}
   }
   @media (max-width:860px){
     body{display:block;overflow:auto;}
@@ -2200,7 +2247,7 @@
       <button class="writer-format" type="button" data-command="underline" title="밑줄" aria-label="밑줄"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4v6a6 6 0 0 0 12 0V4"/> <line x1="4" x2="20" y1="20" y2="20"/></svg></button>
       <button class="writer-format" type="button" data-command="strikeThrough" title="취소선" aria-label="취소선"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4H9a3 3 0 0 0-2.83 4"/> <path d="M14 12a4 4 0 0 1 0 8H6"/> <line x1="4" x2="20" y1="12" y2="12"/></svg></button>
       <div class="writer-color-wrap" data-color-mode="fore">
-        <button class="writer-color-trigger fore" id="writerForeButton" type="button" title="글자색" aria-label="글자색" aria-expanded="false">T</button>
+        <button class="writer-color-trigger fore" id="writerForeButton" type="button" title="글자색" aria-label="글자색" aria-expanded="false"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16"/> <path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/> <path d="M9 20h6"/></svg></button>
         <div class="writer-color-menu" id="writerForeMenu" hidden>
           <div class="writer-color-grid"></div>
           <div class="writer-color-custom">
@@ -2211,7 +2258,7 @@
         </div>
       </div>
       <div class="writer-color-wrap" data-color-mode="back">
-        <button class="writer-color-trigger back" id="writerBackButton" type="button" title="배경색" aria-label="배경색" aria-expanded="false"><span>T</span></button>
+        <button class="writer-color-trigger back" id="writerBackButton" type="button" title="배경색" aria-label="배경색" aria-expanded="false"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 11-6 6v3h9l3-3"/> <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg></button>
         <div class="writer-color-menu" id="writerBackMenu" hidden>
           <div class="writer-color-grid"></div>
           <div class="writer-color-custom">
@@ -2228,9 +2275,9 @@
       <button class="writer-format" type="button" data-command="justifyFull" title="양쪽 정렬" aria-label="양쪽 정렬"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18"/> <path d="M3 12h18"/> <path d="M3 19h18"/></svg></button>
       <span class="writer-sep"></span>
       <div class="writer-insert-wrap">
-        <button class="writer-format writer-insert-button" type="button" data-writer-action="insert-menu" title="말풍선"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>말풍선</button>
+        <button class="writer-format writer-labeled writer-insert-button" type="button" data-writer-action="insert-menu" title="말풍선"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg><span class="writer-label-text">말풍선</span></button>
         <div class="writer-insert-menu writer-chat-menu" id="writerInsertMenu" hidden>
-          <div class="writer-member-heading">멤버 <span class="writer-member-count" id="writerMemberCount">0</span></div>
+          <div class="writer-member-heading">멤버 <span class="writer-member-count" id="writerMemberCount">0</span><button class="writer-sheet-close" type="button" id="writerInsertClose" aria-label="닫기">×</button></div>
           <details class="writer-member-presets">
             <summary>⭐ 멤버 프리셋</summary>
             <div class="writer-preset-body">
@@ -2282,7 +2329,7 @@
       </div>
       <button class="writer-format" type="button" data-command="insertHorizontalRule" title="구분선" aria-label="구분선"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 16-4 4-4-4"/> <path d="M3 12h18"/> <path d="m8 8 4-4 4 4"/></svg></button>
       <div class="writer-margin-wrap">
-        <button class="writer-format writer-margin-button" type="button" id="writerMarginButton">여백</button>
+        <button class="writer-format writer-labeled writer-margin-button" type="button" id="writerMarginButton" title="여백"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/> <path d="M17 3h2a2 2 0 0 1 2 2v2"/> <path d="M21 17v2a2 2 0 0 1-2 2h-2"/> <path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg><span class="writer-label-text">여백</span></button>
         <div class="writer-margin-menu" id="writerMarginMenu" hidden>
           <label>위 <input type="number" id="exportMarginTop" min="0" max="160" step="1" value="60"><span>60px</span></label>
           <label>오른쪽 <input type="number" id="exportMarginRight" min="0" max="320" step="1" value="40"><span>40px</span></label>
@@ -2290,12 +2337,9 @@
           <label>왼쪽 <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="40"><span>40px</span></label>
         </div>
       </div>
-      <button class="writer-format writer-clear-all" type="button" id="writerClearAll">전체 삭제</button>
       <div class="writer-spacer"></div>
-      <select id="writerMode" aria-label="편집 모드">
-        <option value="default">기본모드</option>
-        <option value="night">다크모드</option>
-      </select>
+      <button class="writer-format writer-mode-toggle" type="button" id="writerMode" title="다크모드" aria-label="다크모드" aria-pressed="false"><svg class="lucide icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg><svg class="lucide icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/> <path d="M12 2v2"/> <path d="M12 20v2"/> <path d="m4.93 4.93 1.41 1.41"/> <path d="m17.66 17.66 1.41 1.41"/> <path d="M2 12h2"/> <path d="M20 12h2"/> <path d="m6.34 17.66-1.41 1.41"/> <path d="m19.07 4.93-1.41 1.41"/></svg></button>
+      <button class="writer-format writer-clear-all" type="button" id="writerClearAll" title="전체 삭제" aria-label="전체 삭제"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       <button class="writer-save primary" id="writerImageSave" type="button">PNG 저장</button>
     </header>
 
@@ -2313,7 +2357,7 @@
           <option>로그형</option>
           <option>메신저형</option>
         </select>
-        <input id="writerLogName" type="text" placeholder="왼쪽 아래에 표시할 로그 이름" aria-label="로그 이름">
+        <input id="writerLogName" type="text" placeholder="로그 이름 (선택)" aria-label="로그 이름">
       </div>
       <section class="writer-preview-sheet" id="writerPreviewSheet" aria-label="저장 이미지 미리보기">
         <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
@@ -3502,6 +3546,11 @@ function syncWriterToolbarAlignment(){
     return;
   }
   writerToolbar.style.paddingLeft = `${Math.max(18,writerPreviewSheet.getBoundingClientRect().left)}px`;
+  // Give up the sheet alignment when it would push the tools onto a second row.
+  const items = [...writerToolbar.children].filter(item => item.offsetParent);
+  if(items.length && items.at(-1).getBoundingClientRect().top >= items[0].getBoundingClientRect().bottom){
+    writerToolbar.style.paddingLeft = '18px';
+  }
 }
 function syncWriterPreview(){
   writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
@@ -3634,8 +3683,12 @@ writerFont.addEventListener('change', () => {
   rememberWriterRange();
   queueWriterSave();
 });
-writerMode.addEventListener('change', () => {
-  writerApp.classList.toggle('night',writerMode.value === 'night');
+writerMode.addEventListener('click', () => {
+  const night = !writerApp.classList.contains('night');
+  writerApp.classList.toggle('night',night);
+  writerMode.setAttribute('aria-pressed',String(night));
+  writerMode.title = night ? '기본모드' : '다크모드';
+  writerMode.setAttribute('aria-label',writerMode.title);
 });
 
 const writerImageInput = document.getElementById('writerImageInput');
@@ -4130,6 +4183,10 @@ writerInsertButton.addEventListener('click', event => {
   prepareWriterBubbleSelection();
 });
 writerInsertMenu.addEventListener('click', event => event.stopPropagation());
+document.getElementById('writerInsertClose').addEventListener('click', () => {
+  writerInsertMenu.hidden = true;
+  writerBubbleReplaceRange = null;
+});
 writerNewMemberButton.addEventListener('click', () => {
   resetWriterMemberForm();
   writerNewMemberPanel.hidden = false;
@@ -4633,6 +4690,21 @@ document.addEventListener('click', event => {
   if(!event.target.closest('.writer-margin-wrap')) writerMarginMenu.hidden = true;
 });
 
+// Keep toolbar popovers inside the viewport whichever way they open.
+const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu')];
+function fitWriterPopover(menu){
+  menu.style.translate = '';
+  if(menu.hidden || getComputedStyle(menu).position === 'fixed') return;
+  const gutter = 8;
+  const rect = menu.getBoundingClientRect();
+  let shift = Math.min(0,window.innerWidth - gutter - rect.right);
+  if(rect.left + shift < gutter) shift = gutter - rect.left;
+  if(shift) menu.style.translate = `${shift}px 0`;
+}
+const writerPopoverObserver = new MutationObserver(records => records.forEach(record => fitWriterPopover(record.target)));
+writerPopovers.forEach(menu => writerPopoverObserver.observe(menu,{attributes:true,attributeFilter:['hidden']}));
+window.addEventListener('resize', () => writerPopovers.forEach(fitWriterPopover),{passive:true});
+
 writerCanvas.addEventListener('paste', async event => {
   const clipboard = event.clipboardData || window.clipboardData;
   const imageFiles = [...(event.clipboardData?.items || [])]
@@ -4943,7 +5015,6 @@ document.getElementById('writerExportFormat').addEventListener('change',event =>
 });
 writerCanvas.style.fontFamily = writerFont.value;
 syncWriterPreview();
-writerMode.dispatchEvent(new Event('change'));
 writerChatStyle.dispatchEvent(new Event('change'));
 </script>
 </body>
