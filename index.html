@@ -1066,7 +1066,7 @@
     display:grid;
     place-items:center;
   }
-  .writer-icon .lucide,.writer-format .lucide,.writer-photo .lucide,.writer-color-trigger .lucide,.writer-selection-toolbar .lucide{
+  .writer-icon .lucide,.writer-format .lucide,.writer-photo .lucide,.writer-color-trigger .lucide,.writer-line-height .lucide,.writer-selection-toolbar .lucide{
     display:block;
     flex:0 0 auto;
     width:16px;
@@ -1222,7 +1222,7 @@
     cursor:pointer;
   }
   .writer-spacer{flex:1;}
-  .writer-insert-wrap{position:relative;flex:0 0 auto;}
+  .writer-insert-wrap{position:relative;display:flex;flex:0 0 auto;}
   .writer-insert-menu{
     position:absolute;
     top:38px;
@@ -1300,6 +1300,19 @@
     background:#e4e1dc;
   }
   .writer-margin-wrap{position:relative;flex:0 0 auto;}
+  .writer-line-height{
+    display:flex;
+    flex:0 0 auto;
+    align-items:center;
+    height:32px;
+    padding-left:6px;
+    border-radius:5px;
+    color:#313338;
+    cursor:pointer;
+  }
+  .writer-line-height:hover{background:#f3f3f5;}
+  .writer-line-height .lucide{margin:0;}
+  .writer-toolbar .writer-line-height select{min-width:0;padding-left:3px;cursor:pointer;}
   .writer-margin-menu{
     position:absolute;
     top:38px;
@@ -2027,6 +2040,8 @@
   .writer-app.night .writer-icon,
   .writer-app.night .writer-photo{color:#e7e5df;}
   .writer-app.night .writer-sep{background:#3b3d43;}
+  .writer-app.night .writer-line-height{color:#e7e5df;}
+  .writer-app.night .writer-line-height:hover{background:#2e3035;}
   .writer-app.night .writer-color-trigger::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);}
   .writer-app.night .writer-member-presets summary{color:#ece9e1;}
   .writer-app.night .writer-chat-menu .writer-sheet-close{background:#34363b;color:#d8d9dc;}
@@ -2171,7 +2186,21 @@
       padding-bottom:6px;
       /* backdrop-filter would trap the fixed bottom sheet inside the toolbar. */
       backdrop-filter:none;
+      /* A 12-column grid lines both rows up: photo·size·font·BIUS·colors, then align·insert·spacer·mode·clear. */
+      display:grid;
+      grid-template-columns:repeat(12,minmax(0,1fr));
+      justify-items:center;
+      row-gap:2px;
+      column-gap:0;
     }
+    .writer-toolbar .writer-sep{display:none;}
+    .writer-toolbar > button,
+    .writer-color-trigger{min-width:0;width:28px;padding:0;}
+    #writerFontSize{grid-column:span 2;}
+    #writerFont{grid-column:span 3;}
+    .writer-toolbar > select{width:100%;justify-self:stretch;}
+    .writer-line-height{grid-column:span 3;justify-self:start;padding-left:4px;}
+    .writer-spacer{display:none;}
     .writer-insert-menu.writer-chat-menu{
       position:fixed;
       top:auto;
@@ -2194,8 +2223,6 @@
     .writer-chat-menu .writer-sheet-close{display:grid;place-items:center;}
     .writer-label-text{display:none;}
     .writer-toolbar select{min-width:0;padding-right:2px;padding-left:2px;}
-    #writerFontSize{min-width:52px;}
-    #writerFont{max-width:84px;}
     .writer-member-form{grid-template-columns:repeat(3,1fr);}
     .writer-member-form label:first-child,
     .writer-member-form #writerAddMember{grid-column:1 / -1;width:100%;}
@@ -2275,7 +2302,7 @@
       <button class="writer-format" type="button" data-command="justifyFull" title="양쪽 정렬" aria-label="양쪽 정렬"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18"/> <path d="M3 12h18"/> <path d="M3 19h18"/></svg></button>
       <span class="writer-sep"></span>
       <div class="writer-insert-wrap">
-        <button class="writer-format writer-labeled writer-insert-button" type="button" data-writer-action="insert-menu" title="말풍선"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg><span class="writer-label-text">말풍선</span></button>
+        <button class="writer-format writer-insert-button" type="button" data-writer-action="insert-menu" title="말풍선" aria-label="말풍선"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg></button>
         <div class="writer-insert-menu writer-chat-menu" id="writerInsertMenu" hidden>
           <div class="writer-member-heading">멤버 <span class="writer-member-count" id="writerMemberCount">0</span><button class="writer-sheet-close" type="button" id="writerInsertClose" aria-label="닫기">×</button></div>
           <details class="writer-member-presets">
@@ -2337,6 +2364,11 @@
           <label>왼쪽 <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="40"><span>40px</span></label>
         </div>
       </div>
+      <label class="writer-line-height" title="행간"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h8"/> <path d="M3 12h8"/> <path d="M3 19h8"/> <path d="m15 8 3-3 3 3"/> <path d="m15 16 3 3 3-3"/></svg><select id="writerLineHeight" aria-label="행간">
+        <option value="1.2">1.2</option><option value="1.4">1.4</option><option value="1.5">1.5</option>
+        <option value="1.6" selected>1.6</option><option value="1.8">1.8</option><option value="2">2.0</option>
+        <option value="2.2">2.2</option><option value="2.4">2.4</option>
+      </select></label>
       <div class="writer-spacer"></div>
       <button class="writer-format writer-mode-toggle" type="button" id="writerMode" title="다크모드" aria-label="다크모드" aria-pressed="false"><svg class="lucide icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg><svg class="lucide icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/> <path d="M12 2v2"/> <path d="M12 20v2"/> <path d="m4.93 4.93 1.41 1.41"/> <path d="m17.66 17.66 1.41 1.41"/> <path d="M2 12h2"/> <path d="M20 12h2"/> <path d="m6.34 17.66-1.41 1.41"/> <path d="m19.07 4.93-1.41 1.41"/></svg></button>
       <button class="writer-format writer-clear-all" type="button" id="writerClearAll" title="전체 삭제" aria-label="전체 삭제"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
@@ -3545,7 +3577,12 @@ function syncWriterToolbarAlignment(){
     writerToolbar.style.paddingLeft = '10px';
     return;
   }
-  writerToolbar.style.paddingLeft = `${Math.max(18,writerPreviewSheet.getBoundingClientRect().left)}px`;
+  // Line the photo icon up with the sheet's left edge; the brand hangs out to its left.
+  const sheetLeft = writerPreviewSheet.getBoundingClientRect().left;
+  writerToolbar.style.paddingLeft = `${Math.max(18,sheetLeft)}px`;
+  const photoIcon = writerToolbar.querySelector('[data-writer-action="image"] .lucide');
+  const overshoot = photoIcon.getBoundingClientRect().left - sheetLeft;
+  writerToolbar.style.paddingLeft = `${Math.max(18,sheetLeft - overshoot)}px`;
   // Give up the sheet alignment when it would push the tools onto a second row.
   const items = [...writerToolbar.children].filter(item => item.offsetParent);
   if(items.length && items.at(-1).getBoundingClientRect().top >= items[0].getBoundingClientRect().bottom){
@@ -3676,6 +3713,24 @@ writerFontSize.addEventListener('change', () => {
   queueWriterSave();
 });
 writerFont.addEventListener('mousedown', () => rememberWriterRange());
+const writerLineHeight = document.getElementById('writerLineHeight');
+writerLineHeight.addEventListener('mousedown',rememberWriterRange);
+writerLineHeight.addEventListener('change', () => {
+  restoreWriterRange();
+  const range = window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
+  const blocks = [...writerCanvas.children].filter(block => !block.matches('.writer-inline-chat,hr'));
+  if(!range || range.collapsed){
+    // Like the font menu: no text selection means the whole document.
+    writerCanvas.style.lineHeight = writerLineHeight.value;
+    blocks.forEach(block => block.style.removeProperty('line-height'));
+  }else{
+    blocks.filter(block => range.intersectsNode(block)).forEach(block => {
+      block.style.lineHeight = writerLineHeight.value;
+    });
+  }
+  rememberWriterRange();
+  queueWriterSave();
+});
 writerFont.addEventListener('change', () => {
   if(applyWriterBubbleFormat('fontName',writerFont.value)) return;
   restoreWriterRange();
