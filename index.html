@@ -4665,11 +4665,19 @@ writerCanvas.addEventListener('paste', async event => {
     const parsed = new DOMParser().parseFromString(richHtml,'text/html');
     parsed.querySelectorAll('script,style,link,meta,iframe,object,embed,form,input,button,textarea,select').forEach(node => node.remove());
     const allowedPasteTags = new Set([
-      'P','DIV','BR','UL','OL','LI','BLOCKQUOTE',
+      'P','DIV','BR',
       'H1','H2','H3','H4','H5','H6',
       'STRONG','B','SPAN','FONT','IMG'
     ]);
+    // The writer has no list or quote tools, so pasted ones become plain paragraphs.
+    const plainBlockTags = new Set(['LI','BLOCKQUOTE']);
     [...parsed.body.querySelectorAll('*')].reverse().forEach(node => {
+      if(plainBlockTags.has(node.tagName) && !node.querySelector('p,div,h1,h2,h3,h4,h5,h6')){
+        const paragraph = parsed.createElement('p');
+        paragraph.append(...node.childNodes);
+        node.replaceWith(paragraph);
+        return;
+      }
       if(!allowedPasteTags.has(node.tagName)){
         node.replaceWith(...node.childNodes);
         return;
