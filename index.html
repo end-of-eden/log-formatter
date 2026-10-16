@@ -1399,7 +1399,7 @@
   .writer-line-height-menu[hidden]{display:none;}
   .writer-spacing-row{
     display:grid;
-    grid-template-columns:1fr 58px 28px;
+    grid-template-columns:1fr 58px;
     align-items:center;
     gap:2px 4px;
     color:#34383f;
@@ -1466,20 +1466,6 @@
   .writer-spacing-row input[type=range]:focus{outline:none;box-shadow:none;}
   .writer-spacing-row input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
   .writer-spacing-row input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
-  .writer-toolbar .writer-spacing-reset{
-    display:grid;
-    width:28px;
-    height:28px;
-    place-items:center;
-    padding:0;
-    border:0;
-    border-radius:5px;
-    background:transparent;
-    color:#8b8f96;
-    cursor:pointer;
-  }
-  .writer-toolbar .writer-spacing-reset:hover{background:#f3f3f5;color:#33363b;}
-  .writer-spacing-reset .lucide{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
   .writer-spacing-hint{margin:-2px 0 0;color:#9a9ea6;font:10px/1.4 'Pretendard',sans-serif;}
   .writer-status-bar{
     display:flex;
@@ -2247,7 +2233,6 @@
   .writer-app.night .writer-spacing-row{color:#ece9e1;}
   .writer-app.night .writer-spacing-row input[type=range]{--track:#3b3d43;--thumb-bg:#292b2f;}
   .writer-app.night .writer-spacing-row input[type=number]{background:#202226;border-color:#41444a;color:#ece9e1;}
-  .writer-app.night .writer-toolbar .writer-spacing-reset:hover{background:#35373c;color:#fff;}
   .writer-app.night .writer-tidy-button{background:#24262a;border-color:#3b3d43;color:#d8d9dc;}
   .writer-app.night .writer-tidy-button:hover{background:#2e3035;}
   .writer-app.night .writer-color-trigger::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);}
@@ -2580,22 +2565,19 @@
           <div class="writer-spacing-row">
             <label for="writerLineHeight">행간</label>
             <input type="number" id="writerLineHeightNumber" min="1" max="3" step="0.001" value="1.6" aria-label="행간 값">
-            <button class="writer-spacing-reset" type="button" data-spacing-reset="lineHeight" title="기본값 1.6" aria-label="행간 기본값"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/> <path d="M3 3v5h5"/></svg></button>
             <input type="range" id="writerLineHeight" min="1" max="3" step="0.001" value="1.6" aria-label="행간">
           </div>
           <div class="writer-spacing-row">
             <label for="writerLetterSpacing">자간 <small>em</small></label>
             <input type="number" id="writerLetterSpacingNumber" min="-0.1" max="0.2" step="0.001" value="-0.035" aria-label="자간 값">
-            <button class="writer-spacing-reset" type="button" data-spacing-reset="letterSpacing" title="기본값 -0.035" aria-label="자간 기본값"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/> <path d="M3 3v5h5"/></svg></button>
             <input type="range" id="writerLetterSpacing" min="-0.1" max="0.2" step="0.001" value="-0.035" aria-label="자간">
           </div>
           <div class="writer-spacing-row">
             <label for="writerParagraphGap">문단 간격 <small>px</small></label>
             <input type="number" id="writerParagraphGapNumber" min="0" max="48" step="1" value="16" aria-label="문단 간격 값">
-            <button class="writer-spacing-reset" type="button" data-spacing-reset="paragraphGap" title="기본값 16" aria-label="문단 간격 기본값"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/> <path d="M3 3v5h5"/></svg></button>
             <input type="range" id="writerParagraphGap" min="0" max="48" step="1" value="16" aria-label="문단 간격">
           </div>
-          <p class="writer-spacing-hint">행간·자간은 선택한 문단에, 선택이 없으면 문서 전체에 적용됩니다. 문단 간격은 항상 문서 전체입니다.</p>
+          <p class="writer-spacing-hint">행간·자간은 선택한 문단에, 선택이 없으면 문서 전체에 적용됩니다. 문단 간격은 항상 문서 전체입니다. 슬라이더를 더블클릭하면 기본값으로 돌아갑니다.</p>
         </div>
       </div>
       <div class="writer-find-wrap">
@@ -4033,12 +4015,6 @@ Object.entries(writerSpacing).forEach(([key,control]) => {
   control.number.addEventListener('change', () => applyWriterSpacing(key,control.number.value));
 });
 Object.entries(writerSpacing).forEach(([key,control]) => showWriterSpacing(key,control.fallback));
-writerLineHeightMenu.querySelectorAll('[data-spacing-reset]').forEach(button => {
-  button.addEventListener('click', () => {
-    const key = button.dataset.spacingReset;
-    applyWriterSpacing(key,writerSpacing[key].fallback);
-  });
-});
 document.addEventListener('click', () => {
   writerLineHeightMenu.hidden = true;
   writerLineHeightButton.setAttribute('aria-expanded','false');
