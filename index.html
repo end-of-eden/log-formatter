@@ -1007,14 +1007,13 @@
     font-family:'Pretendard',sans-serif;
   }
   .writer-toolbar{
-    min-height:72px;
     position:sticky;
     top:0;
     z-index:100;
     display:flex;
     align-items:center;
-    gap:2px;
-    padding:10px 18px 10px max(18px,calc((100vw - 900px) / 2));
+    gap:4px 2px;
+    padding:10px 18px;
     border-bottom:1px solid #ececef;
     background:rgba(255,255,255,.97);
     backdrop-filter:blur(12px);
@@ -1022,7 +1021,9 @@
     flex-wrap:wrap;
   }
   .writer-brand{
-    margin-right:6px;
+    position:absolute;
+    top:26px;
+    translate:0 -50%;
     color:var(--burgundy);
     font:700 13px 'JetBrains Mono',monospace;
     white-space:nowrap;
@@ -1222,6 +1223,8 @@
     cursor:pointer;
   }
   .writer-spacer{flex:1;}
+  /* Desktop tools run in two rows across the sheet's width. */
+  .writer-row-break{flex-basis:100%;height:0;}
   .writer-insert-wrap{position:relative;display:flex;flex:0 0 auto;}
   .writer-insert-menu{
     position:absolute;
@@ -1301,6 +1304,70 @@
   }
   .writer-margin-wrap{position:relative;flex:0 0 auto;}
   .writer-line-height-wrap{position:relative;display:flex;flex:0 0 auto;}
+  .writer-find-wrap{position:relative;display:flex;flex:0 0 auto;}
+  .writer-find-menu{
+    position:absolute;
+    top:38px;
+    left:0;
+    z-index:300;
+    display:grid;
+    gap:8px;
+    width:280px;
+    padding:12px;
+    border:1px solid #e0e1e4;
+    border-radius:6px;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(32,34,38,.14);
+  }
+  .writer-find-menu[hidden]{display:none;}
+  .writer-find-row,.writer-find-nav,.writer-find-actions{display:flex;align-items:center;gap:4px;}
+  #writerFindInput,#writerReplaceInput{
+    width:100%;
+    min-width:0;
+    height:32px;
+    padding:0 9px;
+    border:1px solid #dfe1e5;
+    border-radius:5px;
+    background:#fff;
+    color:#33363b;
+    font:12px 'Pretendard',sans-serif;
+  }
+  #writerFindInput{flex:1;}
+  #writerFindInput:focus,#writerReplaceInput:focus{border-color:rgba(192,57,43,.55);outline:2px solid rgba(192,57,43,.1);}
+  #writerFindCount{flex:1;color:#8b8f96;font:11px 'Pretendard',sans-serif;}
+  .writer-toolbar .writer-find-icon{
+    display:grid;
+    width:28px;
+    height:28px;
+    place-items:center;
+    padding:0;
+    border:0;
+    border-radius:5px;
+    background:transparent;
+    color:#5b5f66;
+    font:600 11px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-toolbar .writer-find-icon:hover{background:#f3f3f5;}
+  .writer-toolbar .writer-find-icon:disabled{opacity:.35;cursor:default;}
+  .writer-find-icon .lucide{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .writer-toolbar .writer-find-case[aria-pressed="true"]{background:var(--burgundy-soft);color:var(--burgundy);}
+  .writer-find-actions button{
+    flex:1;
+    height:30px;
+    border:1px solid #e0e1e4;
+    border-radius:5px;
+    background:#fff;
+    color:#5b5f66;
+    font:600 11px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-find-actions button:hover:not(:disabled){background:#f6f6f8;}
+  .writer-find-actions button:disabled{opacity:.45;cursor:default;}
+  #writerReplaceAll{border-color:var(--burgundy);background:var(--burgundy);color:#fff;}
+  #writerReplaceAll:hover:not(:disabled){background:var(--burgundy);opacity:.9;}
+  ::highlight(writer-find){background:rgba(255,200,40,.45);}
+  ::highlight(writer-find-current){background:#ff9f1a;color:#1d1d1f;}
   #writerLineHeightValue{min-width:28px;text-align:left;font:12px 'JetBrains Mono',monospace;}
   .writer-line-height-menu{
     position:absolute;
@@ -2080,7 +2147,13 @@
   .writer-app.night .writer-icon,
   .writer-app.night .writer-photo{color:#e7e5df;}
   .writer-app.night .writer-sep{background:#3b3d43;}
-  .writer-app.night .writer-line-height-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-line-height-menu,
+  .writer-app.night .writer-find-menu{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night #writerFindInput,
+  .writer-app.night #writerReplaceInput,
+  .writer-app.night .writer-find-actions button:not(#writerReplaceAll){background:#202226;border-color:#41444a;color:#ece9e1;}
+  .writer-app.night .writer-toolbar .writer-find-icon{color:#d8d9dc;}
+  .writer-app.night .writer-toolbar .writer-find-icon:hover{background:#35373c;}
   .writer-app.night .writer-line-height-head{color:#ece9e1;}
   .writer-app.night #writerLineHeightNumber,
   .writer-app.night .writer-toolbar #writerLineHeightReset{background:#34363b;border-color:#484b51;color:#d8d9dc;}
@@ -2193,7 +2266,7 @@
   .writer-app.night .writer-category-row select{background:#292b2f;border-color:#3b3d43;color:#ddd;}
   .writer-app.night #writerLogName{background:#292b2f;border-color:#3b3d43;color:#ddd;}
   @media (max-width:900px){
-    .writer-toolbar{padding:0 10px;}
+    .writer-toolbar{padding:6px 10px;}
     .writer-brand{display:none;}
     #writerHtmlSave{display:none;}
     #writerImageSave{display:none;}
@@ -2234,10 +2307,14 @@
     #writerFontSize{grid-column:span 2;}
     #writerFont{grid-column:span 3;}
     .writer-toolbar > select{width:100%;justify-self:stretch;}
-    .writer-line-height-wrap{grid-column:span 3;justify-self:start;}
-    .writer-toolbar > .writer-line-height-wrap > button{width:auto;padding:0 4px;}
+    .writer-line-height-wrap{grid-column:span 2;justify-self:start;}
+    .writer-toolbar > .writer-line-height-wrap > button{width:auto;gap:3px;padding:0 2px;}
+    #writerLineHeightValue{min-width:0;}
+    .writer-find-wrap > button{width:28px;padding:0;}
+    #writerFindInput,#writerReplaceInput{height:38px;font-size:16px;}
     #writerLineHeightNumber{font-size:16px;}
-    .writer-spacer{display:none;}
+    .writer-spacer,.writer-row-break{display:none;}
+    #writerMode,#writerClearAll{order:1;}
     .writer-insert-menu.writer-chat-menu{
       position:fixed;
       top:auto;
@@ -2332,7 +2409,10 @@
           </div>
         </div>
       </div>
-      <span class="writer-sep"></span>
+      <div class="writer-spacer"></div>
+      <button class="writer-format writer-mode-toggle" type="button" id="writerMode" title="다크모드" aria-label="다크모드" aria-pressed="false"><svg class="lucide icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg><svg class="lucide icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/> <path d="M12 2v2"/> <path d="M12 20v2"/> <path d="m4.93 4.93 1.41 1.41"/> <path d="m17.66 17.66 1.41 1.41"/> <path d="M2 12h2"/> <path d="M20 12h2"/> <path d="m6.34 17.66-1.41 1.41"/> <path d="m19.07 4.93-1.41 1.41"/></svg></button>
+      <button class="writer-format writer-clear-all" type="button" id="writerClearAll" title="전체 삭제" aria-label="전체 삭제"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      <span class="writer-row-break" aria-hidden="true"></span>
       <button class="writer-format" type="button" data-command="justifyLeft" title="왼쪽 정렬" aria-label="왼쪽 정렬"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 5H3"/> <path d="M15 12H3"/> <path d="M17 19H3"/></svg></button>
       <button class="writer-format" type="button" data-command="justifyCenter" title="가운데 정렬" aria-label="가운데 정렬"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 5H3"/> <path d="M17 12H7"/> <path d="M19 19H5"/></svg></button>
       <button class="writer-format" type="button" data-command="justifyRight" title="오른쪽 정렬" aria-label="오른쪽 정렬"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 5H3"/> <path d="M21 12H9"/> <path d="M21 19H7"/></svg></button>
@@ -2410,9 +2490,26 @@
           <button type="button" id="writerLineHeightReset">기본값 1.6</button>
         </div>
       </div>
-      <div class="writer-spacer"></div>
-      <button class="writer-format writer-mode-toggle" type="button" id="writerMode" title="다크모드" aria-label="다크모드" aria-pressed="false"><svg class="lucide icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg><svg class="lucide icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/> <path d="M12 2v2"/> <path d="M12 20v2"/> <path d="m4.93 4.93 1.41 1.41"/> <path d="m17.66 17.66 1.41 1.41"/> <path d="M2 12h2"/> <path d="M20 12h2"/> <path d="m6.34 17.66-1.41 1.41"/> <path d="m19.07 4.93-1.41 1.41"/></svg></button>
-      <button class="writer-format writer-clear-all" type="button" id="writerClearAll" title="전체 삭제" aria-label="전체 삭제"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      <div class="writer-find-wrap">
+        <button class="writer-format" type="button" id="writerFindButton" title="찾기·바꾸기 (Ctrl+F)" aria-label="찾기·바꾸기" aria-expanded="false"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.34-4.34"/> <circle cx="11" cy="11" r="8"/></svg></button>
+        <div class="writer-find-menu" id="writerFindMenu" hidden>
+          <div class="writer-find-row">
+            <input type="text" id="writerFindInput" placeholder="찾기" aria-label="찾을 내용" autocomplete="off" spellcheck="false">
+            <button class="writer-find-icon writer-find-case" type="button" id="writerFindCase" aria-pressed="false" title="대소문자 구분">Aa</button>
+            <button class="writer-find-icon" type="button" id="writerFindClose" title="닫기 (Esc)" aria-label="닫기"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/> <path d="m6 6 12 12"/></svg></button>
+          </div>
+          <div class="writer-find-nav">
+            <span id="writerFindCount" aria-live="polite"></span>
+            <button class="writer-find-icon" type="button" id="writerFindPrev" title="이전 (Shift+Enter)" aria-label="이전 결과"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>
+            <button class="writer-find-icon" type="button" id="writerFindNext" title="다음 (Enter)" aria-label="다음 결과"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          </div>
+          <input type="text" id="writerReplaceInput" placeholder="바꿀 내용" aria-label="바꿀 내용" autocomplete="off" spellcheck="false">
+          <div class="writer-find-actions">
+            <button type="button" id="writerReplaceOne">바꾸기</button>
+            <button type="button" id="writerReplaceAll">모두 바꾸기</button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main class="writer-page">
@@ -3614,21 +3711,21 @@ const exportMarginInputs = {
 };
 function queueWriterSave(){}
 function syncWriterToolbarAlignment(){
+  const brand = writerToolbar.querySelector('.writer-brand');
   if(window.innerWidth <= 900){
     writerToolbar.style.paddingLeft = '10px';
+    writerToolbar.style.paddingRight = '';
     return;
   }
-  // Line the photo icon up with the sheet's left edge; the brand hangs out to its left.
-  const sheetLeft = writerPreviewSheet.getBoundingClientRect().left;
-  writerToolbar.style.paddingLeft = `${Math.max(18,sheetLeft)}px`;
-  const photoIcon = writerToolbar.querySelector('[data-writer-action="image"] .lucide');
-  const overshoot = photoIcon.getBoundingClientRect().left - sheetLeft;
-  writerToolbar.style.paddingLeft = `${Math.max(18,sheetLeft - overshoot)}px`;
-  // Give up the sheet alignment when it would push the tools onto a second row.
-  const items = [...writerToolbar.children].filter(item => item.offsetParent);
-  if(items.length && items.at(-1).getBoundingClientRect().top >= items[0].getBoundingClientRect().bottom){
-    writerToolbar.style.paddingLeft = '18px';
-  }
+  // Line the tool icons up with the sheet's edges; the brand hangs out to the left.
+  const sheet = writerPreviewSheet.getBoundingClientRect();
+  writerToolbar.style.paddingLeft = `${sheet.left}px`;
+  writerToolbar.style.paddingRight = `${window.innerWidth - sheet.right}px`;
+  const firstIcon = writerToolbar.querySelector('[data-writer-action="image"] .lucide').getBoundingClientRect();
+  const lastIcon = writerClearAll.querySelector('.lucide').getBoundingClientRect();
+  writerToolbar.style.paddingLeft = `${sheet.left - (firstIcon.left - sheet.left)}px`;
+  writerToolbar.style.paddingRight = `${window.innerWidth - sheet.right - (sheet.right - lastIcon.right)}px`;
+  brand.style.left = `${Math.max(12,parseFloat(writerToolbar.style.paddingLeft) - brand.offsetWidth - 14)}px`;
 }
 function syncWriterPreview(){
   writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
@@ -4826,8 +4923,213 @@ document.addEventListener('click', event => {
   if(!event.target.closest('.writer-margin-wrap')) writerMarginMenu.hidden = true;
 });
 
+// ---------- find & replace ----------
+const writerFindButton = document.getElementById('writerFindButton');
+const writerFindMenu = document.getElementById('writerFindMenu');
+const writerFindInput = document.getElementById('writerFindInput');
+const writerReplaceInput = document.getElementById('writerReplaceInput');
+const writerFindCase = document.getElementById('writerFindCase');
+const writerFindCount = document.getElementById('writerFindCount');
+const writerFindPrev = document.getElementById('writerFindPrev');
+const writerFindNext = document.getElementById('writerFindNext');
+const writerReplaceOne = document.getElementById('writerReplaceOne');
+const writerReplaceAll = document.getElementById('writerReplaceAll');
+const writerHighlights = typeof CSS !== 'undefined' && CSS.highlights && typeof Highlight === 'function';
+let writerFindMatches = [];
+let writerFindIndex = -1;
+let writerFindNotice = '';
+
+// Flatten the canvas text so a match can span formatting spans, but never paragraphs.
+function writerFindTextMap(){
+  const pieces = [];
+  let text = '';
+  let lastBlock = null;
+  const walker = document.createTreeWalker(writerCanvas,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+    const node = walker.currentNode;
+    if(node.parentElement.closest('.writer-bubble-delete')) continue;
+    const block = node.parentElement.closest('p,div,h1,h2,h3,h4,h5,h6,.writer-inline-chat-bubble,.writer-inline-chat-name') || writerCanvas;
+    if(block !== lastBlock && text) text += '\n';
+    lastBlock = block;
+    pieces.push({node,start:text.length});
+    text += node.data;
+  }
+  return {text,pieces};
+}
+function writerFindPosition(pieces,offset,isEnd){
+  for(let index = pieces.length - 1;index >= 0;index -= 1){
+    const piece = pieces[index];
+    if(offset > piece.start || (!isEnd && offset === piece.start)){
+      return {node:piece.node,offset:Math.min(offset - piece.start,piece.node.length)};
+    }
+  }
+  return {node:pieces[0].node,offset:0};
+}
+function collectWriterFindMatches(){
+  const query = writerFindInput.value;
+  writerFindMatches = [];
+  if(query){
+    const {text,pieces} = writerFindTextMap();
+    const caseSensitive = writerFindCase.getAttribute('aria-pressed') === 'true';
+    const haystack = caseSensitive ? text : text.toLocaleLowerCase();
+    const needle = caseSensitive ? query : query.toLocaleLowerCase();
+    let from = 0;
+    while(needle && (from = haystack.indexOf(needle,from)) !== -1){
+      const start = writerFindPosition(pieces,from,false);
+      const end = writerFindPosition(pieces,from + needle.length,true);
+      const range = document.createRange();
+      range.setStart(start.node,start.offset);
+      range.setEnd(end.node,end.offset);
+      writerFindMatches.push({range,offset:from});
+      from += needle.length;
+    }
+  }
+  if(writerFindIndex >= writerFindMatches.length) writerFindIndex = writerFindMatches.length - 1;
+  if(writerFindIndex < 0 && writerFindMatches.length) writerFindIndex = 0;
+}
+function paintWriterFindMatches(scroll){
+  const current = writerFindMatches[writerFindIndex];
+  if(writerHighlights){
+    CSS.highlights.set('writer-find',new Highlight(...writerFindMatches.filter(match => match !== current).map(match => match.range)));
+    if(current) CSS.highlights.set('writer-find-current',new Highlight(current.range));
+    else CSS.highlights.delete('writer-find-current');
+  }
+  const total = writerFindMatches.length;
+  writerFindCount.textContent = !writerFindInput.value ? '' : total ? `${writerFindIndex + 1} / ${total}` : (writerFindNotice || '결과 없음');
+  [writerFindPrev,writerFindNext,writerReplaceOne,writerReplaceAll].forEach(button => button.disabled = !total);
+  if(!current || !scroll) return;
+  const rect = current.range.getBoundingClientRect();
+  const top = writerToolbar.getBoundingClientRect().bottom + 16;
+  if(rect.top < top || rect.bottom > window.innerHeight - 16){
+    window.scrollBy({top:rect.top - (top + window.innerHeight) / 2,behavior:'smooth'});
+  }
+}
+function clearWriterFindHighlights(){
+  if(!writerHighlights) return;
+  CSS.highlights.delete('writer-find');
+  CSS.highlights.delete('writer-find-current');
+}
+function refreshWriterFind(scroll){
+  collectWriterFindMatches();
+  paintWriterFindMatches(scroll);
+}
+function stepWriterFind(direction){
+  if(!writerFindMatches.length) return;
+  writerFindIndex = (writerFindIndex + direction + writerFindMatches.length) % writerFindMatches.length;
+  paintWriterFindMatches(true);
+}
+function openWriterFind(focusReplace){
+  writerFindNotice = '';
+  const selected = writerSavedRange && !writerSavedRange.collapsed && writerCanvas.contains(writerSavedRange.commonAncestorContainer)
+    ? writerSavedRange.toString() : '';
+  if(selected && selected.length <= 80 && !selected.includes('\n')) writerFindInput.value = selected;
+  writerFindMenu.hidden = false;
+  writerFindButton.setAttribute('aria-expanded','true');
+  writerFindIndex = 0;
+  refreshWriterFind(true);
+  // Place the panel before focusing so the browser never scrolls sideways to an off-screen field.
+  fitWriterPopover(writerFindMenu);
+  const field = focusReplace && writerFindInput.value ? writerReplaceInput : writerFindInput;
+  field.focus({preventScroll:true});
+  field.select();
+}
+function closeWriterFind(){
+  writerFindMenu.hidden = true;
+  writerFindButton.setAttribute('aria-expanded','false');
+  clearWriterFindHighlights();
+}
+function replaceWriterFindRange(range,replacement){
+  if(range.startContainer.parentElement.closest('[contenteditable="false"]')){
+    // Chat bubbles are not editable, so edit their text directly.
+    range.deleteContents();
+    if(replacement) range.insertNode(document.createTextNode(replacement));
+    range.startContainer.parentElement?.normalize();
+    return;
+  }
+  // Ordinary text goes through the editor so Ctrl+Z can undo it.
+  const selection = window.getSelection();
+  writerCanvas.focus({preventScroll:true});
+  selection.removeAllRanges();
+  selection.addRange(range);
+  if(replacement) document.execCommand('insertText',false,replacement);
+  else document.execCommand('delete');
+}
+writerFindButton.addEventListener('mousedown', event => {
+  event.preventDefault();
+  rememberWriterRange();
+});
+writerFindButton.addEventListener('click', event => {
+  event.stopPropagation();
+  if(writerFindMenu.hidden) openWriterFind(false);
+  else closeWriterFind();
+});
+writerFindMenu.addEventListener('click', event => event.stopPropagation());
+writerFindInput.addEventListener('input', () => {
+  writerFindNotice = '';
+  writerFindIndex = 0;
+  refreshWriterFind(true);
+});
+writerFindCase.addEventListener('click', () => {
+  writerFindCase.setAttribute('aria-pressed',String(writerFindCase.getAttribute('aria-pressed') !== 'true'));
+  writerFindIndex = 0;
+  refreshWriterFind(true);
+});
+writerFindPrev.addEventListener('click', () => stepWriterFind(-1));
+writerFindNext.addEventListener('click', () => stepWriterFind(1));
+document.getElementById('writerFindClose').addEventListener('click',closeWriterFind);
+writerReplaceOne.addEventListener('click', () => {
+  const current = writerFindMatches[writerFindIndex];
+  if(!current) return;
+  const resumeAt = current.offset + writerReplaceInput.value.length;
+  replaceWriterFindRange(current.range,writerReplaceInput.value);
+  collectWriterFindMatches();
+  const next = writerFindMatches.findIndex(match => match.offset >= resumeAt);
+  writerFindIndex = next === -1 ? 0 : next;
+  paintWriterFindMatches(true);
+  writerReplaceInput.focus();
+  queueWriterSave();
+});
+writerReplaceAll.addEventListener('click', () => {
+  const count = writerFindMatches.length;
+  if(!count) return;
+  // Back to front so earlier matches keep their positions.
+  [...writerFindMatches].reverse().forEach(match => replaceWriterFindRange(match.range,writerReplaceInput.value));
+  writerFindIndex = 0;
+  writerFindNotice = `${count}개 바꿈`;
+  refreshWriterFind(false);
+  writerReplaceInput.focus();
+  queueWriterSave();
+});
+[writerFindInput,writerReplaceInput].forEach(field => {
+  field.addEventListener('keydown', event => {
+    if(event.key === 'Escape'){
+      event.preventDefault();
+      closeWriterFind();
+      writerCanvas.focus();
+    }else if(event.key === 'Enter' && !event.isComposing){
+      event.preventDefault();
+      if(field === writerReplaceInput && !event.shiftKey) writerReplaceOne.click();
+      else stepWriterFind(event.shiftKey ? -1 : 1);
+    }
+  });
+});
+let writerFindRefreshFrame = 0;
+writerCanvas.addEventListener('input', () => {
+  if(writerFindMenu.hidden) return;
+  cancelAnimationFrame(writerFindRefreshFrame);
+  writerFindRefreshFrame = requestAnimationFrame(() => refreshWriterFind(false));
+});
+document.addEventListener('keydown', event => {
+  if(!(event.ctrlKey || event.metaKey) || event.altKey) return;
+  const key = event.key.toLowerCase();
+  if(key !== 'f' && key !== 'h') return;
+  event.preventDefault();
+  rememberWriterRange();
+  openWriterFind(key === 'h');
+});
+
 // Keep toolbar popovers inside the viewport whichever way they open.
-const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu,.writer-line-height-menu')];
+const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu,.writer-line-height-menu,.writer-find-menu')];
 function fitWriterPopover(menu){
   menu.style.translate = '';
   if(menu.hidden || getComputedStyle(menu).position === 'fixed') return;
