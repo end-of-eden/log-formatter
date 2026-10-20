@@ -1793,6 +1793,16 @@
     color:#4b4f56;
     font:12px 'Pretendard',sans-serif;
   }
+  /* iOS Safari sizes native time fields itself and ignores width/height, so they
+     spill into the next grid cell; drop the native look so they follow the grid. */
+  .writer-chat-menu input[type=time]{
+    display:block;
+    max-width:100%;
+    line-height:normal;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .writer-chat-menu input[type=time]::-webkit-date-and-time-value{min-width:0;text-align:left;}
   .writer-chat-menu input:focus,
   .writer-chat-menu select:focus,
   .writer-chat-menu textarea:focus{
