@@ -1737,9 +1737,41 @@
     border-top:1px solid #ececef;
   }
   #writerChatText{grid-column:1 / -1;height:72px!important;resize:vertical;}
-  #writerChatFontSize{grid-column:1 / -1;}
-  .writer-bubble-color-control{grid-column:1 / -1;display:flex;align-items:center;gap:10px;color:#858990;font:600 11px 'Pretendard',sans-serif;}
-  #writerBubbleColor{width:48px;height:30px;padding:2px;}
+  /* Bubble colour reads as a field: swatch, label and hex code, beside the size select. */
+  .writer-bubble-color-control{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    height:34px;
+    padding:0 10px 0 8px;
+    border:1px solid #dfe1e5;
+    border-radius:5px;
+    background:#fff;
+    color:#4b4f56;
+    font:12px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-bubble-color-control:hover{border-color:#c9ccd2;}
+  .writer-bubble-color-control:has(input:disabled){opacity:.45;cursor:default;}
+  .writer-bubble-color-swatch{
+    position:relative;
+    flex:0 0 auto;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:var(--swatch,#ECECEF);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);
+  }
+  .writer-chat-menu .writer-bubble-color-swatch input[type=color]{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:0;
+    cursor:inherit;
+  }
+  .writer-bubble-color-value{margin-left:auto;color:#9a9ea6;font:11px 'JetBrains Mono',monospace;text-transform:uppercase;}
   .writer-chat-menu .writer-sheet-close{
     display:none;
     width:32px;
@@ -2251,6 +2283,7 @@
   .writer-app.night .writer-chat-menu .writer-member-row-actions button,
   .writer-app.night .writer-chat-menu #writerCloseMemberPanel{background:#34363b;border-color:#484b51;color:#d8d9dc;}
   .writer-app.night .writer-message-form{border-top-color:#41444a;}
+  .writer-app.night .writer-bubble-color-control{border-color:#41444a;background:#202226;color:#ece9e1;}
   .writer-app.night .writer-chat-menu input[type=text],
   .writer-app.night .writer-chat-menu input[type=file],
   .writer-app.night .writer-chat-menu input[type=time],
@@ -2403,6 +2436,7 @@
     .writer-chat-menu input[type=time],
     .writer-chat-menu select,
     .writer-chat-menu textarea{font-size:16px;height:40px;}
+    .writer-bubble-color-control{height:40px;font-size:13px;}
     .writer-chat-menu .writer-sheet-close{display:grid;place-items:center;}
     .writer-label-text{display:none;}
     /* Draw a small chevron instead of the native arrow so short selects keep their text. */
@@ -2418,7 +2452,6 @@
     .writer-member-presets summary,
     .writer-member-section-head strong,
     .writer-member-row,
-    .writer-bubble-color-control,
     .writer-spacing-row{font-size:13px;}
     .writer-chat-menu button,
     .writer-json-action,
@@ -2549,7 +2582,7 @@
             <select id="writerMessageSide" aria-label="말풍선 위치"><option value="left">왼쪽</option><option value="right">오른쪽</option></select>
             <input type="time" id="writerChatTime" aria-label="메시지 시간">
             <select id="writerChatStyle" aria-label="채팅 표현 방식"><option value="bubble">말풍선형</option><option value="discord">프로필형</option></select>
-            <label class="writer-bubble-color-control">말풍선 색<input type="color" id="writerBubbleColor" value="#ECECEF" aria-label="말풍선 색"></label>
+            <label class="writer-bubble-color-control"><span class="writer-bubble-color-swatch"><input type="color" id="writerBubbleColor" value="#ECECEF" aria-label="말풍선 색"></span>말풍선 색<span class="writer-bubble-color-value" id="writerBubbleColorValue">#ECECEF</span></label>
             <select id="writerChatFontSize" aria-label="메시지 글자 크기" title="메시지 글자 크기">
               <option value="11">11px</option><option value="12">12px</option>
               <option value="13" selected>13px</option><option value="14">14px</option>
@@ -4289,6 +4322,11 @@ const writerMessageSide = document.getElementById('writerMessageSide');
 const writerChatTime = document.getElementById('writerChatTime');
 const writerChatStyle = document.getElementById('writerChatStyle');
 const writerBubbleColor = document.getElementById('writerBubbleColor');
+const writerBubbleColorValue = document.getElementById('writerBubbleColorValue');
+function showWriterBubbleColor(){
+  writerBubbleColor.parentElement.style.setProperty('--swatch',writerBubbleColor.value);
+  writerBubbleColorValue.textContent = writerBubbleColor.value.toUpperCase();
+}
 const writerChatFontSize = document.getElementById('writerChatFontSize');
 const writerChatText = document.getElementById('writerChatText');
 const writerAddBubble = document.getElementById('writerAddBubble');
@@ -4749,12 +4787,14 @@ function applyWriterBubbleColor(group,color){
   group.style.setProperty('--writer-bubble-color',color);
 }
 writerBubbleColor.addEventListener('input', () => {
+  showWriterBubbleColor();
   if(writerSelectedChatGroup?.isConnected) applyWriterBubbleColor(writerSelectedChatGroup,writerBubbleColor.value);
   queueWriterSave();
 });
 writerMessageSender.addEventListener('change', () => {
   const member = writerMembers.find(member => member.id === writerMessageSender.value);
   writerBubbleColor.value = member?.bubbleColor || '#ECECEF';
+  showWriterBubbleColor();
 });
 function writerChatGroupHtml(member,messages,{right=false,style='bubble',time='',fontSize=13,color=member.bubbleColor || '#ECECEF'}={}){
   const messageHtml = writerMessageItemsHtml(messages,style,time);
@@ -4971,6 +5011,7 @@ writerCanvas.addEventListener('click', event => {
     writerChatTime.value = writerSelectedChatGroup.dataset.time || '';
     writerChatStyle.value = writerSelectedChatGroup.dataset.style || 'bubble';
     writerBubbleColor.value = writerSelectedChatGroup.style.getPropertyValue('--writer-bubble-color').trim() || '#ECECEF';
+    showWriterBubbleColor();
     writerChatStyle.dispatchEvent(new Event('change'));
     writerChatFontSize.value = writerSelectedChatGroup.dataset.fontSize || '13';
     if(writerSelectedBubbleItem){
@@ -5740,6 +5781,8 @@ document.getElementById('writerExportFormat').addEventListener('change',event =>
 writerCanvas.style.fontFamily = writerFont.value;
 syncWriterPreview();
 writerChatStyle.dispatchEvent(new Event('change'));
+// Start from the first speaker's own bubble colour.
+writerMessageSender.dispatchEvent(new Event('change'));
 </script>
 </body>
 </html>
