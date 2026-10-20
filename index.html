@@ -2341,7 +2341,8 @@
     #writerMobileImageSave:disabled{opacity:.65;cursor:wait;}
 
     .writer-page{margin-top:28px;margin-bottom:0;}
-    .writer-inline-chat{width:100%;max-width:100%;}
+    /* Editor only: exports keep the desktop chat inset wherever they are saved. */
+    #writerCanvas .writer-inline-chat{width:100%;max-width:100%;}
   }
   @media (max-width:600px){
     .writer-toolbar{
@@ -2395,7 +2396,29 @@
     .writer-chat-menu textarea{font-size:16px;height:40px;}
     .writer-chat-menu .writer-sheet-close{display:grid;place-items:center;}
     .writer-label-text{display:none;}
-    .writer-toolbar select{min-width:0;padding-right:2px;padding-left:2px;}
+    /* Draw a small chevron instead of the native arrow so short selects keep their text. */
+    .writer-toolbar > select{
+      min-width:0;
+      padding:0 20px 0 6px;
+      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 9px center/8px 5px;
+      -webkit-appearance:none;
+      appearance:none;
+    }
+    /* Menus read at phone size: labels and notes no smaller than 11.5px. */
+    .writer-member-heading{font-size:14px;}
+    .writer-member-presets summary,
+    .writer-member-section-head strong,
+    .writer-member-row,
+    .writer-bubble-color-control,
+    .writer-spacing-row{font-size:13px;}
+    .writer-chat-menu button,
+    .writer-json-action,
+    .writer-member-form label,
+    .writer-preset-body,
+    .writer-empty-members,
+    .writer-toolbar .writer-find-text{font-size:12px;}
+    .writer-member-section-head small,
+    .writer-spacing-hint{font-size:11.5px;}
     .writer-member-form{grid-template-columns:repeat(3,1fr);}
     .writer-member-form label:first-child,
     .writer-member-form #writerAddMember{grid-column:1 / -1;width:100%;}
