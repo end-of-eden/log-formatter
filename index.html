@@ -1737,6 +1737,62 @@
     border-top:1px solid #ececef;
   }
   #writerChatText{grid-column:1 / -1;height:72px!important;resize:vertical;}
+  /* Time is opt-in: a switch, and the time field only once it is on. */
+  .writer-time-field{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    min-width:0;
+    height:34px;
+    padding:0 4px 0 10px;
+    border:1px solid #dfe1e5;
+    border-radius:5px;
+    background:#fff;
+  }
+  .writer-time-toggle{
+    display:flex;
+    flex:0 0 auto;
+    align-items:center;
+    gap:7px;
+    color:#4b4f56;
+    font:12px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-time-toggle input{position:absolute;opacity:0;pointer-events:none;}
+  .writer-switch{
+    position:relative;
+    width:26px;
+    height:15px;
+    border-radius:999px;
+    background:#d5d7dc;
+    transition:background .15s;
+  }
+  .writer-switch::after{
+    content:"";
+    position:absolute;
+    top:2px;
+    left:2px;
+    width:11px;
+    height:11px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 1px 2px rgba(0,0,0,.2);
+    transition:transform .15s;
+  }
+  .writer-time-toggle input:checked + .writer-switch{background:var(--burgundy);}
+  .writer-time-toggle input:checked + .writer-switch::after{transform:translateX(11px);}
+  .writer-time-toggle input:focus-visible + .writer-switch{box-shadow:0 0 0 3px rgba(192,57,43,.18);}
+  .writer-chat-menu .writer-time-field input[type=time]{
+    flex:1;
+    min-width:0;
+    height:100%;
+    padding:0 4px;
+    border:0;
+    outline:0;
+    background:transparent;
+    text-align:right;
+  }
+  .writer-time-field input[type=time]::-webkit-calendar-picker-indicator{display:none;}
   /* Bubble colour reads as a field: swatch, label and hex code, beside the size select. */
   .writer-bubble-color-control{
     display:flex;
@@ -2283,7 +2339,10 @@
   .writer-app.night .writer-chat-menu .writer-member-row-actions button,
   .writer-app.night .writer-chat-menu #writerCloseMemberPanel{background:#34363b;border-color:#484b51;color:#d8d9dc;}
   .writer-app.night .writer-message-form{border-top-color:#41444a;}
-  .writer-app.night .writer-bubble-color-control{border-color:#41444a;background:#202226;color:#ece9e1;}
+  .writer-app.night .writer-bubble-color-control,
+  .writer-app.night .writer-time-field{border-color:#41444a;background:#202226;color:#ece9e1;}
+  .writer-app.night .writer-time-toggle{color:#ece9e1;}
+  .writer-app.night .writer-switch{background:#4a4d54;}
   .writer-app.night .writer-chat-menu input[type=text],
   .writer-app.night .writer-chat-menu input[type=file],
   .writer-app.night .writer-chat-menu input[type=time],
@@ -2436,7 +2495,8 @@
     .writer-chat-menu input[type=time],
     .writer-chat-menu select,
     .writer-chat-menu textarea{font-size:16px;height:40px;}
-    .writer-bubble-color-control{height:40px;font-size:13px;}
+    .writer-bubble-color-control,.writer-time-field{height:40px;font-size:13px;}
+    .writer-time-toggle{font-size:13px;}
     .writer-chat-menu .writer-sheet-close{display:grid;place-items:center;}
     .writer-label-text{display:none;}
     /* Draw a small chevron instead of the native arrow so short selects keep their text. */
@@ -2580,7 +2640,10 @@
           <div class="writer-message-form">
             <select id="writerMessageSender" aria-label="발화자"><option value="">멤버가 없습니다</option></select>
             <select id="writerMessageSide" aria-label="말풍선 위치"><option value="left">왼쪽</option><option value="right">오른쪽</option></select>
-            <input type="time" id="writerChatTime" aria-label="메시지 시간">
+            <div class="writer-time-field">
+              <label class="writer-time-toggle"><input type="checkbox" id="writerChatTimeOn"><span class="writer-switch" aria-hidden="true"></span>시간</label>
+              <input type="time" id="writerChatTime" aria-label="메시지 시간" hidden>
+            </div>
             <select id="writerChatStyle" aria-label="채팅 표현 방식"><option value="bubble">말풍선형</option><option value="discord">프로필형</option></select>
             <label class="writer-bubble-color-control"><span class="writer-bubble-color-swatch"><input type="color" id="writerBubbleColor" value="#ECECEF" aria-label="말풍선 색"></span>말풍선 색<span class="writer-bubble-color-value" id="writerBubbleColorValue">#ECECEF</span></label>
             <select id="writerChatFontSize" aria-label="메시지 글자 크기" title="메시지 글자 크기">
@@ -4320,6 +4383,22 @@ const writerMemberFormTitle = document.getElementById('writerMemberFormTitle');
 const writerMessageSender = document.getElementById('writerMessageSender');
 const writerMessageSide = document.getElementById('writerMessageSide');
 const writerChatTime = document.getElementById('writerChatTime');
+const writerChatTimeOn = document.getElementById('writerChatTimeOn');
+function writerChatTimeValue(){
+  return writerChatTimeOn.checked ? writerChatTime.value : '';
+}
+function setWriterChatTime(time){
+  writerChatTimeOn.checked = Boolean(time);
+  writerChatTime.hidden = !time;
+  writerChatTime.value = time || '';
+}
+writerChatTimeOn.addEventListener('change', () => {
+  writerChatTime.hidden = !writerChatTimeOn.checked;
+  if(writerChatTimeOn.checked && !writerChatTime.value){
+    const now = new Date();
+    writerChatTime.value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
+});
 const writerChatStyle = document.getElementById('writerChatStyle');
 const writerBubbleColor = document.getElementById('writerBubbleColor');
 const writerBubbleColorValue = document.getElementById('writerBubbleColorValue');
@@ -4874,7 +4953,7 @@ function insertWriterMessengerSegments(segments){
     return writerChatGroupHtml(segment.member,segment.messages,{
       right:style === 'bubble' && memberIndex % 2 === 1,
       style,
-      time:segment.time || writerChatTime.value,
+      time:segment.time || writerChatTimeValue(),
       fontSize:writerChatFontSize.value
     });
   }).join('');
@@ -4953,7 +5032,7 @@ writerAddBubble.addEventListener('click', () => {
     return;
   }
   const messages = text.split(/\n\s*\n/).map(value => value.trim()).filter(Boolean);
-  const messageHtml = writerMessageItemsHtml(messages,style,writerChatTime.value);
+  const messageHtml = writerMessageItemsHtml(messages,style,writerChatTimeValue());
   const meaningfulChildren = [...writerCanvas.children].filter(node =>
     !(node.matches('p') && !node.textContent.trim())
   );
@@ -4964,7 +5043,7 @@ writerAddBubble.addEventListener('click', () => {
     && previousGroup.dataset.side === (right ? 'right' : 'left')
     && previousGroup.dataset.style === style
     && previousGroup.dataset.fontSize === writerChatFontSize.value
-    && previousGroup.dataset.time === writerChatTime.value
+    && previousGroup.dataset.time === writerChatTimeValue()
     && previousGroup.style.getPropertyValue('--writer-bubble-color').toLowerCase() === writerBubbleColor.value.toLowerCase()){
     previousGroup.querySelector('.writer-inline-chat-bubbles').insertAdjacentHTML('beforeend',messageHtml);
     writerChatText.value = '';
@@ -4976,7 +5055,7 @@ writerAddBubble.addEventListener('click', () => {
     color:writerBubbleColor.value,
     right,
     style,
-    time:writerChatTime.value,
+    time:writerChatTimeValue(),
     fontSize:writerChatFontSize.value
   });
   if(!insertWriterBubbleHtml(html)){
@@ -5008,7 +5087,7 @@ writerCanvas.addEventListener('click', event => {
       writerMessageSender.value = writerSelectedChatGroup.dataset.memberId;
     }
     writerMessageSide.value = writerSelectedChatGroup.dataset.side || 'left';
-    writerChatTime.value = writerSelectedChatGroup.dataset.time || '';
+    setWriterChatTime(writerSelectedChatGroup.dataset.time || '');
     writerChatStyle.value = writerSelectedChatGroup.dataset.style || 'bubble';
     writerBubbleColor.value = writerSelectedChatGroup.style.getPropertyValue('--writer-bubble-color').trim() || '#ECECEF';
     showWriterBubbleColor();
