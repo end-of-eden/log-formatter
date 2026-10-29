@@ -5835,6 +5835,25 @@ const writerHtmlInfo = document.getElementById('writerHtmlInfo');
 let writerHtmlTimer = 0;
 let writerHtmlObserver = null;
 // Draw the iframe at the chosen width, then scale it down to fit the page column.
+// Measure the drawn content itself. scrollHeight never drops below the frame's current
+// viewport in some browsers, so a page that once stood taller kept a tall empty stage.
+function writerHtmlContentHeight(doc){
+  const view = doc.defaultView;
+  const body = doc.body;
+  const origin = doc.documentElement.getBoundingClientRect().top;
+  const bodyStyle = view.getComputedStyle(body);
+  let bottom = 0;
+  for(const child of body.children){
+    const box = child.getBoundingClientRect();
+    if(!box.width && !box.height) continue;
+    bottom = Math.max(bottom,box.bottom + parseFloat(view.getComputedStyle(child).marginBottom || 0));
+  }
+  if(!bottom) bottom = body.getBoundingClientRect().bottom;
+  bottom += parseFloat(bodyStyle.paddingBottom || 0) + parseFloat(bodyStyle.marginBottom || 0);
+  return Math.max(1,Math.ceil(bottom - origin));
+}
+// zoom shrinks the frame's layout box too, so the stage can never keep its full size.
+const writerHtmlUsesZoom = typeof CSS !== 'undefined' && CSS.supports('zoom','0.5');
 function fitWriterHtmlFrame(){
   const doc = writerHtmlFrame.contentDocument;
   const width = Number(writerHtmlWidth.value);
@@ -5847,19 +5866,24 @@ function fitWriterHtmlFrame(){
     writerHtmlInfo.textContent = '';
     return;
   }
-  writerHtmlFrame.style.height = '0px';
-  const height = Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  const height = writerHtmlContentHeight(doc);
   writerHtmlFrame.style.height = `${height}px`;
   const scale = Math.min(1,writerHtmlStage.clientWidth / width);
-  writerHtmlFrame.style.transform = scale < 1 ? `scale(${scale})` : '';
-  writerHtmlStage.style.height = `${Math.ceil(height * scale)}px`;
+  if(writerHtmlUsesZoom){
+    writerHtmlFrame.style.zoom = scale < 1 ? String(scale) : '';
+    writerHtmlFrame.style.transform = '';
+    writerHtmlStage.style.height = '';
+  }else{
+    writerHtmlFrame.style.transform = scale < 1 ? `scale(${scale})` : '';
+    writerHtmlStage.style.height = `${Math.ceil(height * scale)}px`;
+  }
   writerHtmlInfo.textContent = `${width} × ${height}px${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
 }
 // Phone browsers inflate text inside the preview, which skews its measured height.
 const WRITER_HTML_RESET = '<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>';
 function renderWriterHtml(){
   writerHtmlObserver?.disconnect();
-  writerHtmlFrame.srcdoc = WRITER_HTML_RESET + writerHtmlSource.value;
+  writerHtmlFrame.srcdoc = writerHtmlSource.value + WRITER_HTML_RESET;
 }
 // Cut rows at the bottom that are nothing but the page background (or fully clear),
 // so a height measured before fonts or layout settled never leaves an empty band.
@@ -5911,13 +5935,10 @@ setInterval(() => {
   if(!writerApp.classList.contains('html-mode') || document.hidden) return;
   const doc = writerHtmlFrame.contentDocument;
   if(!doc?.body || !writerHtmlSource.value.trim()) return;
-  writerHtmlFrame.style.height = '0px';
-  const height = Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  const height = writerHtmlContentHeight(doc);
   if(height !== writerHtmlLastHeight){
     writerHtmlLastHeight = height;
     fitWriterHtmlFrame();
-  }else{
-    writerHtmlFrame.style.height = `${height}px`;
   }
 },400);
 window.addEventListener('resize',fitWriterHtmlFrame,{passive:true});
@@ -5926,7 +5947,7 @@ async function renderWriterHtmlCanvas(transparent){
   if(!writerHtmlSource.value.trim() || !doc?.body) throw new Error('HTML 코드를 먼저 붙여넣어 주세요.');
   // @import'ed web fonts can arrive after fonts.ready first resolves; wait (up to ~3s)
   // until fonts are loaded and the page height holds still before measuring.
-  const measure = () => Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  const measure = () => writerHtmlContentHeight(doc);
   let settled = -1;
   for(let attempt = 0;attempt < 20;attempt += 1){
     await doc.fonts?.ready;
