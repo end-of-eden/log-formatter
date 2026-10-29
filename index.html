@@ -1470,6 +1470,54 @@
   .writer-spacing-row input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
   .writer-spacing-row input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
   .writer-spacing-hint{margin:-2px 0 0;color:#9a9ea6;font:10px/1.4 'Pretendard',sans-serif;}
+  /* HTML 이미지 mode swaps the sheet for a code box and a sandboxed preview. */
+  .writer-html-panel{display:none;gap:10px;}
+  .writer-app.html-mode .writer-html-panel{display:grid;}
+  .writer-app.html-mode #writerPreviewSheet,
+  .writer-app.html-mode .writer-status-bar{display:none;}
+  .writer-app.html-mode .writer-toolbar > :not(.writer-brand,.writer-spacer,.writer-row-break,#writerMode,#writerImageSave){opacity:.3;pointer-events:none;}
+  #writerHtmlSource{
+    width:100%;
+    height:140px;
+    padding:10px 12px;
+    border:1px solid #e1e2e5;
+    border-radius:5px;
+    background:#fafafa;
+    color:#33363b;
+    font:12px/1.5 'JetBrains Mono',monospace;
+    resize:vertical;
+  }
+  .writer-html-options{display:flex;align-items:center;gap:10px;color:#8c8f95;font:11px 'Pretendard',sans-serif;}
+  #writerHtmlWidth{
+    width:auto;
+    height:32px;
+    padding:0 4px 0 8px;
+    border:1px solid #e1e2e5;
+    border-radius:5px;
+    background:#fafafa;
+    color:#555960;
+    font:12px 'Pretendard',sans-serif;
+  }
+  .writer-html-stage{
+    position:relative;
+    min-height:160px;
+    overflow:hidden;
+    border-radius:4px;
+    background:repeating-conic-gradient(#e9eaed 0 25%,#f4f5f7 0 50%) 0 0/16px 16px;
+    box-shadow:0 4px 22px rgba(28,31,36,.08);
+  }
+  #writerHtmlFrame{display:block;border:0;background:transparent;transform-origin:0 0;}
+  .writer-html-empty{
+    position:absolute;
+    inset:0;
+    display:grid;
+    place-items:center;
+    margin:0;
+    color:#9a9ea6;
+    font:12px 'Pretendard',sans-serif;
+    pointer-events:none;
+  }
+  .writer-html-stage.has-content .writer-html-empty{display:none;}
   .writer-status-bar{
     display:flex;
     align-items:center;
@@ -2423,7 +2471,10 @@
   .writer-app.night .writer-page{color:#ece9e1;}
   .writer-app.night #writerCanvas{color:#ece9e1;}
   .writer-app.night .writer-category-row select{background:#292b2f;border-color:#3b3d43;color:#ddd;}
-  .writer-app.night #writerLogName{background:#292b2f;border-color:#3b3d43;color:#ddd;}
+  .writer-app.night #writerLogName,
+  .writer-app.night #writerHtmlSource,
+  .writer-app.night #writerHtmlWidth{background:#292b2f;border-color:#3b3d43;color:#ddd;}
+  .writer-app.night .writer-html-stage{background:repeating-conic-gradient(#202226 0 25%,#26282c 0 50%) 0 0/16px 16px;}
   @media (max-width:900px){
     .writer-toolbar{padding:6px 10px;}
     .writer-brand{display:none;}
@@ -2495,6 +2546,7 @@
     .writer-chat-menu input[type=time],
     .writer-chat-menu select,
     .writer-chat-menu textarea{font-size:16px;height:40px;}
+    #writerHtmlSource{font-size:16px;}
     .writer-bubble-color-control,.writer-time-field{height:40px;font-size:13px;}
     .writer-time-toggle{font-size:13px;}
     .writer-chat-menu .writer-sheet-close{display:grid;place-items:center;}
@@ -2733,12 +2785,29 @@
         <select id="writerCategory" aria-label="카테고리" title="카테고리">
           <option>로그형</option>
           <option>메신저형</option>
+          <option value="HTML">HTML 이미지</option>
         </select>
         <input id="writerLogName" type="text" placeholder="로그 이름 (선택)" aria-label="로그 이름">
       </div>
       <section class="writer-preview-sheet" id="writerPreviewSheet" aria-label="저장 이미지 미리보기">
         <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
+      </section>
+      <section class="writer-html-panel" id="writerHtmlPanel" aria-label="HTML 이미지 변환">
+        <textarea id="writerHtmlSource" spellcheck="false" autocomplete="off" placeholder="HTML 코드를 붙여넣으세요. 아래에 그대로 그려지고, PNG 저장을 누르면 이 화면이 이미지로 저장됩니다."></textarea>
+        <div class="writer-html-options">
+          <select id="writerHtmlWidth" aria-label="그릴 폭" title="그릴 폭">
+            <option value="390">모바일 390px</option>
+            <option value="600" selected>기본 600px</option>
+            <option value="1000">넓게 1000px</option>
+          </select>
+          <span id="writerHtmlInfo"></span>
+        </div>
+        <div class="writer-html-stage" id="writerHtmlStage">
+          <!-- No allow-scripts: pasted code is drawn, never run. allow-same-origin lets the app measure and capture it. -->
+          <iframe id="writerHtmlFrame" sandbox="allow-same-origin" title="HTML 미리보기"></iframe>
+          <p class="writer-html-empty">붙여넣은 HTML이 여기에 그려집니다.</p>
+        </div>
       </section>
       <div class="writer-status-bar">
         <span id="writerCharCount" aria-live="polite"></span>
@@ -3929,7 +3998,7 @@ function syncWriterToolbarAlignment(){
     return;
   }
   // Line the tool icons up with the sheet's edges; the brand hangs out to the left.
-  const sheet = writerPreviewSheet.getBoundingClientRect();
+  const sheet = writerPreviewSheet.parentElement.getBoundingClientRect();
   writerToolbar.style.paddingLeft = `${sheet.left}px`;
   writerToolbar.style.paddingRight = `${window.innerWidth - sheet.right}px`;
   const firstIcon = writerToolbar.querySelector('[data-writer-action="image"] .lucide').getBoundingClientRect();
@@ -5135,7 +5204,11 @@ writerCanvas.addEventListener('click', event => {
 });
 renderWriterMembers();
 writerCategory.addEventListener('change', () => {
-  if(writerCategory.value === '메신저형'){
+  writerApp.classList.toggle('html-mode',writerCategory.value === 'HTML');
+  if(writerCategory.value === 'HTML'){
+    writerInsertMenu.hidden = true;
+    requestAnimationFrame(() => fitWriterHtmlFrame());
+  }else if(writerCategory.value === '메신저형'){
     writerCanvas.dataset.placeholder = '이름: 대사 또는 이름 / 시간 다음 줄에 [대사] 형식으로 붙여넣습니다.';
     setTimeout(() => writerInsertMenu.hidden = false,0);
   }else{
@@ -5753,6 +5826,77 @@ function normalizeWriterExportColors(root){
   }
 }
 
+// ---------- HTML → image ----------
+const writerHtmlSource = document.getElementById('writerHtmlSource');
+const writerHtmlWidth = document.getElementById('writerHtmlWidth');
+const writerHtmlStage = document.getElementById('writerHtmlStage');
+const writerHtmlFrame = document.getElementById('writerHtmlFrame');
+const writerHtmlInfo = document.getElementById('writerHtmlInfo');
+let writerHtmlTimer = 0;
+let writerHtmlObserver = null;
+// Draw the iframe at the chosen width, then scale it down to fit the page column.
+function fitWriterHtmlFrame(){
+  const doc = writerHtmlFrame.contentDocument;
+  const width = Number(writerHtmlWidth.value);
+  const hasContent = Boolean(writerHtmlSource.value.trim() && doc?.body);
+  writerHtmlStage.classList.toggle('has-content',hasContent);
+  writerHtmlFrame.style.width = `${width}px`;
+  if(!hasContent){
+    writerHtmlFrame.style.height = '0px';
+    writerHtmlStage.style.height = '';
+    writerHtmlInfo.textContent = '';
+    return;
+  }
+  writerHtmlFrame.style.height = '0px';
+  const height = Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  writerHtmlFrame.style.height = `${height}px`;
+  const scale = Math.min(1,writerHtmlStage.clientWidth / width);
+  writerHtmlFrame.style.transform = scale < 1 ? `scale(${scale})` : '';
+  writerHtmlStage.style.height = `${Math.ceil(height * scale)}px`;
+  writerHtmlInfo.textContent = `${width} × ${height}px${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
+}
+function renderWriterHtml(){
+  writerHtmlObserver?.disconnect();
+  writerHtmlFrame.srcdoc = writerHtmlSource.value;
+}
+writerHtmlFrame.addEventListener('load', () => {
+  const doc = writerHtmlFrame.contentDocument;
+  fitWriterHtmlFrame();
+  if(!doc?.body) return;
+  // Web fonts and images land after load; refit whenever the drawn page changes size.
+  writerHtmlObserver = new ResizeObserver(() => fitWriterHtmlFrame());
+  writerHtmlObserver.observe(doc.body);
+  doc.fonts?.ready.then(fitWriterHtmlFrame);
+});
+writerHtmlSource.addEventListener('input', () => {
+  clearTimeout(writerHtmlTimer);
+  writerHtmlTimer = setTimeout(renderWriterHtml,250);
+});
+writerHtmlWidth.addEventListener('change',fitWriterHtmlFrame);
+window.addEventListener('resize',fitWriterHtmlFrame,{passive:true});
+async function renderWriterHtmlCanvas(transparent){
+  const doc = writerHtmlFrame.contentDocument;
+  if(!writerHtmlSource.value.trim() || !doc?.body) throw new Error('HTML 코드를 먼저 붙여넣어 주세요.');
+  await doc.fonts?.ready;
+  fitWriterHtmlFrame();
+  const width = Number(writerHtmlWidth.value);
+  const height = Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  const isClear = color => !color || color === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(color);
+  const bodyBackground = getComputedStyle(doc.body).backgroundColor;
+  const pageBackground = getComputedStyle(doc.documentElement).backgroundColor;
+  const background = transparent ? null
+    : !isClear(bodyBackground) ? bodyBackground : !isClear(pageBackground) ? pageBackground : '#FFFFFF';
+  return html2canvas(doc.documentElement,{
+    backgroundColor:background,
+    scale:2,
+    useCORS:true,
+    width,
+    height,
+    windowWidth:width,
+    windowHeight:height
+  });
+}
+
 let writerExportInProgress = false;
 async function saveWriterImage(){
   if(writerExportInProgress) return;
@@ -5776,6 +5920,7 @@ async function saveWriterImage(){
   const dark = writerApp.classList.contains('night');
   const logName = writerLogName.value.trim();
   const fileName = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.${extension}`;
+  const htmlCanvas = writerCategory.value === 'HTML' ? await renderWriterHtmlCanvas(transparent) : null;
   const cleanCanvas = writerCanvas.cloneNode(true);
   copyWriterExportTypography(writerCanvas,cleanCanvas);
   cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
@@ -5809,14 +5954,14 @@ async function saveWriterImage(){
   normalizeWriterExportColors(sheet);
   const exportBackground = transparent ? null : (dark ? '#17181B' : '#FFFFFF');
   const exportScale = 2;
-  const canvas = await html2canvas(sheet,{
+  const canvas = htmlCanvas || await html2canvas(sheet,{
     backgroundColor:exportBackground,
     scale:exportScale,
     useCORS:true,
     width:sheet.scrollWidth,
     height:sheet.scrollHeight
   });
-    const balancedCanvas = cropWriterCanvasVertical(
+    const balancedCanvas = htmlCanvas || cropWriterCanvasVertical(
       canvas,
       exportBackground,
       Number(exportMarginInputs.top.value),
