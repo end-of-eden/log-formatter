@@ -5904,14 +5904,40 @@ writerHtmlSource.addEventListener('input', () => {
   writerHtmlTimer = setTimeout(renderWriterHtml,250);
 });
 writerHtmlWidth.addEventListener('change',fitWriterHtmlFrame);
+// Some browsers never report size changes inside the frame (late web fonts, a new
+// width), so while this mode is open, re-check the drawn height and refit on change.
+let writerHtmlLastHeight = -1;
+setInterval(() => {
+  if(!writerApp.classList.contains('html-mode') || document.hidden) return;
+  const doc = writerHtmlFrame.contentDocument;
+  if(!doc?.body || !writerHtmlSource.value.trim()) return;
+  writerHtmlFrame.style.height = '0px';
+  const height = Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  if(height !== writerHtmlLastHeight){
+    writerHtmlLastHeight = height;
+    fitWriterHtmlFrame();
+  }else{
+    writerHtmlFrame.style.height = `${height}px`;
+  }
+},400);
 window.addEventListener('resize',fitWriterHtmlFrame,{passive:true});
 async function renderWriterHtmlCanvas(transparent){
   const doc = writerHtmlFrame.contentDocument;
   if(!writerHtmlSource.value.trim() || !doc?.body) throw new Error('HTML 코드를 먼저 붙여넣어 주세요.');
-  await doc.fonts?.ready;
-  fitWriterHtmlFrame();
+  // @import'ed web fonts can arrive after fonts.ready first resolves; wait (up to ~3s)
+  // until fonts are loaded and the page height holds still before measuring.
+  const measure = () => Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  let settled = -1;
+  for(let attempt = 0;attempt < 20;attempt += 1){
+    await doc.fonts?.ready;
+    fitWriterHtmlFrame();
+    const now = measure();
+    if(now === settled && (!doc.fonts || doc.fonts.status === 'loaded')) break;
+    settled = now;
+    await new Promise(resolve => setTimeout(resolve,150));
+  }
   const width = Number(writerHtmlWidth.value);
-  const height = Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight);
+  const height = measure();
   const isClear = color => !color || color === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(color);
   const bodyBackground = getComputedStyle(doc.body).backgroundColor;
   const pageBackground = getComputedStyle(doc.documentElement).backgroundColor;
