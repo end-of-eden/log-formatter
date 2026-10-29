@@ -5855,9 +5855,40 @@ function fitWriterHtmlFrame(){
   writerHtmlStage.style.height = `${Math.ceil(height * scale)}px`;
   writerHtmlInfo.textContent = `${width} × ${height}px${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
 }
+// Phone browsers inflate text inside the preview, which skews its measured height.
+const WRITER_HTML_RESET = '<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>';
 function renderWriterHtml(){
   writerHtmlObserver?.disconnect();
-  writerHtmlFrame.srcdoc = writerHtmlSource.value;
+  writerHtmlFrame.srcdoc = WRITER_HTML_RESET + writerHtmlSource.value;
+}
+// Cut rows at the bottom that are nothing but the page background (or fully clear),
+// so a height measured before fonts or layout settled never leaves an empty band.
+function trimWriterCanvasBottom(canvas,background){
+  const context = canvas.getContext('2d',{willReadFrequently:true});
+  const {data} = context.getImageData(0,0,canvas.width,canvas.height);
+  const probe = document.createElement('canvas').getContext('2d',{willReadFrequently:true});
+  probe.fillStyle = background || 'rgba(0,0,0,0)';
+  probe.fillRect(0,0,1,1);
+  const [r,g,b,a] = probe.getImageData(0,0,1,1).data;
+  const matches = index => background
+    ? Math.abs(data[index] - r) <= 3 && Math.abs(data[index + 1] - g) <= 3 && Math.abs(data[index + 2] - b) <= 3
+    : data[index + 3] === 0;
+  let bottom = canvas.height;
+  while(bottom > 1){
+    const row = (bottom - 1) * canvas.width * 4;
+    let blank = true;
+    for(let x = 0;x < canvas.width;x += 2){
+      if(!matches(row + x * 4)){ blank = false; break; }
+    }
+    if(!blank) break;
+    bottom -= 1;
+  }
+  if(bottom === canvas.height || a === 0 && background) return canvas;
+  const trimmed = document.createElement('canvas');
+  trimmed.width = canvas.width;
+  trimmed.height = bottom;
+  trimmed.getContext('2d').drawImage(canvas,0,0);
+  return trimmed;
 }
 writerHtmlFrame.addEventListener('load', () => {
   const doc = writerHtmlFrame.contentDocument;
@@ -5886,7 +5917,7 @@ async function renderWriterHtmlCanvas(transparent){
   const pageBackground = getComputedStyle(doc.documentElement).backgroundColor;
   const background = transparent ? null
     : !isClear(bodyBackground) ? bodyBackground : !isClear(pageBackground) ? pageBackground : '#FFFFFF';
-  return html2canvas(doc.documentElement,{
+  const canvas = await html2canvas(doc.documentElement,{
     backgroundColor:background,
     scale:2,
     useCORS:true,
@@ -5895,6 +5926,10 @@ async function renderWriterHtmlCanvas(transparent){
     windowWidth:width,
     windowHeight:height
   });
+  // Only a page without its own background gets filler colour below the content;
+  // a page that paints its background meant that space, so leave it.
+  const pageIsBare = isClear(bodyBackground) && isClear(pageBackground);
+  return pageIsBare ? trimWriterCanvasBottom(canvas,background) : canvas;
 }
 
 let writerExportInProgress = false;
