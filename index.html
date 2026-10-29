@@ -1488,7 +1488,7 @@
     resize:vertical;
   }
   .writer-html-options{display:flex;align-items:center;gap:10px;color:#8c8f95;font:11px 'Pretendard',sans-serif;}
-  #writerHtmlWidth{
+  #writerHtmlWidth,#writerHtmlScale{
     width:auto;
     height:32px;
     padding:0 4px 0 8px;
@@ -2478,7 +2478,8 @@
   .writer-app.night .writer-category-row select{background:#292b2f;border-color:#3b3d43;color:#ddd;}
   .writer-app.night #writerLogName,
   .writer-app.night #writerHtmlSource,
-  .writer-app.night #writerHtmlWidth{background:#292b2f;border-color:#3b3d43;color:#ddd;}
+  .writer-app.night #writerHtmlWidth,
+  .writer-app.night #writerHtmlScale{background:#292b2f;border-color:#3b3d43;color:#ddd;}
   .writer-app.night .writer-html-crop{background:repeating-conic-gradient(#202226 0 25%,#26282c 0 50%) 0 0/16px 16px;}
   @media (max-width:900px){
     .writer-toolbar{padding:6px 10px;}
@@ -2805,6 +2806,11 @@
             <option value="390">모바일 390px</option>
             <option value="600" selected>기본 600px</option>
             <option value="1000">넓게 1000px</option>
+          </select>
+          <select id="writerHtmlScale" aria-label="저장 해상도" title="저장 해상도">
+            <option value="2" selected>2배</option>
+            <option value="3">3배</option>
+            <option value="4">4배</option>
           </select>
           <span id="writerHtmlInfo"></span>
         </div>
@@ -5834,6 +5840,7 @@ function normalizeWriterExportColors(root){
 // ---------- HTML → image ----------
 const writerHtmlSource = document.getElementById('writerHtmlSource');
 const writerHtmlWidth = document.getElementById('writerHtmlWidth');
+const writerHtmlScale = document.getElementById('writerHtmlScale');
 const writerHtmlStage = document.getElementById('writerHtmlStage');
 const writerHtmlFrame = document.getElementById('writerHtmlFrame');
 const writerHtmlCrop = document.getElementById('writerHtmlCrop');
@@ -5937,7 +5944,8 @@ function fitWriterHtmlFrame(){
     writerHtmlFrame.style.marginTop = '';
     writerHtmlFrame.style.transform = `translate(${-box.x * scale}px,${-box.y * scale}px) scale(${scale})`;
   }
-  writerHtmlInfo.textContent = `${box.w} × ${box.h}px${box.cropped ? ' · 빈 여백 자름' : ''}${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
+  const output = Number(writerHtmlScale.value);
+  writerHtmlInfo.textContent = `${box.w} × ${box.h}px${box.cropped ? ' · 빈 여백 자름' : ''} · 저장 ${box.w * output}×${box.h * output}px${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
 }
 // Phone browsers inflate text inside the preview, which skews its measured height.
 const WRITER_HTML_RESET = '<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>';
@@ -5988,6 +5996,7 @@ writerHtmlSource.addEventListener('input', () => {
   writerHtmlTimer = setTimeout(renderWriterHtml,250);
 });
 writerHtmlWidth.addEventListener('change',fitWriterHtmlFrame);
+writerHtmlScale.addEventListener('change',fitWriterHtmlFrame);
 // Some browsers never report size changes inside the frame (late web fonts, a new
 // width), so while this mode is open, re-check the drawn height and refit on change.
 let writerHtmlLastHeight = -1;
@@ -6002,7 +6011,8 @@ setInterval(() => {
   }
 },400);
 window.addEventListener('resize',fitWriterHtmlFrame,{passive:true});
-async function renderWriterHtmlCanvas(transparent){
+async function renderWriterHtmlCanvas(format){
+  const transparent = format === 'transparent';
   const doc = writerHtmlFrame.contentDocument;
   if(!writerHtmlSource.value.trim() || !doc?.body) throw new Error('HTML 코드를 먼저 붙여넣어 주세요.');
   // @import'ed web fonts can arrive after fonts.ready first resolves; wait (up to ~3s)
@@ -6025,9 +6035,13 @@ async function renderWriterHtmlCanvas(transparent){
   const background = transparent ? null
     : !isClear(bodyBackground) ? bodyBackground : !isClear(pageBackground) ? pageBackground : '#FFFFFF';
   const box = writerHtmlPaintedBox(doc,width,height);
+  // Only a page without its own background gets filler around the content; a page that
+  // paints its background meant that space. Bare pages are captured on a clear canvas,
+  // so rounded corners stay see-through instead of turning white.
+  const pageIsBare = isClear(bodyBackground) && isClear(pageBackground);
   const canvas = await html2canvas(doc.documentElement,{
-    backgroundColor:background,
-    scale:2,
+    backgroundColor:pageIsBare ? null : background,
+    scale:Number(writerHtmlScale.value) || 2,
     useCORS:true,
     x:box.x,
     y:box.y,
@@ -6036,10 +6050,20 @@ async function renderWriterHtmlCanvas(transparent){
     windowWidth:width,
     windowHeight:height
   });
-  // Only a page without its own background gets filler colour around the content;
-  // a page that paints its background meant that space, so leave it.
-  const pageIsBare = isClear(bodyBackground) && isClear(pageBackground);
-  return pageIsBare ? trimWriterCanvasEdges(canvas,background) : canvas;
+  if(!pageIsBare) return canvas;
+  const trimmed = trimWriterCanvasEdges(canvas,null);
+  if(format !== 'jpg') return trimmed;
+  // JPG has no transparency: fill what is left around the shape (rounded corners) with
+  // the shape's own edge colour rather than white.
+  const edge = trimmed.getContext('2d').getImageData(Math.floor(trimmed.width / 2),0,1,1).data;
+  const flat = document.createElement('canvas');
+  flat.width = trimmed.width;
+  flat.height = trimmed.height;
+  const flatContext = flat.getContext('2d');
+  flatContext.fillStyle = edge[3] ? `rgb(${edge[0]},${edge[1]},${edge[2]})` : '#FFFFFF';
+  flatContext.fillRect(0,0,flat.width,flat.height);
+  flatContext.drawImage(trimmed,0,0);
+  return flat;
 }
 
 let writerExportInProgress = false;
@@ -6065,7 +6089,7 @@ async function saveWriterImage(){
   const dark = writerApp.classList.contains('night');
   const logName = writerLogName.value.trim();
   const fileName = `${(logName || 'eoe-log').replace(/[\\/:*?"<>|]/g,'_')}.${extension}`;
-  const htmlCanvas = writerCategory.value === 'HTML' ? await renderWriterHtmlCanvas(transparent) : null;
+  const htmlCanvas = writerCategory.value === 'HTML' ? await renderWriterHtmlCanvas(format) : null;
   const cleanCanvas = writerCanvas.cloneNode(true);
   copyWriterExportTypography(writerCanvas,cleanCanvas);
   cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
