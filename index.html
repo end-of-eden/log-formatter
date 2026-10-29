@@ -1500,12 +1500,17 @@
   }
   .writer-html-stage{
     position:relative;
+    display:flex;
+    justify-content:center;
     min-height:160px;
+  }
+  .writer-html-crop{
     overflow:hidden;
     border-radius:4px;
     background:repeating-conic-gradient(#e9eaed 0 25%,#f4f5f7 0 50%) 0 0/16px 16px;
     box-shadow:0 4px 22px rgba(28,31,36,.08);
   }
+  .writer-html-stage:not(.has-content) .writer-html-crop{width:100%;}
   #writerHtmlFrame{display:block;border:0;background:transparent;transform-origin:0 0;}
   .writer-html-empty{
     position:absolute;
@@ -2474,7 +2479,7 @@
   .writer-app.night #writerLogName,
   .writer-app.night #writerHtmlSource,
   .writer-app.night #writerHtmlWidth{background:#292b2f;border-color:#3b3d43;color:#ddd;}
-  .writer-app.night .writer-html-stage{background:repeating-conic-gradient(#202226 0 25%,#26282c 0 50%) 0 0/16px 16px;}
+  .writer-app.night .writer-html-crop{background:repeating-conic-gradient(#202226 0 25%,#26282c 0 50%) 0 0/16px 16px;}
   @media (max-width:900px){
     .writer-toolbar{padding:6px 10px;}
     .writer-brand{display:none;}
@@ -2805,7 +2810,7 @@
         </div>
         <div class="writer-html-stage" id="writerHtmlStage">
           <!-- No allow-scripts: pasted code is drawn, never run. allow-same-origin lets the app measure and capture it. -->
-          <iframe id="writerHtmlFrame" sandbox="allow-same-origin" title="HTML 미리보기"></iframe>
+          <div class="writer-html-crop" id="writerHtmlCrop"><iframe id="writerHtmlFrame" sandbox="allow-same-origin" title="HTML 미리보기"></iframe></div>
           <p class="writer-html-empty">붙여넣은 HTML이 여기에 그려집니다.</p>
         </div>
       </section>
@@ -5831,6 +5836,7 @@ const writerHtmlSource = document.getElementById('writerHtmlSource');
 const writerHtmlWidth = document.getElementById('writerHtmlWidth');
 const writerHtmlStage = document.getElementById('writerHtmlStage');
 const writerHtmlFrame = document.getElementById('writerHtmlFrame');
+const writerHtmlCrop = document.getElementById('writerHtmlCrop');
 const writerHtmlInfo = document.getElementById('writerHtmlInfo');
 let writerHtmlTimer = 0;
 let writerHtmlObserver = null;
@@ -5852,6 +5858,51 @@ function writerHtmlContentHeight(doc){
   bottom += parseFloat(bodyStyle.paddingBottom || 0) + parseFloat(bodyStyle.marginBottom || 0);
   return Math.max(1,Math.ceil(bottom - origin));
 }
+// The part of a bare page (no background of its own) that actually paints: boxes with a
+// background, border, image or shadow, plus text. Everything outside is empty margin and
+// gets cut. Pages that paint their own background are kept whole.
+function writerHtmlPaintedBox(doc,width,height){
+  const full = {x:0,y:0,w:width,h:height,cropped:false};
+  const view = doc.defaultView;
+  const clear = color => !color || color === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(color);
+  const pageStyles = [view.getComputedStyle(doc.documentElement),view.getComputedStyle(doc.body)];
+  if(pageStyles.some(style => !clear(style.backgroundColor) || style.backgroundImage !== 'none')) return full;
+  const origin = doc.documentElement.getBoundingClientRect();
+  let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+  const add = (box,pad = 0) => {
+    if(!box.width && !box.height) return;
+    left = Math.min(left,box.left - pad);
+    top = Math.min(top,box.top - pad);
+    right = Math.max(right,box.right + pad);
+    bottom = Math.max(bottom,box.bottom + pad);
+  };
+  for(const element of doc.body.querySelectorAll('*')){
+    if(/^(STYLE|SCRIPT|TEMPLATE|LINK|META|TITLE)$/i.test(element.tagName)) continue;
+    const style = view.getComputedStyle(element);
+    if(style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) continue;
+    const media = /^(IMG|SVG|VIDEO|CANVAS|PICTURE)$/i.test(element.tagName);
+    const border = ['Top','Right','Bottom','Left'].some(side =>
+      parseFloat(style[`border${side}Width`]) > 0 && style[`border${side}Style`] !== 'none' && !clear(style[`border${side}Color`]));
+    const shadow = style.boxShadow !== 'none' || /drop-shadow/.test(style.filter);
+    if(media || border || shadow || !clear(style.backgroundColor) || style.backgroundImage !== 'none'){
+      add(element.getBoundingClientRect(),shadow ? 24 : 0);
+    }
+  }
+  const walker = doc.createTreeWalker(doc.body,4);
+  const range = doc.createRange();
+  while(walker.nextNode()){
+    const node = walker.currentNode;
+    if(!node.data.trim() || node.parentElement.closest('style,script,template')) continue;
+    range.selectNodeContents(node);
+    for(const box of range.getClientRects()) add(box);
+  }
+  if(left === Infinity) return full;
+  const x = Math.max(0,Math.floor(left - origin.left));
+  const y = Math.max(0,Math.floor(top - origin.top));
+  const x2 = Math.min(width,Math.ceil(right - origin.left));
+  const y2 = Math.min(height,Math.ceil(bottom - origin.top));
+  return {x,y,w:Math.max(1,x2 - x),h:Math.max(1,y2 - y),cropped:x > 0 || y > 0 || x2 < width || y2 < height};
+}
 // zoom shrinks the frame's layout box too, so the stage can never keep its full size.
 const writerHtmlUsesZoom = typeof CSS !== 'undefined' && CSS.supports('zoom','0.5');
 function fitWriterHtmlFrame(){
@@ -5863,21 +5914,30 @@ function fitWriterHtmlFrame(){
   if(!hasContent){
     writerHtmlFrame.style.height = '0px';
     writerHtmlStage.style.height = '';
+    writerHtmlCrop.style.width = '';
+    writerHtmlCrop.style.height = '';
     writerHtmlInfo.textContent = '';
     return;
   }
   const height = writerHtmlContentHeight(doc);
   writerHtmlFrame.style.height = `${height}px`;
-  const scale = Math.min(1,writerHtmlStage.clientWidth / width);
+  const box = writerHtmlPaintedBox(doc,width,height);
+  const scale = Math.min(1,writerHtmlStage.clientWidth / box.w);
+  // The crop window shows only the painted box; the frame slides under it.
+  writerHtmlCrop.style.width = `${Math.floor(box.w * scale)}px`;
+  writerHtmlCrop.style.height = `${Math.floor(box.h * scale)}px`;
+  writerHtmlStage.style.height = '';
   if(writerHtmlUsesZoom){
     writerHtmlFrame.style.zoom = scale < 1 ? String(scale) : '';
     writerHtmlFrame.style.transform = '';
-    writerHtmlStage.style.height = '';
+    writerHtmlFrame.style.marginLeft = `${-box.x}px`;
+    writerHtmlFrame.style.marginTop = `${-box.y}px`;
   }else{
-    writerHtmlFrame.style.transform = scale < 1 ? `scale(${scale})` : '';
-    writerHtmlStage.style.height = `${Math.ceil(height * scale)}px`;
+    writerHtmlFrame.style.marginLeft = '';
+    writerHtmlFrame.style.marginTop = '';
+    writerHtmlFrame.style.transform = `translate(${-box.x * scale}px,${-box.y * scale}px) scale(${scale})`;
   }
-  writerHtmlInfo.textContent = `${width} × ${height}px${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
+  writerHtmlInfo.textContent = `${box.w} × ${box.h}px${box.cropped ? ' · 빈 여백 자름' : ''}${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
 }
 // Phone browsers inflate text inside the preview, which skews its measured height.
 const WRITER_HTML_RESET = '<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>';
@@ -5885,33 +5945,33 @@ function renderWriterHtml(){
   writerHtmlObserver?.disconnect();
   writerHtmlFrame.srcdoc = writerHtmlSource.value + WRITER_HTML_RESET;
 }
-// Cut rows at the bottom that are nothing but the page background (or fully clear),
-// so a height measured before fonts or layout settled never leaves an empty band.
-function trimWriterCanvasBottom(canvas,background){
+// Cut edges that are nothing but the filler colour (or fully clear), on all four sides,
+// so empty margin never survives: a height measured early, or room left for a shadow
+// the capture could not draw.
+function trimWriterCanvasEdges(canvas,background){
   const context = canvas.getContext('2d',{willReadFrequently:true});
-  const {data} = context.getImageData(0,0,canvas.width,canvas.height);
+  const {width,height} = canvas;
+  const {data} = context.getImageData(0,0,width,height);
   const probe = document.createElement('canvas').getContext('2d',{willReadFrequently:true});
   probe.fillStyle = background || 'rgba(0,0,0,0)';
   probe.fillRect(0,0,1,1);
-  const [r,g,b,a] = probe.getImageData(0,0,1,1).data;
-  const matches = index => background
+  const [r,g,b] = probe.getImageData(0,0,1,1).data;
+  const blank = index => background
     ? Math.abs(data[index] - r) <= 3 && Math.abs(data[index + 1] - g) <= 3 && Math.abs(data[index + 2] - b) <= 3
     : data[index + 3] === 0;
-  let bottom = canvas.height;
-  while(bottom > 1){
-    const row = (bottom - 1) * canvas.width * 4;
-    let blank = true;
-    for(let x = 0;x < canvas.width;x += 2){
-      if(!matches(row + x * 4)){ blank = false; break; }
-    }
-    if(!blank) break;
-    bottom -= 1;
-  }
-  if(bottom === canvas.height || a === 0 && background) return canvas;
+  const rowBlank = y => { for(let x = 0;x < width;x += 2) if(!blank((y * width + x) * 4)) return false; return true; };
+  const columnBlank = (x,top,bottom) => { for(let y = top;y < bottom;y += 2) if(!blank((y * width + x) * 4)) return false; return true; };
+  let top = 0, bottom = height;
+  while(top < bottom - 1 && rowBlank(top)) top += 1;
+  while(bottom > top + 1 && rowBlank(bottom - 1)) bottom -= 1;
+  let left = 0, right = width;
+  while(left < right - 1 && columnBlank(left,top,bottom)) left += 1;
+  while(right > left + 1 && columnBlank(right - 1,top,bottom)) right -= 1;
+  if(!top && !left && bottom === height && right === width) return canvas;
   const trimmed = document.createElement('canvas');
-  trimmed.width = canvas.width;
-  trimmed.height = bottom;
-  trimmed.getContext('2d').drawImage(canvas,0,0);
+  trimmed.width = right - left;
+  trimmed.height = bottom - top;
+  trimmed.getContext('2d').drawImage(canvas,-left,-top);
   return trimmed;
 }
 writerHtmlFrame.addEventListener('load', () => {
@@ -5964,19 +6024,22 @@ async function renderWriterHtmlCanvas(transparent){
   const pageBackground = getComputedStyle(doc.documentElement).backgroundColor;
   const background = transparent ? null
     : !isClear(bodyBackground) ? bodyBackground : !isClear(pageBackground) ? pageBackground : '#FFFFFF';
+  const box = writerHtmlPaintedBox(doc,width,height);
   const canvas = await html2canvas(doc.documentElement,{
     backgroundColor:background,
     scale:2,
     useCORS:true,
-    width,
-    height,
+    x:box.x,
+    y:box.y,
+    width:box.w,
+    height:box.h,
     windowWidth:width,
     windowHeight:height
   });
-  // Only a page without its own background gets filler colour below the content;
+  // Only a page without its own background gets filler colour around the content;
   // a page that paints its background meant that space, so leave it.
   const pageIsBare = isClear(bodyBackground) && isClear(pageBackground);
-  return pageIsBare ? trimWriterCanvasBottom(canvas,background) : canvas;
+  return pageIsBare ? trimWriterCanvasEdges(canvas,background) : canvas;
 }
 
 let writerExportInProgress = false;
