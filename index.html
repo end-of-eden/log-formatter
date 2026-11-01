@@ -1471,7 +1471,7 @@
   .writer-spacing-row input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
   .writer-spacing-hint{margin:-2px 0 0;color:#9a9ea6;font:10px/1.4 'Pretendard',sans-serif;}
   /* HTML 이미지 mode swaps the sheet for a code box and a sandboxed preview. */
-  .writer-html-panel{display:none;gap:10px;}
+  .writer-html-panel{display:none;grid-template-columns:minmax(0,1fr);gap:10px;}
   .writer-app.html-mode .writer-html-panel{display:grid;}
   .writer-app.html-mode #writerPreviewSheet,
   .writer-app.html-mode .writer-status-bar{display:none;}
@@ -1502,7 +1502,9 @@
     position:relative;
     display:flex;
     justify-content:center;
+    min-width:0;
     min-height:160px;
+    overflow:clip;
   }
   .writer-html-crop{
     overflow:hidden;
@@ -1511,7 +1513,8 @@
     box-shadow:0 4px 22px rgba(28,31,36,.08);
   }
   .writer-html-stage:not(.has-content) .writer-html-crop{width:100%;}
-  #writerHtmlFrame{display:block;border:0;background:transparent;transform-origin:0 0;}
+  /* A picture, not a page: links and buttons in the preview stay inert. */
+  #writerHtmlFrame{display:block;border:0;background:transparent;transform-origin:0 0;pointer-events:none;}
   .writer-html-empty{
     position:absolute;
     inset:0;
@@ -2815,8 +2818,9 @@
           <span id="writerHtmlInfo"></span>
         </div>
         <div class="writer-html-stage" id="writerHtmlStage">
-          <!-- No allow-scripts: pasted code is drawn, never run. allow-same-origin lets the app measure and capture it. -->
-          <div class="writer-html-crop" id="writerHtmlCrop"><iframe id="writerHtmlFrame" sandbox="allow-same-origin" title="HTML 미리보기"></iframe></div>
+          <!-- Not sandboxed: Safari ignores event listeners inside script-less sandboxes, which stalled the capture.
+               Pasted code is cleaned of scripts and handlers before it is drawn instead. -->
+          <div class="writer-html-crop" id="writerHtmlCrop"><iframe id="writerHtmlFrame" title="HTML 미리보기" tabindex="-1"></iframe></div>
           <p class="writer-html-empty">붙여넣은 HTML이 여기에 그려집니다.</p>
         </div>
       </section>
@@ -5949,9 +5953,29 @@ function fitWriterHtmlFrame(){
 }
 // Phone browsers inflate text inside the preview, which skews its measured height.
 const WRITER_HTML_RESET = '<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>';
+// Drop everything that could run or navigate: scripts, frames, plug-ins, forms, refreshes,
+// event handler attributes and javascript: links. What is left only draws.
+function cleanWriterHtml(source){
+  const parsed = new DOMParser().parseFromString(source,'text/html');
+  parsed.querySelectorAll('script,noscript,iframe,frame,frameset,object,embed,applet,base,portal,meta[http-equiv]').forEach(node => node.remove());
+  parsed.querySelectorAll('form').forEach(form => form.replaceWith(...form.childNodes));
+  for(const element of parsed.querySelectorAll('*')){
+    for(const {name,value} of [...element.attributes]){
+      if(/^on/i.test(name) || name === 'srcdoc' || name === 'formaction'
+        || (/^(href|src|xlink:href|action|data|poster)$/i.test(name) && /^\s*(javascript|vbscript):/i.test(value))){
+        element.removeAttribute(name);
+      }
+    }
+  }
+  return `<!doctype html>\n${parsed.documentElement.outerHTML}`;
+}
 function renderWriterHtml(){
   writerHtmlObserver?.disconnect();
-  writerHtmlFrame.srcdoc = writerHtmlSource.value + WRITER_HTML_RESET;
+  writerHtmlFrame.srcdoc = cleanWriterHtml(writerHtmlSource.value) + WRITER_HTML_RESET;
+}
+// Never wait on a browser promise forever (Safari can leave fonts.ready pending).
+function writerHtmlWait(promise,ms){
+  return Promise.race([promise,new Promise(resolve => setTimeout(resolve,ms))]);
 }
 // Cut edges that are nothing but the filler colour (or fully clear), on all four sides,
 // so empty margin never survives: a height measured early, or room left for a shadow
@@ -5989,7 +6013,7 @@ writerHtmlFrame.addEventListener('load', () => {
   // Web fonts and images land after load; refit whenever the drawn page changes size.
   writerHtmlObserver = new ResizeObserver(() => fitWriterHtmlFrame());
   writerHtmlObserver.observe(doc.body);
-  doc.fonts?.ready.then(fitWriterHtmlFrame);
+  writerHtmlWait(doc.fonts?.ready,3000).then(fitWriterHtmlFrame);
 });
 writerHtmlSource.addEventListener('input', () => {
   clearTimeout(writerHtmlTimer);
@@ -6020,7 +6044,7 @@ async function renderWriterHtmlCanvas(format){
   const measure = () => writerHtmlContentHeight(doc);
   let settled = -1;
   for(let attempt = 0;attempt < 20;attempt += 1){
-    await doc.fonts?.ready;
+    await writerHtmlWait(doc.fonts?.ready,1500);
     fitWriterHtmlFrame();
     const now = measure();
     if(now === settled && (!doc.fonts || doc.fonts.status === 'loaded')) break;
@@ -6039,7 +6063,7 @@ async function renderWriterHtmlCanvas(format){
   // paints its background meant that space. Bare pages are captured on a clear canvas,
   // so rounded corners stay see-through instead of turning white.
   const pageIsBare = isClear(bodyBackground) && isClear(pageBackground);
-  const canvas = await html2canvas(doc.documentElement,{
+  const canvas = await Promise.race([html2canvas(doc.documentElement,{
     backgroundColor:pageIsBare ? null : background,
     scale:Number(writerHtmlScale.value) || 2,
     useCORS:true,
@@ -6049,7 +6073,7 @@ async function renderWriterHtmlCanvas(format){
     height:box.h,
     windowWidth:width,
     windowHeight:height
-  });
+  }),new Promise((resolve,reject) => setTimeout(() => reject(new Error('이미지 생성이 30초 안에 끝나지 않았습니다. 해상도를 낮추거나 다시 시도해 주세요.')),30000))]);
   if(!pageIsBare) return canvas;
   const trimmed = trimWriterCanvasEdges(canvas,null);
   if(format !== 'jpg') return trimmed;
