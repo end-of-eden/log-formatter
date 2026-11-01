@@ -6066,23 +6066,41 @@ setInterval(() => {
 },400);
 window.addEventListener('resize',fitWriterHtmlFrame,{passive:true});
 async function renderWriterHtmlCanvas(format){
+  if(!writerHtmlSource.value.trim()) throw new Error('HTML 코드를 먼저 붙여넣어 주세요.');
+  // Capture from an unzoomed, off-screen copy at the chosen width. Safari lays a page out
+  // wider inside the zoomed preview (width ÷ zoom), which reflowed and cut the image.
+  const width = Number(writerHtmlWidth.value);
+  const frame = document.createElement('iframe');
+  frame.setAttribute('aria-hidden','true');
+  frame.style.cssText = `position:fixed;left:-100000px;top:0;width:${width}px;height:200px;border:0;`;
+  frame.srcdoc = cleanWriterHtml(writerHtmlSource.value) + WRITER_HTML_RESET;
+  const loaded = new Promise(resolve => frame.addEventListener('load',resolve,{once:true}));
+  document.body.appendChild(frame);
+  try{
+    await writerHtmlWait(loaded,10000);
+    const doc = frame.contentDocument;
+    if(!doc?.body) throw new Error('HTML을 그리지 못했습니다. 다시 시도해 주세요.');
+    return await captureWriterHtml(doc,frame,width,format);
+  }finally{
+    frame.remove();
+  }
+}
+async function captureWriterHtml(doc,frame,width,format){
   const transparent = format === 'transparent';
-  const doc = writerHtmlFrame.contentDocument;
-  if(!writerHtmlSource.value.trim() || !doc?.body) throw new Error('HTML 코드를 먼저 붙여넣어 주세요.');
   // @import'ed web fonts can arrive after fonts.ready first resolves; wait (up to ~3s)
   // until fonts are loaded and the page height holds still before measuring.
   const measure = () => writerHtmlContentHeight(doc);
   let settled = -1;
   for(let attempt = 0;attempt < 20;attempt += 1){
     await writerHtmlWait(doc.fonts?.ready,1500);
-    fitWriterHtmlFrame();
+    frame.style.height = `${measure()}px`;
     const now = measure();
     if(now === settled && (!doc.fonts || doc.fonts.status === 'loaded')) break;
     settled = now;
     await new Promise(resolve => setTimeout(resolve,150));
   }
-  const width = Number(writerHtmlWidth.value);
   const height = measure();
+  frame.style.height = `${height}px`;
   const isClear = color => !color || color === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(color);
   const bodyBackground = getComputedStyle(doc.body).backgroundColor;
   const pageBackground = getComputedStyle(doc.documentElement).backgroundColor;
