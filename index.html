@@ -5223,6 +5223,7 @@ writerCanvas.addEventListener('click', event => {
 });
 renderWriterMembers();
 writerCategory.addEventListener('change', () => {
+  try{ localStorage.setItem('eoe-writer-category',writerCategory.value); }catch{}
   writerApp.classList.toggle('html-mode',writerCategory.value === 'HTML');
   if(writerCategory.value === 'HTML'){
     writerInsertMenu.hidden = true;
@@ -6019,10 +6020,35 @@ writerHtmlFrame.addEventListener('load', () => {
   writerHtmlObserver.observe(doc.body);
   writerHtmlWait(doc.fonts?.ready,3000).then(fitWriterHtmlFrame);
 });
+// Keep the pasted code and picks in this browser, so a reload does not lose them.
+const WRITER_HTML_STORE = 'eoe-writer-html';
+function saveWriterHtmlDraft(){
+  try{
+    localStorage.setItem(WRITER_HTML_STORE,JSON.stringify({
+      source:writerHtmlSource.value,
+      width:writerHtmlWidth.value,
+      scale:writerHtmlScale.value
+    }));
+  }catch{}
+}
 writerHtmlSource.addEventListener('input', () => {
   clearTimeout(writerHtmlTimer);
-  writerHtmlTimer = setTimeout(renderWriterHtml,250);
+  writerHtmlTimer = setTimeout(() => {
+    renderWriterHtml();
+    saveWriterHtmlDraft();
+  },250);
 });
+writerHtmlWidth.addEventListener('change',saveWriterHtmlDraft);
+writerHtmlScale.addEventListener('change',saveWriterHtmlDraft);
+try{
+  const draft = JSON.parse(localStorage.getItem(WRITER_HTML_STORE) || 'null');
+  if(draft?.source){
+    writerHtmlSource.value = draft.source;
+    if([...writerHtmlWidth.options].some(option => option.value === draft.width)) writerHtmlWidth.value = draft.width;
+    if([...writerHtmlScale.options].some(option => option.value === draft.scale)) writerHtmlScale.value = draft.scale;
+    renderWriterHtml();
+  }
+}catch{}
 writerHtmlWidth.addEventListener('change',fitWriterHtmlFrame);
 writerHtmlScale.addEventListener('change',fitWriterHtmlFrame);
 // Some browsers never report size changes inside the frame (late web fonts, a new
@@ -6204,6 +6230,14 @@ syncWriterPreview();
 writerChatStyle.dispatchEvent(new Event('change'));
 // Start from the first speaker's own bubble colour.
 writerMessageSender.dispatchEvent(new Event('change'));
+// Reopen in the mode used last (HTML 이미지 users should not have to pick it every time).
+try{
+  const lastCategory = localStorage.getItem('eoe-writer-category');
+  if(lastCategory === 'HTML'){
+    writerCategory.value = lastCategory;
+    writerCategory.dispatchEvent(new Event('change'));
+  }
+}catch{}
 </script>
 </body>
 </html>
