@@ -1516,7 +1516,7 @@
     background:repeating-conic-gradient(#e9eaed 0 25%,#f4f5f7 0 50%) 0 0/16px 16px;
     box-shadow:0 4px 22px rgba(28,31,36,.08);
   }
-  .writer-html-stage:not(.has-content) .writer-html-crop{width:100%;}
+  .writer-html-stage:not(.has-content) .writer-html-crop{width:100%;background:none;box-shadow:none;outline:1px dashed #d5d7dc;outline-offset:-1px;}
   /* A picture, not a page: links and buttons in the preview stay inert. */
   #writerHtmlFrame{display:block;border:0;background:transparent;transform-origin:0 0;pointer-events:none;}
   .writer-html-empty{
@@ -1659,26 +1659,12 @@
     color:#30343a;
     font:700 12px 'Pretendard',sans-serif;
   }
-  .writer-member-count{
-    display:grid;
-    min-width:20px;
-    height:20px;
-    place-items:center;
-    padding:0 6px;
-    border-radius:999px;
-    background:#f0f1f3;
-    color:#969aa1;
-    font:600 10px 'Pretendard',sans-serif;
-  }
-  .writer-member-presets{
-    margin-bottom:10px;
-    border:1px solid #e6ded3;
-    border-radius:9px;
-    background:#fbf8f3;
-  }
+  .writer-member-count{color:#9a9ea6;font:600 12px 'Pretendard',sans-serif;}
+  /* Sections are separated by hairlines, not nested cards. */
+  .writer-member-presets{margin:0 0 10px;padding-bottom:4px;border-bottom:1px solid #ececef;}
   .writer-member-presets summary{
     position:relative;
-    padding:12px 34px 12px 13px;
+    padding:6px 24px 6px 0;
     color:#34383f;
     font:700 12px 'Pretendard',sans-serif;
     cursor:pointer;
@@ -1688,8 +1674,8 @@
   .writer-member-presets summary::after{
     content:"⌄";
     position:absolute;
-    top:10px;
-    right:13px;
+    top:4px;
+    right:2px;
     color:#9da1a8;
   }
   .writer-member-presets[open] summary::after{transform:rotate(180deg);}
@@ -1698,7 +1684,7 @@
     align-items:center;
     justify-content:space-between;
     gap:10px;
-    padding:0 12px 12px;
+    padding:2px 0 6px;
     color:#8b8f96;
     font:11px/1.5 'Pretendard',sans-serif;
   }
@@ -1735,13 +1721,8 @@
     white-space:nowrap;
   }
   .writer-registered-members,
-  .writer-new-member{
-    padding:10px;
-    border:1px solid #e6ded3;
-    border-radius:9px;
-    background:#fffdfa;
-  }
-  .writer-new-member{margin-top:10px;}
+  .writer-new-member{padding:0;}
+  .writer-new-member{margin-top:10px;padding-top:10px;border-top:1px solid #ececef;}
   .writer-member-section-head{
     display:flex;
     align-items:center;
@@ -1928,32 +1909,7 @@
     font-size:18px;
     line-height:1;
   }
-  #writerAddBubble{
-    grid-column:1 / -1;
-    justify-self:center;
-    display:flex;
-    width:132px;
-    align-items:center;
-    justify-content:center;
-    border:1px solid var(--burgundy);
-    border-radius:8px;
-    background:#fff;
-    color:var(--burgundy);
-    box-shadow:0 2px 8px rgba(91,21,36,.12);
-  }
-  #writerAddBubble:hover{background:#fbf6f1;}
-  #writerAddBubble::before{
-    content:"+";
-    margin-right:6px;
-    color:var(--burgundy);
-    font-size:15px;
-    line-height:1;
-  }
-  #writerAddBubble.is-editing::before{
-    content:"✓";
-    color:var(--burgundy);
-    font-size:14px;
-  }
+  #writerAddBubble{grid-column:1 / -1;text-align:center;}
   .writer-chat-menu input[type=text],
   .writer-chat-menu input[type=file],
   .writer-chat-menu input[type=time],
@@ -2031,7 +1987,7 @@
     min-height:42px;
     padding:5px 6px;
     border-radius:8px;
-    background:#faf7f3;
+    background:#f6f6f7;
     color:#34383f;
     font:600 11px 'Pretendard',sans-serif;
   }
@@ -2073,6 +2029,8 @@
     text-align:center;
     font:10px 'Pretendard',sans-serif;
   }
+  .writer-member-row-actions .lucide{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .writer-member-row-actions button.active .lucide{fill:currentColor;}
   .writer-chat-menu .writer-member-row-actions button{
     display:grid;
     width:26px;
@@ -2371,6 +2329,8 @@
     left:0;
     z-index:6;
     display:none;
+    flex-wrap:wrap;
+    max-width:calc(100vw - 24px);
     gap:2px;
     margin-bottom:8px;
     padding:3px;
@@ -2379,7 +2339,7 @@
     background:#fff;
     box-shadow:0 6px 18px rgba(25,28,34,.16);
     line-height:normal;
-    white-space:nowrap;
+    width:max-content;
   }
   .writer-image.is-selected .writer-image-tools{display:flex;}
   .writer-image.tools-right .writer-image-tools{right:0;left:auto;}
@@ -2537,8 +2497,8 @@
   .writer-app.night .writer-member-section-head strong{color:#ece9e1;}
   .writer-app.night .writer-member-presets,
   .writer-app.night .writer-member-row{background:#24262a;border-color:#3b3d43;color:#ece9e1;}
-  .writer-app.night .writer-registered-members,
-  .writer-app.night .writer-new-member{background:#292b2f;border-color:#3b3d43;}
+  .writer-app.night .writer-new-member,
+  .writer-app.night .writer-member-presets{border-color:#3b3d43;}
   .writer-app.night .writer-json-action,
   .writer-app.night .writer-chat-menu .writer-member-row-actions button,
   .writer-app.night .writer-chat-menu #writerCloseMemberPanel{background:#34363b;border-color:#484b51;color:#d8d9dc;}
@@ -2572,14 +2532,6 @@
     border-color:#41444a;
     background:#202226;
   }
-  .writer-app.night #writerAddBubble{
-    border-color:#d94b3d;
-    background:#24262a;
-    color:#ef6255;
-    box-shadow:none;
-  }
-  .writer-app.night #writerAddBubble::before{color:#ef6255;}
-  .writer-app.night #writerAddBubble:hover{background:#2e3035;}
   .writer-app.night .writer-selection-toolbar{
     border-color:#3b3d43;
     background:#292b2f;
@@ -2816,9 +2768,9 @@
         <div class="writer-insert-menu writer-chat-menu" id="writerInsertMenu" hidden>
           <div class="writer-member-heading">멤버 <span class="writer-member-count" id="writerMemberCount">0</span><button class="writer-sheet-close" type="button" id="writerInsertClose" aria-label="닫기">×</button></div>
           <details class="writer-member-presets">
-            <summary>⭐ 멤버 프리셋</summary>
+            <summary>멤버 프리셋</summary>
             <div class="writer-preset-body">
-              <span>저장된 프리셋을 불러옵니다.</span>
+              
               <div class="writer-preset-actions">
                 <label class="writer-json-action">JSON 불러오기<input type="file" id="writerMemberProjectImport" accept=".json,application/json"></label>
                 <button class="writer-json-action" type="button" id="writerMemberProjectExport">JSON 내보내기</button>
@@ -2827,14 +2779,14 @@
           </details>
           <section class="writer-registered-members">
             <div class="writer-member-section-head">
-              <div><strong>등록된 멤버</strong><small>등록 즉시 발화자 목록에 반영됩니다.</small></div>
-              <button class="writer-new-member-button" type="button" id="writerNewMemberButton">+ 새 멤버</button>
+              <div><strong>등록된 멤버</strong></div>
+              <button class="writer-new-member-button" type="button" id="writerNewMemberButton">새 멤버</button>
             </div>
             <div class="writer-member-list" id="writerMemberList"></div>
           </section>
           <section class="writer-new-member" id="writerNewMemberPanel" hidden>
             <div class="writer-member-section-head">
-              <div><strong id="writerMemberFormTitle">새 멤버</strong><small>이름만 입력해도 추가됩니다.</small></div>
+              <div><strong id="writerMemberFormTitle">새 멤버</strong></div>
               <button type="button" id="writerCloseMemberPanel" aria-label="멤버 입력 닫기">×</button>
             </div>
             <div class="writer-member-form">
@@ -2891,7 +2843,6 @@
             <input type="number" id="exportMarginLeft" min="0" max="320" step="1" value="60" aria-label="왼쪽 여백 값">
             <input type="range" id="exportMarginLeftRange" min="0" max="320" step="1" value="60" aria-label="왼쪽 여백" title="더블클릭하면 기본값 60">
           </div>
-          <p class="writer-spacing-hint">저장 이미지의 바깥 여백입니다. 슬라이더를 더블클릭하면 기본값으로 돌아갑니다.</p>
           <div class="writer-backdrop-row">
             <strong>배경 사진</strong>
             <label class="writer-backdrop-pick">사진 고르기<input type="file" id="writerBackdropInput" accept="image/*" hidden></label>
@@ -2922,7 +2873,6 @@
             <input type="number" id="writerParagraphGapNumber" min="0" max="48" step="1" value="16" aria-label="문단 간격 값">
             <input type="range" id="writerParagraphGap" min="0" max="48" step="1" value="16" aria-label="문단 간격">
           </div>
-          <p class="writer-spacing-hint">행간·자간은 선택한 문단에, 선택이 없으면 문서 전체에 적용됩니다. 문단 간격은 항상 문서 전체입니다. 슬라이더를 더블클릭하면 기본값으로 돌아갑니다.</p>
         </div>
       </div>
       <div class="writer-find-wrap">
@@ -2957,11 +2907,11 @@
         <input id="writerLogName" type="text" placeholder="로그 이름 (선택)" aria-label="로그 이름">
       </div>
       <section class="writer-preview-sheet" id="writerPreviewSheet" aria-label="저장 이미지 미리보기">
-        <div id="writerCanvas" contenteditable="true" data-placeholder="백업할 로그를 여기에 붙여넣으세요. 빈 줄은 문단으로 유지됩니다."></div>
+        <div id="writerCanvas" contenteditable="true" data-placeholder="로그를 붙여넣거나 입력하세요."></div>
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
       <section class="writer-html-panel" id="writerHtmlPanel" aria-label="HTML 이미지 변환">
-        <textarea id="writerHtmlSource" spellcheck="false" autocomplete="off" placeholder="HTML 코드를 붙여넣으세요. 아래에 그대로 그려지고, PNG 저장을 누르면 이 화면이 이미지로 저장됩니다."></textarea>
+        <textarea id="writerHtmlSource" spellcheck="false" autocomplete="off" placeholder="HTML 코드 붙여넣기"></textarea>
         <div class="writer-html-options">
           <select id="writerHtmlWidth" aria-label="그릴 폭" title="그릴 폭">
             <option value="390">모바일 390px</option>
@@ -2979,12 +2929,12 @@
           <!-- Not sandboxed: Safari ignores event listeners inside script-less sandboxes, which stalled the capture.
                Pasted code is cleaned of scripts and handlers before it is drawn instead. -->
           <div class="writer-html-crop" id="writerHtmlCrop"><iframe id="writerHtmlFrame" title="HTML 미리보기" tabindex="-1"></iframe></div>
-          <p class="writer-html-empty">붙여넣은 HTML이 여기에 그려집니다.</p>
+          <p class="writer-html-empty">미리보기</p>
         </div>
       </section>
       <div class="writer-status-bar">
         <span id="writerCharCount" aria-live="polite"></span>
-        <button class="writer-tidy-button" type="button" id="writerTidyButton" title="... → …, 곧은 따옴표 → 둥근 따옴표, 겹친 공백 → 한 칸"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/> <path d="m14 7 3 3"/> <path d="M5 6v4"/> <path d="M19 14v4"/> <path d="M10 2v2"/> <path d="M7 8H3"/> <path d="M21 16h-4"/> <path d="M11 3H9"/></svg><span id="writerTidyLabel">문장부호 정리</span></button>
+        <button class="writer-tidy-button" type="button" id="writerTidyButton" title="... → …, 곧은 따옴표 → 둥근 따옴표, 겹친 공백 → 한 칸"><span id="writerTidyLabel">문장부호 정리</span></button>
       </div>
     </main>
     <button class="writer-save primary" id="writerMobileImageSave" type="button">PNG 저장</button>
@@ -4755,9 +4705,9 @@ function renderWriterMembers(){
       <i class="writer-member-color-dot" style="--member-color:${escapeAttr(member.nameColor || '#C0392B')}"></i>
       <span class="writer-member-row-name">${escapeHtml(member.name)}</span>
       <span class="writer-member-row-actions">
-        <button class="${member.favorite ? 'active' : ''}" type="button" data-writer-member-favorite="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 즐겨찾기">★</button>
-        <button type="button" data-writer-member-edit="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 수정">✎</button>
-        <button type="button" data-writer-member-remove="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 삭제">×</button>
+        <button class="${member.favorite ? 'active' : ''}" type="button" data-writer-member-favorite="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 즐겨찾기"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg></button>
+        <button type="button" data-writer-member-edit="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 수정"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/> <path d="m15 5 4 4"/></svg></button>
+        <button type="button" data-writer-member-remove="${escapeAttr(member.id)}" aria-label="${escapeAttr(member.name)} 삭제"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/> <path d="m6 6 12 12"/></svg></button>
       </span>
     </div>`).join('') : '<div class="writer-empty-members">등록된 멤버가 없습니다.</div>';
   const selectedMember = writerMessageSender.value;
@@ -5440,10 +5390,10 @@ writerCategory.addEventListener('change', () => {
     writerInsertMenu.hidden = true;
     requestAnimationFrame(() => fitWriterHtmlFrame());
   }else if(writerCategory.value === '메신저형'){
-    writerCanvas.dataset.placeholder = '이름: 대사 또는 이름 / 시간 다음 줄에 [대사] 형식으로 붙여넣습니다.';
+    writerCanvas.dataset.placeholder = '이름: 대사 형식으로 붙여넣으세요.';
     setTimeout(() => writerInsertMenu.hidden = false,0);
   }else{
-    writerCanvas.dataset.placeholder = '백업할 로그를 여기에 붙여넣습니다. 빈 줄은 문단으로 유지됩니다.';
+    writerCanvas.dataset.placeholder = '로그를 붙여넣거나 입력하세요.';
     writerInsertMenu.hidden = true;
   }
 });
@@ -5845,11 +5795,20 @@ function selectWriterImage(figure){
   writerSelectedImage = figure || null;
   if(!figure) return;
   figure.classList.add('is-selected');
-  // Open the tools toward the column's middle so they never hang off the page.
-  figure.classList.toggle('tools-right',figure.offsetLeft + figure.offsetWidth / 2 > writerCanvas.clientWidth / 2);
+  placeWriterImageTools(figure);
   figure.querySelectorAll('[data-image-layout]').forEach(button => {
     button.setAttribute('aria-pressed',String(button.dataset.imageLayout === figure.dataset.layout));
   });
+}
+// Open the tools toward the column's middle, then nudge them inside the screen.
+function placeWriterImageTools(figure){
+  if(!figure?.classList.contains('is-selected')) return;
+  figure.classList.toggle('tools-right',figure.offsetLeft + figure.offsetWidth / 2 > writerCanvas.clientWidth / 2);
+  const tools = figure.querySelector('.writer-image-tools');
+  tools.style.translate = '';
+  const box = tools.getBoundingClientRect();
+  const shift = box.left < 12 ? 12 - box.left : box.right > window.innerWidth - 12 ? window.innerWidth - 12 - box.right : 0;
+  if(shift) tools.style.translate = `${shift}px 0`;
 }
 function writerImageVar(figure,name){
   return Number.parseFloat(figure.style.getPropertyValue(name)) || (name === '--w' || name === '--z' ? 1 : 0);
@@ -6015,8 +5974,10 @@ writerCanvas.addEventListener('pointermove', event => {
 });
 const endWriterImageGesture = event => {
   if(!writerImageGesture || writerImageGesture.pointer !== event.pointerId) return;
+  const moved = writerImageGesture.figure;
   writerImageGesture = null;
   clearWriterImageGuides();
+  placeWriterImageTools(moved);
   syncWriterFreeImageSpace(writerCanvas);
   queueWriterSave();
 };
@@ -6457,7 +6418,7 @@ function fitWriterHtmlFrame(){
     writerHtmlFrame.style.transform = `translate(${-box.x * scale}px,${-box.y * scale}px) scale(${scale})`;
   }
   const output = Number(writerHtmlScale.value);
-  writerHtmlInfo.textContent = `${box.w} × ${box.h}px${box.cropped ? ' · 빈 여백 자름' : ''} · 저장 ${box.w * output}×${box.h * output}px${scale < 1 ? ` · 화면에는 ${Math.round(scale * 100)}%로 보임` : ''}`;
+  writerHtmlInfo.textContent = `${box.w} × ${box.h} → ${box.w * output} × ${box.h * output}px`;
 }
 // Phone browsers inflate text inside the preview, which skews its measured height.
 const WRITER_HTML_RESET = '<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>';
