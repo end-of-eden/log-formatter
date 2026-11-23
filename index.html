@@ -2392,6 +2392,30 @@
   .writer-image-zoom input[type=range]{width:96px;margin:0;}
   .writer-image-zoom output{min-width:30px;color:#6b7079;font:11px 'JetBrains Mono',monospace;text-align:right;}
   .writer-image-guide{position:absolute;z-index:5;background:#e0457b;pointer-events:none;}
+  /* 사진형: a fixed grid of photo boxes and one text area. */
+  .writer-photo-layout{display:grid;gap:18px;align-items:start;}
+  .writer-photo-layout[hidden]{display:none;}
+  .writer-photo-layout[data-template="text-photo"]{grid-template-areas:"text" "p1";}
+  .writer-photo-layout[data-template="photo-text"]{grid-template-areas:"p1" "text";}
+  .writer-photo-layout[data-template="photo-left"]{grid-template-columns:1.4fr 1fr;grid-template-areas:"p1 text";}
+  .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr 1.4fr;grid-template-areas:"text p1";}
+  .writer-photo-layout[data-template="two-photo"]{grid-template-columns:1fr 1fr;grid-template-areas:"p1 p2" "text text";}
+  .writer-photo-layout > #writerCanvas,
+  .writer-photo-layout > .writer-export-body{grid-area:text;min-width:0;}
+  .writer-layout-slot[data-slot="1"]{grid-area:p1;}
+  .writer-layout-slot[data-slot="2"]{grid-area:p2;}
+  .writer-photo-layout:not([data-template="two-photo"]) .writer-layout-slot[data-slot="2"]{display:none;}
+  .writer-photo-layout .writer-image.writer-layout-slot{width:100%;max-width:none;margin:0;}
+  .writer-layout-slot .writer-image-frame{background:#f1f2f4;}
+  .writer-layout-slot.has-photo .writer-image-frame{background:none;cursor:grab;touch-action:none;}
+  .writer-slot-empty{position:absolute;inset:0;display:grid;place-items:center;color:#8a8f98;font:500 12px 'Pretendard',sans-serif;line-height:normal;}
+  .writer-layout-slot.has-photo .writer-slot-empty{display:none;}
+  .writer-layout-slot:not(.has-photo) .writer-image-zoom,
+  .writer-layout-slot:not(.has-photo) [data-slot-action="clear"]{display:none;}
+  .writer-layout-slot .writer-image-tools{bottom:auto;top:8px;left:8px;margin:0;}
+  .writer-app.night .writer-layout-slot .writer-image-frame{background:#292b2f;}
+  .writer-app.night .writer-layout-slot.has-photo .writer-image-frame{background:none;}
+  .writer-toolbar .writer-photo[disabled]{opacity:.35;cursor:default;pointer-events:none;}
   .writer-app.night .writer-image-tools{border-color:#3b3d43;background:#292b2f;}
   .writer-app.night .writer-image-tools button{color:#e7e5df;}
   .writer-app.night .writer-image-tools button:hover{background:#35373c;}
@@ -2904,12 +2928,21 @@
         <select id="writerCategory" aria-label="카테고리" title="카테고리">
           <option>로그형</option>
           <option>메신저형</option>
+          <option>사진형</option>
           <option value="HTML">HTML 이미지</option>
+        </select>
+        <select id="writerPhotoTemplate" aria-label="사진 틀" title="사진 틀" hidden>
+          <option value="text-photo">위 글 · 아래 사진</option>
+          <option value="photo-text">위 사진 · 아래 글</option>
+          <option value="photo-left">왼쪽 사진 · 오른쪽 글</option>
+          <option value="photo-right">왼쪽 글 · 오른쪽 사진</option>
+          <option value="two-photo">사진 두 장 · 아래 글</option>
         </select>
         <input id="writerLogName" type="text" placeholder="로그 이름 (선택)" aria-label="로그 이름">
       </div>
       <section class="writer-preview-sheet" id="writerPreviewSheet" aria-label="저장 이미지 미리보기">
         <div id="writerCanvas" contenteditable="true" data-placeholder="로그를 붙여넣거나 입력하세요."></div>
+        <div class="writer-photo-layout" id="writerPhotoLayout" hidden></div>
         <div class="writer-preview-log-name" id="writerPreviewLogName"></div>
       </section>
       <section class="writer-html-panel" id="writerHtmlPanel" aria-label="HTML 이미지 변환">
@@ -4606,8 +4639,10 @@ function readWriterImage(file){
 }
 
 document.querySelector('[data-writer-action="image"]').addEventListener('click', () => {
-  rememberWriterRange();
-  writerImageInput.click();
+  if(writerCategory.value !== '사진형') return;
+  const slots = [...writerPhotoLayout.querySelectorAll('.writer-layout-slot')].filter(slot => getComputedStyle(slot).display !== 'none');
+  openWriterSlotPicker(writerPhotoLayout.querySelector('.writer-layout-slot.is-selected')
+    || slots.find(slot => !slot.classList.contains('has-photo')) || slots[0]);
 });
 writerImageInput.addEventListener('change', async () => {
   for(const file of [...writerImageInput.files]){
@@ -5386,6 +5421,7 @@ writerCanvas.addEventListener('click', event => {
 renderWriterMembers();
 writerCategory.addEventListener('change', () => {
   try{ localStorage.setItem('eoe-writer-category',writerCategory.value); }catch{}
+  setWriterPhotoMode(writerCategory.value === '사진형');
   writerApp.classList.toggle('html-mode',writerCategory.value === 'HTML');
   if(writerCategory.value === 'HTML'){
     writerInsertMenu.hidden = true;
@@ -5818,7 +5854,8 @@ function writerImageVar(figure,name){
 function clampWriterImageCrop(figure){
   const ratio = Number(figure.dataset.ratio) || 1;
   const box = Number.parseFloat(figure.style.getPropertyValue('--ar')) || ratio;
-  const zoom = Math.max(writerImageVar(figure,'--z'),box / ratio,1);
+  const cover = Math.max(1,ratio / box);
+  const zoom = Math.max(writerImageVar(figure,'--z'),cover);
   const imageHeight = zoom * box / ratio;
   const ix = Math.min(0,Math.max(1 - zoom,writerImageVar(figure,'--ix')));
   const iy = Math.min(0,Math.max(1 - imageHeight,writerImageVar(figure,'--iy')));
@@ -5827,9 +5864,9 @@ function clampWriterImageCrop(figure){
   figure.style.setProperty('--iy',String(iy));
   const slider = figure.querySelector('.writer-image-zoom input');
   if(slider){
-    slider.value = String(zoom);
+    slider.value = String(zoom / cover);
     paintWriterRange(slider);
-    slider.nextElementSibling.textContent = zoom.toFixed(2);
+    slider.nextElementSibling.textContent = (zoom / cover).toFixed(2);
   }
 }
 // Free photos are out of the text flow; keep the column tall enough to hold them.
@@ -6066,21 +6103,23 @@ writerCanvas.addEventListener('click', event => {
   }
   setWriterImageLayout(figure,button.dataset.imageLayout);
 },true);
-// Zoom around the box centre.
-writerCanvas.addEventListener('input', event => {
-  const slider = event.target.closest('.writer-image-zoom input');
-  if(!slider) return;
+// Zoom around the box centre. The slider reads 1 when the picture just covers its box.
+function zoomWriterImage(slider){
   const figure = slider.closest('.writer-image');
   const ratio = Number(figure.dataset.ratio) || 1;
   const box = Number.parseFloat(figure.style.getPropertyValue('--ar')) || ratio;
   const before = writerImageVar(figure,'--z');
-  const after = Number(slider.value);
+  const after = Number(slider.value) * Math.max(1,ratio / box);
   const cx = (.5 - writerImageVar(figure,'--ix')) / before;
   const cy = (.5 - writerImageVar(figure,'--iy')) / (before * box / ratio);
   figure.style.setProperty('--z',String(after));
   figure.style.setProperty('--ix',String(.5 - cx * after));
   figure.style.setProperty('--iy',String(.5 - cy * after * box / ratio));
   clampWriterImageCrop(figure);
+}
+writerCanvas.addEventListener('input', event => {
+  const slider = event.target.closest('.writer-image-zoom input');
+  if(slider) zoomWriterImage(slider);
 });
 document.addEventListener('pointerdown', event => {
   if(writerSelectedImage && !event.target.closest('.writer-image')){
@@ -6099,6 +6138,163 @@ document.addEventListener('keydown', event => {
   queueWriterSave();
 });
 window.addEventListener('resize',() => syncWriterFreeImageSpace(writerCanvas),{passive:true});
+
+// ---------- 사진형 ----------
+const writerPhotoLayout = document.getElementById('writerPhotoLayout');
+const writerPhotoTemplate = document.getElementById('writerPhotoTemplate');
+const writerPhotoButton = document.querySelector('[data-writer-action="image"]');
+const writerSlotInput = document.createElement('input');
+writerSlotInput.type = 'file';
+writerSlotInput.accept = 'image/*';
+writerSlotInput.hidden = true;
+document.body.appendChild(writerSlotInput);
+let writerSlotTarget = null;
+const WRITER_SLOT_SHAPE = {'text-photo':1.5,'photo-text':1.5,'photo-left':.72,'photo-right':.72,'two-photo':.8};
+function createWriterSlot(index){
+  const slot = document.createElement('figure');
+  slot.className = 'writer-image writer-layout-slot';
+  slot.dataset.slot = String(index);
+  slot.dataset.layout = 'slot';
+  slot.contentEditable = 'false';
+  slot.innerHTML = '<span class="writer-image-frame"><span class="writer-slot-empty">사진 추가</span></span>'
+    + '<span class="writer-image-tools" role="toolbar" aria-label="사진">'
+    + '<label class="writer-image-zoom">확대<input type="range" min="1" max="4" step="0.01" value="1" aria-label="사진 확대"><output>1.00</output></label>'
+    + '<button type="button" data-slot-action="replace">바꾸기</button>'
+    + '<button type="button" class="writer-image-remove" data-slot-action="clear" aria-label="사진 빼기">×</button>'
+    + '</span><span class="writer-image-height" aria-hidden="true"></span>';
+  return slot;
+}
+writerPhotoLayout.append(createWriterSlot(1),createWriterSlot(2));
+function applyWriterPhotoTemplate(){
+  const template = writerPhotoTemplate.value;
+  writerPhotoLayout.dataset.template = template;
+  writerPhotoLayout.querySelectorAll('.writer-layout-slot').forEach(slot => {
+    slot.style.setProperty('--ar',String(WRITER_SLOT_SHAPE[template] || 1));
+    if(slot.classList.contains('has-photo')) clampWriterImageCrop(slot);
+  });
+  try{ localStorage.setItem('eoe-writer-photo-template',template); }catch{}
+}
+function setWriterPhotoMode(on){
+  writerPhotoLayout.hidden = !on;
+  writerPhotoTemplate.hidden = !on;
+  writerPhotoButton.disabled = !on;
+  writerPhotoButton.title = on ? '사진 넣기' : '사진형에서 사용';
+  if(on){
+    writerPhotoLayout.appendChild(writerCanvas);
+    applyWriterPhotoTemplate();
+  }else if(writerCanvas.parentElement !== writerPreviewSheet){
+    writerPreviewSheet.insertBefore(writerCanvas,writerPhotoLayout);
+  }
+}
+function openWriterSlotPicker(slot){
+  if(!slot) return;
+  writerSlotTarget = slot;
+  writerSlotInput.click();
+}
+function setWriterSlotImage(slot,source){
+  const frame = slot.querySelector('.writer-image-frame');
+  frame.querySelector('img')?.remove();
+  const image = document.createElement('img');
+  image.alt = '';
+  image.src = source;
+  frame.appendChild(image);
+  const fit = () => {
+    slot.dataset.ratio = String(image.naturalWidth / image.naturalHeight || 1);
+    slot.style.setProperty('--z','1');
+    clampWriterImageCrop(slot);
+    // Start centred.
+    const ratio = Number(slot.dataset.ratio);
+    const box = writerImageVar(slot,'--ar');
+    const zoom = writerImageVar(slot,'--z');
+    slot.style.setProperty('--ix',String((1 - zoom) / 2));
+    slot.style.setProperty('--iy',String((1 - zoom * box / ratio) / 2));
+  };
+  image.complete ? fit() : image.addEventListener('load',fit,{once:true});
+  slot.classList.add('has-photo');
+}
+writerSlotInput.addEventListener('change',() => {
+  const file = writerSlotInput.files[0];
+  writerSlotInput.value = '';
+  if(!file || !writerSlotTarget) return;
+  const reader = new FileReader();
+  reader.onload = () => setWriterSlotImage(writerSlotTarget,reader.result);
+  reader.readAsDataURL(file);
+});
+function selectWriterSlot(slot){
+  writerPhotoLayout.querySelectorAll('.writer-layout-slot.is-selected').forEach(item => {
+    if(item !== slot) item.classList.remove('is-selected');
+  });
+  slot?.classList.add('is-selected');
+}
+writerPhotoTemplate.addEventListener('change',applyWriterPhotoTemplate);
+try{
+  const lastTemplate = localStorage.getItem('eoe-writer-photo-template');
+  if(lastTemplate && WRITER_SLOT_SHAPE[lastTemplate]) writerPhotoTemplate.value = lastTemplate;
+}catch{}
+writerPhotoButton.disabled = true;
+writerPhotoButton.title = '사진형에서 사용';
+let writerSlotGesture = null;
+writerPhotoLayout.addEventListener('pointerdown', event => {
+  const slot = event.target.closest('.writer-layout-slot');
+  if(!slot || event.target.closest('.writer-image-tools')) return;
+  event.preventDefault();
+  if(!slot.classList.contains('has-photo')){
+    openWriterSlotPicker(slot);
+    return;
+  }
+  selectWriterSlot(slot);
+  const frame = slot.querySelector('.writer-image-frame');
+  writerSlotGesture = {
+    slot,
+    mode:event.target.closest('.writer-image-height') ? 'height' : 'pan',
+    pointer:event.pointerId,
+    startX:event.clientX,
+    startY:event.clientY,
+    frameWidth:frame.offsetWidth,
+    frameHeight:frame.offsetHeight,
+    ix:writerImageVar(slot,'--ix'),
+    iy:writerImageVar(slot,'--iy')
+  };
+  writerPhotoLayout.setPointerCapture(event.pointerId);
+});
+writerPhotoLayout.addEventListener('pointermove', event => {
+  const gesture = writerSlotGesture;
+  if(!gesture || gesture.pointer !== event.pointerId) return;
+  const dx = event.clientX - gesture.startX;
+  const dy = event.clientY - gesture.startY;
+  if(gesture.mode === 'height'){
+    const height = Math.max(60,gesture.frameHeight + dy);
+    gesture.slot.style.setProperty('--ar',String(Math.min(5,Math.max(.2,gesture.frameWidth / height))));
+  }else{
+    gesture.slot.style.setProperty('--ix',String(gesture.ix + dx / gesture.frameWidth));
+    gesture.slot.style.setProperty('--iy',String(gesture.iy + dy / gesture.frameHeight));
+  }
+  clampWriterImageCrop(gesture.slot);
+});
+const endWriterSlotGesture = event => {
+  if(writerSlotGesture?.pointer === event.pointerId) writerSlotGesture = null;
+};
+writerPhotoLayout.addEventListener('pointerup',endWriterSlotGesture);
+writerPhotoLayout.addEventListener('pointercancel',endWriterSlotGesture);
+writerPhotoLayout.addEventListener('input', event => {
+  const slider = event.target.closest('.writer-layout-slot .writer-image-zoom input');
+  if(slider) zoomWriterImage(slider);
+});
+writerPhotoLayout.addEventListener('click', event => {
+  const button = event.target.closest('[data-slot-action]');
+  if(!button) return;
+  const slot = button.closest('.writer-layout-slot');
+  if(button.dataset.slotAction === 'replace'){
+    openWriterSlotPicker(slot);
+    return;
+  }
+  slot.querySelector('.writer-image-frame img')?.remove();
+  slot.classList.remove('has-photo','is-selected');
+  ['--z','--ix','--iy'].forEach(name => slot.style.removeProperty(name));
+});
+document.addEventListener('pointerdown', event => {
+  if(!event.target.closest('.writer-layout-slot')) selectWriterSlot(null);
+});
 
 // ---------- background photo ----------
 const writerBackdropInput = document.getElementById('writerBackdropInput');
@@ -6708,6 +6904,18 @@ async function saveWriterImage(){
     <div class="writer-export-body">${cleanCanvas.innerHTML}</div>
     ${logName ? `<div class="writer-export-log-name">${escapeHtml(logName)}</div>` : ''}`;
   const exportBody = sheet.querySelector('.writer-export-body');
+  if(writerCategory.value === '사진형'){
+    const layout = writerPhotoLayout.cloneNode(true);
+    layout.removeAttribute('id');
+    layout.querySelector('#writerCanvas')?.remove();
+    layout.querySelectorAll('.writer-image-tools,.writer-image-height,.writer-slot-empty').forEach(node => node.remove());
+    layout.querySelectorAll('.writer-layout-slot').forEach(slot => {
+      slot.classList.remove('is-selected');
+      if(!slot.classList.contains('has-photo') || getComputedStyle(writerPhotoLayout.querySelector(`[data-slot="${slot.dataset.slot}"]`)).display === 'none') slot.remove();
+    });
+    exportBody.replaceWith(layout);
+    layout.appendChild(exportBody);
+  }
   // Preserve the editor's actual typography, not the last toolbar selection.
   // Layout dimensions remain controlled by the export preset.
   for(const property of cleanCanvas.style){
@@ -6781,7 +6989,7 @@ writerMessageSender.dispatchEvent(new Event('change'));
 // Reopen in the mode used last (HTML 이미지 users should not have to pick it every time).
 try{
   const lastCategory = localStorage.getItem('eoe-writer-category');
-  if(lastCategory === 'HTML'){
+  if(lastCategory === 'HTML' || lastCategory === '사진형'){
     writerCategory.value = lastCategory;
     writerCategory.dispatchEvent(new Event('change'));
   }
