@@ -1541,23 +1541,6 @@
   }
   .writer-preview-sheet > :not(.writer-sheet-backdrop),
   .writer-export-sheet > :not(.writer-sheet-backdrop){position:relative;z-index:1;}
-  .writer-backdrop-row{display:flex;align-items:center;gap:6px;padding-top:10px;border-top:1px solid #ececef;color:#34383f;font:700 12px 'Pretendard',sans-serif;}
-  .writer-backdrop-row strong{flex:1;}
-  .writer-backdrop-pick,
-  .writer-toolbar #writerBackdropClear{
-    height:28px;
-    padding:0 10px;
-    border:1px solid #e0e1e4;
-    border-radius:5px;
-    background:#fff;
-    color:#5b5f66;
-    font:600 11px/26px 'Pretendard',sans-serif;
-    cursor:pointer;
-  }
-  .writer-toolbar #writerBackdropClear:disabled{opacity:.4;cursor:default;}
-  .writer-app.night .writer-backdrop-row{border-color:#3b3d43;color:#ece9e1;}
-  .writer-app.night .writer-backdrop-pick,
-  .writer-app.night .writer-toolbar #writerBackdropClear{background:#202226;border-color:#41444a;color:#d8d9dc;}
   .writer-status-bar{
     display:flex;
     align-items:center;
@@ -2585,8 +2568,30 @@
   .writer-app.night .writer-selection-toolbar button{color:#e7e5df;}
   .writer-app.night .writer-selection-toolbar button:hover{background:#35373c;}
   .writer-app.night .writer-selection-divider{background:#484b51;}
-  .writer-photo-menu{position:fixed;top:0;left:0;}
-  .writer-photo-menu .writer-backdrop-row{padding-top:0;border-top:0;}
+  .writer-photo-menu{position:fixed;top:0;left:0;gap:2px;width:220px;padding:6px;}
+  .writer-photo-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    height:34px;
+    padding:0 10px;
+    border:0;
+    border-radius:5px;
+    background:none;
+    color:#34383f;
+    font:500 13px 'Pretendard',sans-serif;
+    text-align:left;
+    cursor:pointer;
+  }
+  .writer-photo-item[hidden]{display:none;}
+  .writer-photo-item:hover{background:#f3f3f5;}
+  .writer-photo-item .lucide{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:#7a7e86;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .writer-photo-menu > .writer-spacing-row{margin:4px 0 0;padding:10px 10px 6px;border-top:1px solid #ececef;}
+  .writer-photo-menu:not(.has-backdrop) .writer-backdrop-only{display:none;}
+  .writer-app.night .writer-photo-item{color:#e7e5df;}
+  .writer-app.night .writer-photo-item:hover{background:#35373c;}
+  .writer-app.night .writer-photo-menu > .writer-spacing-row{border-color:#3b3d43;}
   .writer-app.night .writer-margin-menu{background:#292b2f;border-color:#3b3d43;}
   .writer-app.night .writer-color-trigger{color:#e7e5df;}
   .writer-app.night .writer-color-trigger:hover,
@@ -2760,25 +2765,16 @@
       <div class="writer-brand">EOE log</div>
       <button class="writer-photo" type="button" data-writer-action="image" title="사진 · 배경 사진" aria-label="사진"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> <circle cx="9" cy="9" r="2"/> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></button>
       <input type="file" id="writerImageInput" accept="image/*" multiple hidden>
-      <div class="writer-margin-menu writer-photo-menu" id="writerPhotoMenu" hidden>
-          <div class="writer-backdrop-row">
-            <strong>본문 사진</strong>
-            <button type="button" class="writer-backdrop-pick" id="writerInlinePick">사진 넣기</button>
-          </div>
-          <div class="writer-backdrop-row" id="writerSlotRow">
-            <strong>옆 사진</strong>
-            <button type="button" class="writer-backdrop-pick" id="writerSlotPick">사진 고르기</button>
-          </div>
-          <div class="writer-backdrop-row">
-            <strong>배경 사진</strong>
-            <label class="writer-backdrop-pick">사진 고르기<input type="file" id="writerBackdropInput" accept="image/*" hidden></label>
-            <button type="button" id="writerBackdropClear" disabled>지우기</button>
-          </div>
-          <div class="writer-spacing-row">
-            <label for="writerBackdropOpacity">진하기 <small>%</small></label>
-            <input type="number" id="writerBackdropOpacityNumber" min="0" max="100" step="1" value="30" aria-label="배경 사진 진하기 값">
-            <input type="range" id="writerBackdropOpacity" min="0" max="100" step="1" value="30" aria-label="배경 사진 진하기" title="더블클릭하면 기본값 30">
-          </div>
+      <div class="writer-margin-menu writer-photo-menu" id="writerPhotoMenu" role="menu" hidden>
+        <button type="button" class="writer-photo-item" id="writerInlinePick" role="menuitem"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>본문에 사진 넣기</button>
+        <button type="button" class="writer-photo-item" id="writerSlotPick" role="menuitem"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>옆 사진 넣기</button>
+        <label class="writer-photo-item" role="menuitem"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3z"/><path d="m3 15 5-5 4 4 3-3 6 6"/></svg><span id="writerBackdropLabel">배경 사진 깔기</span><input type="file" id="writerBackdropInput" accept="image/*" hidden></label>
+        <button type="button" class="writer-photo-item writer-backdrop-only" id="writerBackdropClear" role="menuitem"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>배경 사진 지우기</button>
+        <div class="writer-spacing-row writer-backdrop-only">
+          <label for="writerBackdropOpacity">배경 진하기 <small>%</small></label>
+          <input type="number" id="writerBackdropOpacityNumber" min="0" max="100" step="1" value="30" aria-label="배경 사진 진하기 값">
+          <input type="range" id="writerBackdropOpacity" min="0" max="100" step="1" value="30" aria-label="배경 사진 진하기" title="더블클릭하면 기본값 30">
+        </div>
       </div>
       <select id="writerFontSize" aria-label="글자 크기">
         <option>6pt</option><option>7pt</option><option>8pt</option><option>9pt</option>
@@ -4681,7 +4677,7 @@ document.querySelector('[data-writer-action="image"]').addEventListener('click',
   writerPhotoMenu.hidden = !open;
   if(!open) return;
   rememberWriterRange();
-  document.getElementById('writerSlotRow').hidden = writerCategory.value !== '사진형';
+  document.getElementById('writerSlotPick').hidden = writerCategory.value !== '사진형';
   const button = event.currentTarget.getBoundingClientRect();
   const width = writerPhotoMenu.offsetWidth;
   writerPhotoMenu.style.left = `${Math.max(8,Math.min(button.left,window.innerWidth - width - 8))}px`;
@@ -6455,14 +6451,16 @@ writerBackdropInput.addEventListener('change', () => {
   const reader = new FileReader();
   reader.onload = () => {
     writerBackdropSource = String(reader.result);
-    writerBackdropClear.disabled = false;
+    writerPhotoMenu.classList.add('has-backdrop');
+    document.getElementById('writerBackdropLabel').textContent = '배경 사진 바꾸기';
     applyWriterBackdrop(writerPreviewSheet);
   };
   reader.readAsDataURL(file);
 });
 writerBackdropClear.addEventListener('click', () => {
   writerBackdropSource = '';
-  writerBackdropClear.disabled = true;
+  writerPhotoMenu.classList.remove('has-backdrop');
+  document.getElementById('writerBackdropLabel').textContent = '배경 사진 깔기';
   applyWriterBackdrop(writerPreviewSheet);
 });
 writerBackdropOpacity.addEventListener('input', () => setWriterBackdropOpacity(writerBackdropOpacity.value));
