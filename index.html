@@ -2397,8 +2397,24 @@
   .writer-photo-layout[hidden]{display:none;}
   .writer-photo-layout[data-template="text-photo"]{grid-template-areas:"text" "p1";}
   .writer-photo-layout[data-template="photo-text"]{grid-template-areas:"p1" "text";}
-  .writer-photo-layout[data-template="photo-left"]{grid-template-columns:1.4fr 1fr;grid-template-areas:"p1 text";}
-  .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr 1.4fr;grid-template-areas:"text p1";}
+  .writer-photo-layout{position:relative;--split:.42;--gutter:28px;}
+  .writer-photo-layout[data-template="photo-left"]{grid-template-columns:calc(var(--split) * (100% - var(--gutter))) 1fr;grid-template-areas:"p1 text";column-gap:var(--gutter);align-items:stretch;}
+  .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr calc(var(--split) * (100% - var(--gutter)));grid-template-areas:"text p1";column-gap:var(--gutter);align-items:stretch;}
+  /* Side layouts: the photo fills the whole height of the text and runs out to the sheet edges. */
+  .writer-photo-layout[data-template^="photo-"]:not([data-template="photo-text"]) > #writerCanvas,
+  .writer-photo-layout[data-template^="photo-"]:not([data-template="photo-text"]) > .writer-export-body{align-self:start;}
+  .writer-photo-layout[data-template="photo-left"] .writer-image.writer-layout-slot{width:auto;margin:calc(-1 * var(--m-top,0px)) 0 calc(-1 * var(--m-bottom,0px)) calc(-1 * var(--m-left,0px));}
+  .writer-photo-layout[data-template="photo-right"] .writer-image.writer-layout-slot{width:auto;margin:calc(-1 * var(--m-top,0px)) calc(-1 * var(--m-right,0px)) calc(-1 * var(--m-bottom,0px)) 0;}
+  .writer-photo-layout[data-template="photo-left"] .writer-layout-slot .writer-image-frame,
+  .writer-photo-layout[data-template="photo-right"] .writer-layout-slot .writer-image-frame{height:100%;min-height:240px;aspect-ratio:auto;}
+  .writer-photo-layout[data-template="photo-left"] .writer-layout-slot .writer-image-height,
+  .writer-photo-layout[data-template="photo-right"] .writer-layout-slot .writer-image-height{display:none!important;}
+  .writer-layout-split{position:absolute;top:0;bottom:0;z-index:5;display:none;width:16px;margin-left:-8px;cursor:col-resize;touch-action:none;}
+  .writer-layout-split::after{content:"";position:absolute;top:50%;left:6px;width:4px;height:36px;margin-top:-18px;border-radius:2px;background:#c9ccd2;transition:background .12s;}
+  .writer-layout-split:hover::after,.writer-layout-split.is-dragging::after{background:var(--burgundy);}
+  .writer-photo-layout[data-template="photo-left"] > .writer-layout-split{display:block;left:calc(var(--split) * (100% - var(--gutter)) + var(--gutter) / 2);}
+  .writer-photo-layout[data-template="photo-right"] > .writer-layout-split{display:block;left:calc((1 - var(--split)) * (100% - var(--gutter)) + var(--gutter) / 2);}
+  .writer-app.night .writer-layout-split::after{background:#4a4d54;}
   .writer-photo-layout[data-template="two-photo"]{grid-template-columns:1fr 1fr;grid-template-areas:"p1 p2" "text text";}
   .writer-photo-layout > #writerCanvas,
   .writer-photo-layout > .writer-export-body{grid-area:text;min-width:0;}
@@ -2932,10 +2948,10 @@
           <option value="HTML">HTML 이미지</option>
         </select>
         <select id="writerPhotoTemplate" aria-label="사진 틀" title="사진 틀" hidden>
-          <option value="text-photo">위 글 · 아래 사진</option>
-          <option value="photo-text">위 사진 · 아래 글</option>
           <option value="photo-left">왼쪽 사진 · 오른쪽 글</option>
           <option value="photo-right">왼쪽 글 · 오른쪽 사진</option>
+          <option value="text-photo">위 글 · 아래 사진</option>
+          <option value="photo-text">위 사진 · 아래 글</option>
           <option value="two-photo">사진 두 장 · 아래 글</option>
         </select>
         <input id="writerLogName" type="text" placeholder="로그 이름 (선택)" aria-label="로그 이름">
@@ -4167,6 +4183,7 @@ function syncWriterToolbarAlignment(){
 }
 function syncWriterPreview(){
   writerPreviewSheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
+  setWriterSheetMarginVars(writerPreviewSheet);
   writerPreviewLogName.textContent = writerLogName.value.trim();
   requestAnimationFrame(syncWriterToolbarAlignment);
 }
@@ -6140,6 +6157,10 @@ document.addEventListener('keydown', event => {
 window.addEventListener('resize',() => syncWriterFreeImageSpace(writerCanvas),{passive:true});
 
 // ---------- 사진형 ----------
+// The side layouts run the photo out to the sheet's edges, so the margins are exposed to CSS.
+function setWriterSheetMarginVars(sheet){
+  for(const side of ['top','right','bottom','left']) sheet.style.setProperty(`--m-${side}`,`${exportMarginInputs[side].value}px`);
+}
 const writerPhotoLayout = document.getElementById('writerPhotoLayout');
 const writerPhotoTemplate = document.getElementById('writerPhotoTemplate');
 const writerPhotoButton = document.querySelector('[data-writer-action="image"]');
@@ -6165,6 +6186,50 @@ function createWriterSlot(index){
   return slot;
 }
 writerPhotoLayout.append(createWriterSlot(1),createWriterSlot(2));
+const writerLayoutSplit = document.createElement('div');
+writerLayoutSplit.className = 'writer-layout-split';
+writerLayoutSplit.title = '사진 / 글 비율';
+writerPhotoLayout.appendChild(writerLayoutSplit);
+function isWriterSideTemplate(){
+  return ['photo-left','photo-right'].includes(writerPhotoLayout.dataset.template);
+}
+// In the side layouts the box takes the text's height, so its shape follows the layout.
+function syncWriterSlotShape(layout = writerPhotoLayout){
+  if(!['photo-left','photo-right'].includes(layout.dataset.template)) return;
+  layout.querySelectorAll('.writer-layout-slot').forEach(slot => {
+    const frame = slot.querySelector('.writer-image-frame');
+    if(!frame.offsetHeight) return;
+    slot.style.setProperty('--ar',String(frame.offsetWidth / frame.offsetHeight));
+    if(slot.classList.contains('has-photo')) clampWriterImageCrop(slot);
+  });
+}
+const writerSlotObserver = new ResizeObserver(() => syncWriterSlotShape());
+writerPhotoLayout.querySelectorAll('.writer-image-frame').forEach(frame => writerSlotObserver.observe(frame));
+function setWriterLayoutSplit(value){
+  const split = Math.min(.75,Math.max(.2,value));
+  writerPhotoLayout.style.setProperty('--split',String(split));
+  try{ localStorage.setItem('eoe-writer-photo-split',String(split)); }catch{}
+}
+try{
+  const savedSplit = Number(localStorage.getItem('eoe-writer-photo-split'));
+  if(savedSplit) writerPhotoLayout.style.setProperty('--split',String(savedSplit));
+}catch{}
+writerLayoutSplit.addEventListener('pointerdown', event => {
+  event.preventDefault();
+  event.stopPropagation();
+  writerLayoutSplit.setPointerCapture(event.pointerId);
+  writerLayoutSplit.classList.add('is-dragging');
+});
+writerLayoutSplit.addEventListener('pointermove', event => {
+  if(!writerLayoutSplit.hasPointerCapture(event.pointerId)) return;
+  const box = writerPhotoLayout.getBoundingClientRect();
+  const gutter = 28;
+  const at = (event.clientX - box.left - gutter / 2) / (box.width - gutter);
+  setWriterLayoutSplit(writerPhotoLayout.dataset.template === 'photo-right' ? 1 - at : at);
+});
+writerLayoutSplit.addEventListener('pointerup',() => writerLayoutSplit.classList.remove('is-dragging'));
+writerLayoutSplit.addEventListener('pointercancel',() => writerLayoutSplit.classList.remove('is-dragging'));
+writerLayoutSplit.addEventListener('dblclick',() => setWriterLayoutSplit(.42));
 function applyWriterPhotoTemplate(){
   const template = writerPhotoTemplate.value;
   writerPhotoLayout.dataset.template = template;
@@ -6172,6 +6237,7 @@ function applyWriterPhotoTemplate(){
     slot.style.setProperty('--ar',String(WRITER_SLOT_SHAPE[template] || 1));
     if(slot.classList.contains('has-photo')) clampWriterImageCrop(slot);
   });
+  syncWriterSlotShape();
   try{ localStorage.setItem('eoe-writer-photo-template',template); }catch{}
 }
 function setWriterPhotoMode(on){
@@ -6201,6 +6267,7 @@ function setWriterSlotImage(slot,source){
   const fit = () => {
     slot.dataset.ratio = String(image.naturalWidth / image.naturalHeight || 1);
     slot.style.setProperty('--z','1');
+    syncWriterSlotShape();
     clampWriterImageCrop(slot);
     // Start centred.
     const ratio = Number(slot.dataset.ratio);
@@ -6900,6 +6967,7 @@ async function saveWriterImage(){
   sheet.style.width = '600px';
   if(transparent) sheet.style.backgroundColor = 'transparent';
   sheet.style.padding = `${exportMarginInputs.top.value}px ${exportMarginInputs.right.value}px ${exportMarginInputs.bottom.value}px ${exportMarginInputs.left.value}px`;
+  setWriterSheetMarginVars(sheet);
   sheet.innerHTML = `
     <div class="writer-export-body">${cleanCanvas.innerHTML}</div>
     ${logName ? `<div class="writer-export-log-name">${escapeHtml(logName)}</div>` : ''}`;
@@ -6908,7 +6976,7 @@ async function saveWriterImage(){
     const layout = writerPhotoLayout.cloneNode(true);
     layout.removeAttribute('id');
     layout.querySelector('#writerCanvas')?.remove();
-    layout.querySelectorAll('.writer-image-tools,.writer-image-height,.writer-slot-empty').forEach(node => node.remove());
+    layout.querySelectorAll('.writer-image-tools,.writer-image-height,.writer-slot-empty,.writer-layout-split').forEach(node => node.remove());
     layout.querySelectorAll('.writer-layout-slot').forEach(slot => {
       slot.classList.remove('is-selected');
       if(!slot.classList.contains('has-photo') || getComputedStyle(writerPhotoLayout.querySelector(`[data-slot="${slot.dataset.slot}"]`)).display === 'none') slot.remove();
@@ -6929,6 +6997,8 @@ async function saveWriterImage(){
   document.body.appendChild(sheet);
   await Promise.all([...sheet.querySelectorAll('img')].map(image => image.decode()));
   syncWriterFreeImageSpace(exportBody);
+  const exportLayout = sheet.querySelector('.writer-photo-layout');
+  if(exportLayout) syncWriterSlotShape(exportLayout);
   normalizeWriterExportColors(sheet);
   const exportBackground = transparent ? null : (dark ? '#17181B' : '#FFFFFF');
   const exportScale = 2;
@@ -6940,7 +7010,8 @@ async function saveWriterImage(){
     height:sheet.scrollHeight
   });
     // A background photo paints the whole sheet, so there is no blank margin to rebalance.
-    const balancedCanvas = htmlCanvas || (writerBackdropSource ? canvas : null) || cropWriterCanvasVertical(
+    const bleeds = writerCategory.value === '사진형' && isWriterSideTemplate();
+    const balancedCanvas = htmlCanvas || (writerBackdropSource || bleeds ? canvas : null) || cropWriterCanvasVertical(
       canvas,
       exportBackground,
       Number(exportMarginInputs.top.value),
