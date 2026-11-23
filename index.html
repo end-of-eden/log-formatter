@@ -2568,6 +2568,24 @@
   .writer-app.night .writer-selection-toolbar button{color:#e7e5df;}
   .writer-app.night .writer-selection-toolbar button:hover{background:#35373c;}
   .writer-app.night .writer-selection-divider{background:#484b51;}
+  /* Divider styles: an <hr> drawn by its background, so it stays one element in the text. */
+  hr.writer-rule{display:block;height:16px;border:0;background-position:center;background-repeat:no-repeat;}
+  #writerCanvas hr.writer-rule,.writer-export-body hr.writer-rule{border:0;}
+  hr.writer-rule[data-rule="short"]{height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='16' viewBox='0 0 90 16' fill='none' stroke='%23b3b0a8' stroke-width='1'%3E%3Cpath d='M0 8.5h90'/%3E%3C/svg%3E");}
+  hr.writer-rule[data-rule="line"]{height:16px;background:linear-gradient(#d9d5cc,#d9d5cc) center/100% 1px no-repeat;}
+  hr.writer-rule[data-rule="bold"]{height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='16' viewBox='0 0 44 16' fill='none' stroke='%23b3b0a8' stroke-width='1'%3E%3Crect x='0' y='7' width='44' height='3' rx='1.5' fill='%23b3b0a8' stroke='none'/%3E%3C/svg%3E");}
+  hr.writer-rule[data-rule="notch"]{height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='16' viewBox='0 0 170 16' fill='none' stroke='%23b3b0a8' stroke-width='1'%3E%3Cpath d='M0 6.5h77l8 6 8-6h77'/%3E%3C/svg%3E");}
+  hr.writer-rule[data-rule="diamond"]{height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='16' viewBox='0 0 150 16' fill='none' stroke='%23b3b0a8' stroke-width='1'%3E%3Cpath d='M0 8.5h66M84 8.5h66'/%3E%3Cpath d='M75 4l4.5 4.5L75 13l-4.5-4.5z'/%3E%3C/svg%3E");}
+  hr.writer-rule[data-rule="dots"]{height:16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='16' viewBox='0 0 46 16' fill='none' stroke='%23b3b0a8' stroke-width='1'%3E%3Cg fill='%23b3b0a8' stroke='none'%3E%3Ccircle cx='3' cy='8.5' r='1.6'/%3E%3Ccircle cx='11' cy='8.5' r='1.6'/%3E%3Ccircle cx='19' cy='8.5' r='1.6'/%3E%3Ccircle cx='27' cy='8.5' r='1.6'/%3E%3Ccircle cx='35' cy='8.5' r='1.6'/%3E%3Ccircle cx='43' cy='8.5' r='1.6'/%3E%3C/g%3E%3C/svg%3E");}
+  hr.writer-rule[data-rule="slash"]{height:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none' stroke='%23b3b0a8' stroke-width='1'%3E%3Cpath d='M3 25L25 3'/%3E%3C/svg%3E");}
+  hr.writer-rule[data-rule="bar"]{height:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='30' viewBox='0 0 4 30' fill='none' stroke='%23b3b0a8' stroke-width='1'%3E%3Cpath d='M2 0v30'/%3E%3C/svg%3E");}
+  .writer-rule-menu{position:fixed;top:0;left:0;gap:0;width:200px;padding:4px;}
+  .writer-rule-item{display:block;width:100%;height:42px;padding:0 14px;border:0;border-radius:5px;background:none;cursor:pointer;}
+  .writer-rule-item:hover{background:#f3f3f5;}
+  .writer-rule-item hr.writer-rule{margin:0;pointer-events:none;background-size:auto 100%;}
+  .writer-rule-item hr.writer-rule[data-rule="slash"],.writer-rule-item hr.writer-rule[data-rule="bar"]{height:24px;}
+  .writer-rule-item hr.writer-rule[data-rule="line"]{background-size:100% 1px;}
+  .writer-app.night .writer-rule-item:hover{background:#35373c;}
   .writer-photo-menu{position:fixed;top:0;left:0;gap:2px;width:220px;padding:6px;}
   .writer-photo-item{
     display:flex;
@@ -2889,7 +2907,17 @@
           </div>
         </div>
       </div>
-      <button class="writer-format" type="button" data-command="insertHorizontalRule" title="구분선" aria-label="구분선"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 16-4 4-4-4"/> <path d="M3 12h18"/> <path d="m8 8 4-4 4 4"/></svg></button>
+      <button class="writer-format" type="button" id="writerRuleButton" title="구분선" aria-label="구분선" aria-haspopup="menu"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 16-4 4-4-4"/> <path d="M3 12h18"/> <path d="m8 8 4-4 4 4"/></svg></button>
+      <div class="writer-margin-menu writer-rule-menu" id="writerRuleMenu" role="menu" hidden>
+        <button type="button" class="writer-rule-item" data-rule="short" role="menuitem" aria-label="짧은 선" title="짧은 선"><hr class="writer-rule" data-rule="short"></button>
+        <button type="button" class="writer-rule-item" data-rule="line" role="menuitem" aria-label="긴 선" title="긴 선"><hr class="writer-rule" data-rule="line"></button>
+        <button type="button" class="writer-rule-item" data-rule="bold" role="menuitem" aria-label="굵은 선" title="굵은 선"><hr class="writer-rule" data-rule="bold"></button>
+        <button type="button" class="writer-rule-item" data-rule="notch" role="menuitem" aria-label="꺾인 선" title="꺾인 선"><hr class="writer-rule" data-rule="notch"></button>
+        <button type="button" class="writer-rule-item" data-rule="diamond" role="menuitem" aria-label="마름모 선" title="마름모 선"><hr class="writer-rule" data-rule="diamond"></button>
+        <button type="button" class="writer-rule-item" data-rule="dots" role="menuitem" aria-label="점선" title="점선"><hr class="writer-rule" data-rule="dots"></button>
+        <button type="button" class="writer-rule-item" data-rule="slash" role="menuitem" aria-label="사선" title="사선"><hr class="writer-rule" data-rule="slash"></button>
+        <button type="button" class="writer-rule-item" data-rule="bar" role="menuitem" aria-label="세로선" title="세로선"><hr class="writer-rule" data-rule="bar"></button>
+      </div>
       <div class="writer-margin-wrap">
         <button class="writer-format writer-labeled writer-margin-button" type="button" id="writerMarginButton" title="여백"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/> <path d="M17 3h2a2 2 0 0 1 2 2v2"/> <path d="M21 17v2a2 2 0 0 1-2 2h-2"/> <path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg><span class="writer-label-text">여백</span></button>
         <div class="writer-margin-menu" id="writerMarginMenu" hidden>
@@ -4669,6 +4697,39 @@ function readWriterImage(file){
   });
 }
 
+// Divider: pick a style from the menu; it goes in at the caret as <hr class="writer-rule">.
+const writerRuleMenu = document.getElementById('writerRuleMenu');
+const writerRuleButton = document.getElementById('writerRuleButton');
+writerRuleButton.addEventListener('mousedown', event => event.preventDefault());
+writerRuleButton.addEventListener('click', event => {
+  event.stopPropagation();
+  rememberWriterRange();
+  writerRuleMenu.hidden = !writerRuleMenu.hidden;
+  if(writerRuleMenu.hidden) return;
+  const box = writerRuleButton.getBoundingClientRect();
+  writerRuleMenu.style.left = `${Math.max(8,Math.min(box.left,window.innerWidth - writerRuleMenu.offsetWidth - 8))}px`;
+  writerRuleMenu.style.top = `${box.bottom + 6}px`;
+});
+writerRuleMenu.addEventListener('mousedown', event => event.preventDefault());
+writerRuleMenu.addEventListener('click', event => {
+  const item = event.target.closest('.writer-rule-item');
+  if(!item) return;
+  writerRuleMenu.hidden = true;
+  restoreWriterRange();
+  const before = new Set(writerCanvas.querySelectorAll('hr'));
+  document.execCommand('insertHorizontalRule');
+  const rule = [...writerCanvas.querySelectorAll('hr')].find(hr => !before.has(hr));
+  if(rule){
+    rule.className = 'writer-rule';
+    rule.dataset.rule = item.dataset.rule;
+    rule.removeAttribute('id');
+  }
+  queueWriterSave();
+});
+document.addEventListener('click', event => {
+  if(!event.target.closest('#writerRuleMenu')) writerRuleMenu.hidden = true;
+});
+window.addEventListener('scroll',() => { writerRuleMenu.hidden = true; },{passive:true});
 // The photo button opens the photo menu: the side photo (사진형) and the sheet's background photo.
 const writerPhotoMenu = document.getElementById('writerPhotoMenu');
 document.querySelector('[data-writer-action="image"]').addEventListener('click', event => {
