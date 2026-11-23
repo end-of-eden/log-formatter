@@ -2396,8 +2396,11 @@
   .writer-photo-layout{display:grid;gap:18px;align-items:start;}
   .writer-photo-layout[hidden]{display:none;}
   .writer-photo-layout{position:relative;--split:.42;--gutter:25px;}
-  .writer-photo-layout[data-template="photo-left"]{grid-template-columns:calc(var(--split) * (100% - var(--gutter))) 1fr;grid-template-areas:"p1 text";column-gap:var(--gutter);align-items:stretch;}
-  .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr calc(var(--split) * (100% - var(--gutter)));grid-template-areas:"text p1";column-gap:var(--gutter);align-items:stretch;}
+  .writer-photo-layout[data-template="photo-left"]{grid-template-columns:calc(var(--split) * (100% - var(--gutter))) 1fr;grid-template-rows:1fr auto;grid-template-areas:"p1 text" "p1 name";column-gap:var(--gutter);row-gap:0;align-items:stretch;}
+  .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr calc(var(--split) * (100% - var(--gutter)));grid-template-rows:1fr auto;grid-template-areas:"text p1" "name p1";column-gap:var(--gutter);row-gap:0;align-items:stretch;}
+  /* The log name closes the text column instead of sitting under the photo. */
+  .writer-photo-layout > .writer-preview-log-name,
+  .writer-photo-layout > .writer-export-log-name{grid-area:name;align-self:end;min-width:0;}
   /* Side layouts: the photo fills the whole height of the text and runs out to the sheet edges. */
   .writer-photo-layout > #writerCanvas,
   .writer-photo-layout > .writer-export-body{align-self:start;}
@@ -6264,9 +6267,11 @@ function setWriterPhotoMode(on){
   writerPhotoButton.title = on ? '사진 넣기' : '사진형에서 사용';
   if(on){
     writerPhotoLayout.appendChild(writerCanvas);
+    writerPhotoLayout.appendChild(writerPreviewLogName);
     applyWriterPhotoTemplate();
   }else if(writerCanvas.parentElement !== writerPreviewSheet){
     writerPreviewSheet.insertBefore(writerCanvas,writerPhotoLayout);
+    writerPreviewSheet.appendChild(writerPreviewLogName);
   }
 }
 function openWriterSlotPicker(slot){
@@ -6993,6 +6998,7 @@ async function saveWriterImage(){
     const layout = writerPhotoLayout.cloneNode(true);
     layout.removeAttribute('id');
     layout.querySelector('#writerCanvas')?.remove();
+    layout.querySelector('#writerPreviewLogName')?.remove();
     layout.querySelectorAll('.writer-image-tools,.writer-image-height,.writer-slot-empty,.writer-layout-split').forEach(node => node.remove());
     layout.querySelectorAll('.writer-layout-slot').forEach(slot => {
       slot.classList.remove('is-selected');
@@ -7000,6 +7006,8 @@ async function saveWriterImage(){
     });
     exportBody.replaceWith(layout);
     layout.appendChild(exportBody);
+    const exportName = sheet.querySelector('.writer-export-log-name');
+    if(exportName) layout.appendChild(exportName);
   }
   // Preserve the editor's actual typography, not the last toolbar selection.
   // Layout dimensions remain controlled by the export preset.
