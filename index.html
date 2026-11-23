@@ -1530,6 +1530,34 @@
     pointer-events:none;
   }
   .writer-html-stage.has-content .writer-html-empty{display:none;}
+  /* Background photo behind the whole sheet, faded by --backdrop-opacity. */
+  .writer-sheet-backdrop{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    background:var(--backdrop-image) center/cover no-repeat;
+    opacity:var(--backdrop-opacity,.3);
+    pointer-events:none;
+  }
+  .writer-preview-sheet > :not(.writer-sheet-backdrop),
+  .writer-export-sheet > :not(.writer-sheet-backdrop){position:relative;z-index:1;}
+  .writer-backdrop-row{display:flex;align-items:center;gap:6px;padding-top:10px;border-top:1px solid #ececef;color:#34383f;font:700 12px 'Pretendard',sans-serif;}
+  .writer-backdrop-row strong{flex:1;}
+  .writer-backdrop-pick,
+  .writer-toolbar #writerBackdropClear{
+    height:28px;
+    padding:0 10px;
+    border:1px solid #e0e1e4;
+    border-radius:5px;
+    background:#fff;
+    color:#5b5f66;
+    font:600 11px/26px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-toolbar #writerBackdropClear:disabled{opacity:.4;cursor:default;}
+  .writer-app.night .writer-backdrop-row{border-color:#3b3d43;color:#ece9e1;}
+  .writer-app.night .writer-backdrop-pick,
+  .writer-app.night .writer-toolbar #writerBackdropClear{background:#202226;border-color:#41444a;color:#d8d9dc;}
   .writer-status-bar{
     display:flex;
     align-items:center;
@@ -2306,7 +2334,25 @@
     user-select:none;
     -webkit-user-select:none;
   }
-  .writer-image img{display:block;width:100%;max-width:none;height:auto;border-radius:4px;pointer-events:none;}
+  /* The photo sits in a box (aspect --ar). Inside it the picture can be zoomed (--z, of the
+     box width) and moved (--ix of the box width, --iy of the box height). */
+  .writer-image-frame{position:relative;display:block;overflow:hidden;border-radius:4px;aspect-ratio:var(--ar,auto);}
+  .writer-image-frame img{
+    position:absolute;
+    top:calc(var(--iy,0) * 100%);
+    left:calc(var(--ix,0) * 100%);
+    display:block;
+    width:calc(var(--z,1) * 100%);
+    max-width:none;
+    height:auto;
+    border-radius:0;
+    pointer-events:none;
+  }
+  .writer-image:not([style*="--ar"]) .writer-image-frame img{position:static;width:100%;}
+  /* Beat the column's max-width:100% for pictures so a zoomed photo can overflow its box. */
+  #writerCanvas .writer-image-frame img,
+  .writer-export-body .writer-image-frame img{max-width:none;}
+  #writerCanvas .writer-image.is-cropping .writer-image-frame{cursor:grab;touch-action:none;}
   .writer-image[data-layout="left"]{float:left;margin:4px 18px 10px 0;}
   .writer-image[data-layout="right"]{float:right;margin:4px 0 10px 18px;}
   .writer-image[data-layout="free"]{
@@ -2364,6 +2410,25 @@
     touch-action:none;
   }
   .writer-image.is-selected .writer-image-handle{display:block;}
+  .writer-image-height{
+    position:absolute;
+    bottom:-6px;
+    left:50%;
+    z-index:6;
+    display:none;
+    width:28px;
+    height:10px;
+    margin-left:-14px;
+    border:2px solid var(--burgundy);
+    border-radius:6px;
+    background:#fff;
+    cursor:ns-resize;
+    touch-action:none;
+  }
+  .writer-image.is-selected .writer-image-height{display:block;}
+  .writer-image-zoom{display:none;align-items:center;gap:5px;padding:0 6px;color:#44484f;font:600 11px 'Pretendard',sans-serif;}
+  .writer-image.is-cropping .writer-image-zoom{display:flex;}
+  .writer-image-zoom input{width:80px;accent-color:var(--burgundy);}
   .writer-image-guide{position:absolute;z-index:5;background:#e0457b;pointer-events:none;}
   .writer-app.night .writer-image-tools{border-color:#3b3d43;background:#292b2f;}
   .writer-app.night .writer-image-tools button{color:#e7e5df;}
@@ -2827,6 +2892,16 @@
             <input type="range" id="exportMarginLeftRange" min="0" max="320" step="1" value="60" aria-label="왼쪽 여백" title="더블클릭하면 기본값 60">
           </div>
           <p class="writer-spacing-hint">저장 이미지의 바깥 여백입니다. 슬라이더를 더블클릭하면 기본값으로 돌아갑니다.</p>
+          <div class="writer-backdrop-row">
+            <strong>배경 사진</strong>
+            <label class="writer-backdrop-pick">사진 고르기<input type="file" id="writerBackdropInput" accept="image/*" hidden></label>
+            <button type="button" id="writerBackdropClear" disabled>지우기</button>
+          </div>
+          <div class="writer-spacing-row">
+            <label for="writerBackdropOpacity">진하기 <small>%</small></label>
+            <input type="number" id="writerBackdropOpacityNumber" min="0" max="100" step="1" value="30" aria-label="배경 사진 진하기 값">
+            <input type="range" id="writerBackdropOpacity" min="0" max="100" step="1" value="30" aria-label="배경 사진 진하기" title="더블클릭하면 기본값 30">
+          </div>
         </div>
       </div>
       <div class="writer-line-height-wrap">
@@ -4510,14 +4585,26 @@ function createWriterImage(source){
   figure.className = 'writer-image';
   figure.contentEditable = 'false';
   figure.dataset.layout = 'block';
-  figure.innerHTML = `<img src="${escapeAttr(source)}" alt="">`
+  figure.innerHTML = `<span class="writer-image-frame"><img src="${escapeAttr(source)}" alt=""></span>`
     + '<span class="writer-image-tools" role="toolbar" aria-label="사진 배치">'
     + '<button type="button" data-image-layout="block">한 줄</button>'
     + '<button type="button" data-image-layout="left">왼쪽</button>'
     + '<button type="button" data-image-layout="right">오른쪽</button>'
     + '<button type="button" data-image-layout="free">자유</button>'
+    + '<button type="button" data-image-action="crop" aria-pressed="false">사진 맞추기</button>'
+    + '<label class="writer-image-zoom">확대<input type="range" min="1" max="4" step="0.01" value="1" aria-label="사진 확대"></label>'
     + '<button type="button" class="writer-image-remove" data-image-action="remove" aria-label="사진 삭제">×</button>'
-    + '</span><span class="writer-image-handle" aria-hidden="true"></span>';
+    + '</span><span class="writer-image-handle" aria-hidden="true"></span>'
+    + '<span class="writer-image-height" aria-hidden="true"></span>';
+  // The box starts at the photo's own proportions, showing all of it.
+  const image = figure.querySelector('img');
+  const fit = () => {
+    if(!image.naturalWidth) return;
+    figure.dataset.ratio = String(image.naturalWidth / image.naturalHeight);
+    if(!figure.style.getPropertyValue('--ar')) figure.style.setProperty('--ar',figure.dataset.ratio);
+    syncWriterFreeImageSpace(writerCanvas);
+  };
+  image.complete ? fit() : image.addEventListener('load',fit,{once:true});
   return figure;
 }
 // Put a block at the caret, lifting it out of any paragraph so it sits between blocks.
@@ -5765,7 +5852,21 @@ function selectWriterImage(figure){
   });
 }
 function writerImageVar(figure,name){
-  return Number.parseFloat(figure.style.getPropertyValue(name)) || (name === '--w' ? 1 : 0);
+  return Number.parseFloat(figure.style.getPropertyValue(name)) || (name === '--w' || name === '--z' ? 1 : 0);
+}
+// Keep the picture covering its box: never smaller than the box, never pulled past an edge.
+function clampWriterImageCrop(figure){
+  const ratio = Number(figure.dataset.ratio) || 1;
+  const box = Number.parseFloat(figure.style.getPropertyValue('--ar')) || ratio;
+  const zoom = Math.max(writerImageVar(figure,'--z'),box / ratio,1);
+  const imageHeight = zoom * box / ratio;
+  const ix = Math.min(0,Math.max(1 - zoom,writerImageVar(figure,'--ix')));
+  const iy = Math.min(0,Math.max(1 - imageHeight,writerImageVar(figure,'--iy')));
+  figure.style.setProperty('--z',String(zoom));
+  figure.style.setProperty('--ix',String(ix));
+  figure.style.setProperty('--iy',String(iy));
+  const slider = figure.querySelector('.writer-image-zoom input');
+  if(slider) slider.value = String(zoom);
 }
 // Free photos are out of the text flow; keep the column tall enough to hold them.
 function syncWriterFreeImageSpace(root){
@@ -5858,10 +5959,17 @@ writerCanvas.addEventListener('pointerdown', event => {
   selectWriterImage(figure);
   const columnWidth = writerCanvas.clientWidth || 1;
   const handle = event.target.closest('.writer-image-handle');
-  if(!handle && figure.dataset.layout !== 'free') return;
+  const heightHandle = event.target.closest('.writer-image-height');
+  const cropping = figure.classList.contains('is-cropping') && event.target.closest('.writer-image-frame');
+  if(!handle && !heightHandle && !cropping && figure.dataset.layout !== 'free') return;
+  const frame = figure.querySelector('.writer-image-frame');
   writerImageGesture = {
     figure,
-    mode:handle ? 'resize' : 'move',
+    mode:handle ? 'resize' : heightHandle ? 'height' : cropping ? 'pan' : 'move',
+    frameWidth:frame.offsetWidth,
+    frameHeight:frame.offsetHeight,
+    ix:writerImageVar(figure,'--ix'),
+    iy:writerImageVar(figure,'--iy'),
     pointer:event.pointerId,
     startX:event.clientX,
     startY:event.clientY,
@@ -5878,6 +5986,19 @@ writerCanvas.addEventListener('pointermove', event => {
   const dx = event.clientX - gesture.startX;
   const dy = event.clientY - gesture.startY;
   const {figure,columnWidth} = gesture;
+  if(gesture.mode === 'pan'){
+    figure.style.setProperty('--ix',String(gesture.ix + dx / gesture.frameWidth));
+    figure.style.setProperty('--iy',String(gesture.iy + dy / gesture.frameHeight));
+    clampWriterImageCrop(figure);
+    return;
+  }
+  if(gesture.mode === 'height'){
+    const height = Math.max(40,gesture.frameHeight + dy);
+    figure.style.setProperty('--ar',String(Math.min(5,Math.max(.2,gesture.frameWidth / height))));
+    clampWriterImageCrop(figure);
+    syncWriterFreeImageSpace(writerCanvas);
+    return;
+  }
   if(gesture.mode === 'resize'){
     const free = figure.dataset.layout === 'free';
     const room = free ? columnWidth - figure.offsetLeft : columnWidth;
@@ -5907,6 +6028,13 @@ writerCanvas.addEventListener('click', event => {
   event.preventDefault();
   event.stopPropagation();
   const figure = button.closest('.writer-image');
+  if(button.dataset.imageAction === 'crop'){
+    const on = !figure.classList.contains('is-cropping');
+    figure.classList.toggle('is-cropping',on);
+    button.setAttribute('aria-pressed',String(on));
+    if(on) clampWriterImageCrop(figure);
+    return;
+  }
   if(button.dataset.imageAction === 'remove'){
     figure.remove();
     selectWriterImage(null);
@@ -5916,8 +6044,28 @@ writerCanvas.addEventListener('click', event => {
   }
   setWriterImageLayout(figure,button.dataset.imageLayout);
 },true);
+// Zoom around the box centre.
+writerCanvas.addEventListener('input', event => {
+  const slider = event.target.closest('.writer-image-zoom input');
+  if(!slider) return;
+  const figure = slider.closest('.writer-image');
+  const ratio = Number(figure.dataset.ratio) || 1;
+  const box = Number.parseFloat(figure.style.getPropertyValue('--ar')) || ratio;
+  const before = writerImageVar(figure,'--z');
+  const after = Number(slider.value);
+  const cx = (.5 - writerImageVar(figure,'--ix')) / before;
+  const cy = (.5 - writerImageVar(figure,'--iy')) / (before * box / ratio);
+  figure.style.setProperty('--z',String(after));
+  figure.style.setProperty('--ix',String(.5 - cx * after));
+  figure.style.setProperty('--iy',String(.5 - cy * after * box / ratio));
+  clampWriterImageCrop(figure);
+});
 document.addEventListener('pointerdown', event => {
-  if(writerSelectedImage && !event.target.closest('.writer-image')) selectWriterImage(null);
+  if(writerSelectedImage && !event.target.closest('.writer-image')){
+    writerSelectedImage.classList.remove('is-cropping');
+    writerSelectedImage.querySelector('[data-image-action="crop"]')?.setAttribute('aria-pressed','false');
+    selectWriterImage(null);
+  }
 });
 document.addEventListener('keydown', event => {
   if(!writerSelectedImage?.isConnected || !['Delete','Backspace'].includes(event.key)) return;
@@ -5929,6 +6077,56 @@ document.addEventListener('keydown', event => {
   queueWriterSave();
 });
 window.addEventListener('resize',() => syncWriterFreeImageSpace(writerCanvas),{passive:true});
+
+// ---------- background photo ----------
+const writerBackdropInput = document.getElementById('writerBackdropInput');
+const writerBackdropClear = document.getElementById('writerBackdropClear');
+const writerBackdropOpacity = document.getElementById('writerBackdropOpacity');
+const writerBackdropOpacityNumber = document.getElementById('writerBackdropOpacityNumber');
+let writerBackdropSource = '';
+function applyWriterBackdrop(sheet){
+  let layer = sheet.querySelector(':scope > .writer-sheet-backdrop');
+  if(!writerBackdropSource){
+    layer?.remove();
+    return;
+  }
+  if(!layer){
+    layer = document.createElement('div');
+    layer.className = 'writer-sheet-backdrop';
+    layer.setAttribute('aria-hidden','true');
+    sheet.prepend(layer);
+  }
+  layer.style.setProperty('--backdrop-image',`url("${writerBackdropSource}")`);
+  layer.style.setProperty('--backdrop-opacity',String(Number(writerBackdropOpacity.value) / 100));
+}
+function setWriterBackdropOpacity(value){
+  const clamped = String(Math.round(Math.min(100,Math.max(0,Number(value) || 0))));
+  writerBackdropOpacity.value = clamped;
+  writerBackdropOpacityNumber.value = clamped;
+  paintWriterRange(writerBackdropOpacity);
+  applyWriterBackdrop(writerPreviewSheet);
+}
+writerBackdropInput.addEventListener('change', () => {
+  const file = writerBackdropInput.files?.[0];
+  writerBackdropInput.value = '';
+  if(!file?.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    writerBackdropSource = String(reader.result);
+    writerBackdropClear.disabled = false;
+    applyWriterBackdrop(writerPreviewSheet);
+  };
+  reader.readAsDataURL(file);
+});
+writerBackdropClear.addEventListener('click', () => {
+  writerBackdropSource = '';
+  writerBackdropClear.disabled = true;
+  applyWriterBackdrop(writerPreviewSheet);
+});
+writerBackdropOpacity.addEventListener('input', () => setWriterBackdropOpacity(writerBackdropOpacity.value));
+writerBackdropOpacity.addEventListener('dblclick', () => setWriterBackdropOpacity(30));
+writerBackdropOpacityNumber.addEventListener('change', () => setWriterBackdropOpacity(writerBackdropOpacityNumber.value));
+paintWriterRange(writerBackdropOpacity);
 
 // Keep toolbar popovers inside the viewport whichever way they open.
 const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu,.writer-line-height-menu,.writer-find-menu')];
@@ -6469,8 +6667,8 @@ async function saveWriterImage(){
   const htmlCanvas = writerCategory.value === 'HTML' ? await renderWriterHtmlCanvas(format) : null;
   const cleanCanvas = writerCanvas.cloneNode(true);
   copyWriterExportTypography(writerCanvas,cleanCanvas);
-  cleanCanvas.querySelectorAll('.writer-bubble-delete,.writer-image-tools,.writer-image-handle,.writer-image-guide').forEach(node => node.remove());
-  cleanCanvas.querySelectorAll('.writer-image.is-selected').forEach(figure => figure.classList.remove('is-selected'));
+  cleanCanvas.querySelectorAll('.writer-bubble-delete,.writer-image-tools,.writer-image-handle,.writer-image-height,.writer-image-guide').forEach(node => node.remove());
+  cleanCanvas.querySelectorAll('.writer-image').forEach(figure => figure.classList.remove('is-selected','is-cropping','tools-right'));
   cleanCanvas.style.removeProperty('min-height');
   normalizeWriterExportHighlights(cleanCanvas);
   while(cleanCanvas.lastElementChild
@@ -6497,6 +6695,7 @@ async function saveWriterImage(){
   }
   const paragraphGap = writerCanvas.style.getPropertyValue('--writer-paragraph-gap');
   if(paragraphGap) exportBody.style.setProperty('--writer-paragraph-gap',paragraphGap);
+  applyWriterBackdrop(sheet);
   document.body.appendChild(sheet);
   await Promise.all([...sheet.querySelectorAll('img')].map(image => image.decode()));
   syncWriterFreeImageSpace(exportBody);
@@ -6510,7 +6709,8 @@ async function saveWriterImage(){
     width:sheet.scrollWidth,
     height:sheet.scrollHeight
   });
-    const balancedCanvas = htmlCanvas || cropWriterCanvasVertical(
+    // A background photo paints the whole sheet, so there is no blank margin to rebalance.
+    const balancedCanvas = htmlCanvas || (writerBackdropSource ? canvas : null) || cropWriterCanvasVertical(
       canvas,
       exportBackground,
       Number(exportMarginInputs.top.value),
