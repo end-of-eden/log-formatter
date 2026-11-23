@@ -2289,6 +2289,85 @@
     margin:36px 0;
   }
   #writerCanvas img{max-width:100%;height:auto;border-radius:4px;}
+  /* Placed photos. Sizes and positions are fractions of the text column (cqw), so a
+     layout made on a phone keeps its proportions on a desktop and in the saved image. */
+  #writerCanvas,.writer-export-body{position:relative;container-type:inline-size;}
+  .writer-image{
+    --w:1;
+    --x:0;
+    --y:0;
+    position:relative;
+    display:block;
+    width:calc(var(--w) * 100cqw);
+    max-width:100%;
+    margin:18px auto;
+    padding:0;
+    line-height:0;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .writer-image img{display:block;width:100%;max-width:none;height:auto;border-radius:4px;pointer-events:none;}
+  .writer-image[data-layout="left"]{float:left;margin:4px 18px 10px 0;}
+  .writer-image[data-layout="right"]{float:right;margin:4px 0 10px 18px;}
+  .writer-image[data-layout="free"]{
+    position:absolute;
+    left:calc(var(--x) * 100cqw);
+    top:calc(var(--y) * 100cqw);
+    z-index:2;
+    margin:0;
+  }
+  #writerCanvas .writer-image{cursor:pointer;}
+  #writerCanvas .writer-image[data-layout="free"]{cursor:move;touch-action:none;}
+  #writerCanvas .writer-image.is-selected{outline:2px solid rgba(192,57,43,.75);outline-offset:2px;}
+  .writer-image-tools{
+    position:absolute;
+    bottom:100%;
+    left:0;
+    z-index:6;
+    display:none;
+    gap:2px;
+    margin-bottom:8px;
+    padding:3px;
+    border:1px solid #dedfe3;
+    border-radius:7px;
+    background:#fff;
+    box-shadow:0 6px 18px rgba(25,28,34,.16);
+    line-height:normal;
+    white-space:nowrap;
+  }
+  .writer-image.is-selected .writer-image-tools{display:flex;}
+  .writer-image.tools-right .writer-image-tools{right:0;left:auto;}
+  .writer-image-tools button{
+    padding:5px 8px;
+    border:0;
+    border-radius:5px;
+    background:transparent;
+    color:#44484f;
+    font:600 11px 'Pretendard',sans-serif;
+    cursor:pointer;
+  }
+  .writer-image-tools button:hover{background:#f1f2f4;}
+  .writer-image-tools button[aria-pressed="true"]{background:var(--burgundy-soft);color:var(--burgundy);}
+  .writer-image-tools .writer-image-remove{color:#c0392b;}
+  .writer-image-handle{
+    position:absolute;
+    right:-7px;
+    bottom:-7px;
+    z-index:6;
+    display:none;
+    width:14px;
+    height:14px;
+    border:2px solid var(--burgundy);
+    border-radius:50%;
+    background:#fff;
+    cursor:nwse-resize;
+    touch-action:none;
+  }
+  .writer-image.is-selected .writer-image-handle{display:block;}
+  .writer-image-guide{position:absolute;z-index:5;background:#e0457b;pointer-events:none;}
+  .writer-app.night .writer-image-tools{border-color:#3b3d43;background:#292b2f;}
+  .writer-app.night .writer-image-tools button{color:#e7e5df;}
+  .writer-app.night .writer-image-tools button:hover{background:#35373c;}
   #writerCanvas [style*="background-color"],
   .writer-export-body [style*="background-color"]{
     -webkit-box-decoration-break:clone;
@@ -4425,10 +4504,55 @@ document.addEventListener('click', () => {
   document.querySelectorAll('.writer-color-trigger').forEach(button => button.setAttribute('aria-expanded','false'));
 });
 
+// A photo is a non-editable block with its own layout tools.
+function createWriterImage(source){
+  const figure = document.createElement('figure');
+  figure.className = 'writer-image';
+  figure.contentEditable = 'false';
+  figure.dataset.layout = 'block';
+  figure.innerHTML = `<img src="${escapeAttr(source)}" alt="">`
+    + '<span class="writer-image-tools" role="toolbar" aria-label="사진 배치">'
+    + '<button type="button" data-image-layout="block">한 줄</button>'
+    + '<button type="button" data-image-layout="left">왼쪽</button>'
+    + '<button type="button" data-image-layout="right">오른쪽</button>'
+    + '<button type="button" data-image-layout="free">자유</button>'
+    + '<button type="button" class="writer-image-remove" data-image-action="remove" aria-label="사진 삭제">×</button>'
+    + '</span><span class="writer-image-handle" aria-hidden="true"></span>';
+  return figure;
+}
+// Put a block at the caret, lifting it out of any paragraph so it sits between blocks.
+function insertWriterBlockElement(block){
+  const range = writerSavedRange && writerCanvas.contains(writerSavedRange.commonAncestorContainer)
+    ? writerSavedRange.cloneRange() : null;
+  if(range){
+    range.deleteContents();
+    range.insertNode(block);
+    while(block.parentNode !== writerCanvas){
+      const parent = block.parentNode;
+      const after = parent.cloneNode(false);
+      after.removeAttribute('id');
+      while(block.nextSibling) after.appendChild(block.nextSibling);
+      parent.after(block);
+      if(after.hasChildNodes() && (after.textContent.trim() || after.querySelector('img,br'))) block.after(after);
+      if(!parent.textContent.trim() && !parent.querySelector('img,.writer-inline-chat,.writer-image')) parent.remove();
+    }
+  }else{
+    writerCanvas.appendChild(block);
+  }
+  if(!block.nextElementSibling?.matches('p')){
+    const tail = document.createElement('p');
+    tail.innerHTML = '<br>';
+    block.after(tail);
+  }
+  const caret = document.createRange();
+  caret.selectNodeContents(block.nextElementSibling);
+  caret.collapse(true);
+  writerSavedRange = caret;
+}
 function insertWriterImageSource(source){
-  restoreWriterRange();
-  document.execCommand('insertHTML',false,`<p><img src="${escapeAttr(source)}" alt=""></p><p><br></p>`);
-  rememberWriterRange();
+  insertWriterBlockElement(createWriterImage(source));
+  syncWriterFreeImageSpace(writerCanvas);
+  queueWriterSave();
 }
 
 function readWriterImage(file){
@@ -5318,7 +5442,7 @@ function writerFindTextMap(){
   const walker = document.createTreeWalker(writerCanvas,NodeFilter.SHOW_TEXT);
   while(walker.nextNode()){
     const node = walker.currentNode;
-    if(node.parentElement.closest('.writer-bubble-delete')) continue;
+    if(node.parentElement.closest('.writer-bubble-delete,.writer-image')) continue;
     const block = node.parentElement.closest('p,div,h1,h2,h3,h4,h5,h6,.writer-inline-chat-bubble,.writer-inline-chat-name') || writerCanvas;
     if(block !== lastBlock && text) text += '\n';
     lastBlock = block;
@@ -5504,7 +5628,7 @@ const writerCharCount = document.getElementById('writerCharCount');
 const writerTidyButton = document.getElementById('writerTidyButton');
 const writerTidyLabel = document.getElementById('writerTidyLabel');
 const writerGraphemes = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter('ko',{granularity:'grapheme'}) : null;
-const WRITER_NON_TEXT = '.writer-inline-chat-name,.writer-inline-chat-time,.writer-discord-time,.writer-bubble-delete';
+const WRITER_NON_TEXT = '.writer-inline-chat-name,.writer-inline-chat-time,.writer-discord-time,.writer-bubble-delete,.writer-image';
 // Only words a reader sees: skip chat names/times and the markup whitespace between blocks.
 function isWriterReadableText(node){
   const parent = node.parentElement;
@@ -5624,6 +5748,187 @@ writerCanvas.addEventListener('input', () => {
   setWriterTidyLabel('문장부호 정리',false);
 });
 updateWriterCharCount();
+
+// ---------- photo layout ----------
+let writerSelectedImage = null;
+function selectWriterImage(figure){
+  writerCanvas.querySelectorAll('.writer-image.is-selected').forEach(item => {
+    if(item !== figure) item.classList.remove('is-selected');
+  });
+  writerSelectedImage = figure || null;
+  if(!figure) return;
+  figure.classList.add('is-selected');
+  // Open the tools toward the column's middle so they never hang off the page.
+  figure.classList.toggle('tools-right',figure.offsetLeft + figure.offsetWidth / 2 > writerCanvas.clientWidth / 2);
+  figure.querySelectorAll('[data-image-layout]').forEach(button => {
+    button.setAttribute('aria-pressed',String(button.dataset.imageLayout === figure.dataset.layout));
+  });
+}
+function writerImageVar(figure,name){
+  return Number.parseFloat(figure.style.getPropertyValue(name)) || (name === '--w' ? 1 : 0);
+}
+// Free photos are out of the text flow; keep the column tall enough to hold them.
+function syncWriterFreeImageSpace(root){
+  root.style.minHeight = '';
+  let bottom = 0;
+  root.querySelectorAll(':scope > .writer-image[data-layout="free"]').forEach(figure => {
+    bottom = Math.max(bottom,figure.offsetTop + figure.offsetHeight);
+  });
+  if(bottom > root.offsetHeight) root.style.minHeight = `${Math.ceil(bottom)}px`;
+}
+function setWriterImageLayout(figure,layout){
+  const width = writerCanvas.clientWidth || 1;
+  if(layout === 'free' && figure.dataset.layout !== 'free'){
+    const box = figure.getBoundingClientRect();
+    const canvasBox = writerCanvas.getBoundingClientRect();
+    figure.style.setProperty('--x',String((box.left - canvasBox.left) / width));
+    figure.style.setProperty('--y',String((box.top - canvasBox.top) / width));
+    figure.style.setProperty('--w',String(Math.min(1,box.width / width)));
+  }
+  if((layout === 'left' || layout === 'right') && writerImageVar(figure,'--w') > .6){
+    figure.style.setProperty('--w','0.45');
+  }
+  figure.dataset.layout = layout;
+  syncWriterFreeImageSpace(writerCanvas);
+  selectWriterImage(figure);
+  queueWriterSave();
+}
+// Wrap a plain pasted <img> into a placeable photo the first time it is touched.
+function adoptWriterImage(image){
+  const figure = createWriterImage(image.getAttribute('src') || '');
+  const top = image.closest('#writerCanvas > *');
+  if(top && top !== image){
+    top.after(figure);
+    image.remove();
+    if(!top.textContent.trim() && !top.querySelector('img,.writer-inline-chat')) top.remove();
+  }else{
+    image.replaceWith(figure);
+  }
+  return figure;
+}
+function clearWriterImageGuides(){
+  writerCanvas.querySelectorAll('.writer-image-guide').forEach(guide => guide.remove());
+}
+function showWriterImageGuide(vertical,at){
+  const guide = document.createElement('div');
+  guide.className = 'writer-image-guide';
+  guide.contentEditable = 'false';
+  guide.style.cssText = vertical
+    ? `left:${at}px;top:0;width:1px;height:100%;`
+    : `top:${at}px;left:0;height:1px;width:100%;`;
+  writerCanvas.appendChild(guide);
+}
+// Snap a free photo's edges and centre to the column and to other free photos.
+function snapWriterImage(figure,left,top,width,height,disabled){
+  clearWriterImageGuides();
+  if(disabled) return {left,top};
+  const columnWidth = writerCanvas.clientWidth;
+  const xs = [0,columnWidth / 2,columnWidth];
+  const ys = [0];
+  writerCanvas.querySelectorAll(':scope > .writer-image[data-layout="free"]').forEach(other => {
+    if(other === figure) return;
+    xs.push(other.offsetLeft,other.offsetLeft + other.offsetWidth / 2,other.offsetLeft + other.offsetWidth);
+    ys.push(other.offsetTop,other.offsetTop + other.offsetHeight / 2,other.offsetTop + other.offsetHeight);
+  });
+  const snap = (start,size,targets) => {
+    let best = null;
+    for(const [offset,edge] of [[0,start],[size / 2,start + size / 2],[size,start + size]]){
+      for(const target of targets){
+        const distance = Math.abs(edge - target);
+        if(distance <= 6 && (!best || distance < best.distance)) best = {distance,value:target - offset,line:target};
+      }
+    }
+    return best;
+  };
+  const sx = snap(left,width,xs);
+  const sy = snap(top,height,ys);
+  if(sx){ left = sx.value; showWriterImageGuide(true,sx.line); }
+  if(sy){ top = sy.value; showWriterImageGuide(false,sy.line); }
+  return {left,top};
+}
+let writerImageGesture = null;
+writerCanvas.addEventListener('pointerdown', event => {
+  let figure = event.target.closest('.writer-image');
+  if(!figure && event.target.matches('img') && writerCanvas.contains(event.target)){
+    figure = adoptWriterImage(event.target);
+  }
+  if(!figure) return;
+  if(event.target.closest('.writer-image-tools')) return;
+  event.preventDefault();
+  selectWriterImage(figure);
+  const columnWidth = writerCanvas.clientWidth || 1;
+  const handle = event.target.closest('.writer-image-handle');
+  if(!handle && figure.dataset.layout !== 'free') return;
+  writerImageGesture = {
+    figure,
+    mode:handle ? 'resize' : 'move',
+    pointer:event.pointerId,
+    startX:event.clientX,
+    startY:event.clientY,
+    left:figure.offsetLeft,
+    top:figure.offsetTop,
+    width:figure.offsetWidth,
+    columnWidth
+  };
+  writerCanvas.setPointerCapture(event.pointerId);
+});
+writerCanvas.addEventListener('pointermove', event => {
+  const gesture = writerImageGesture;
+  if(!gesture || gesture.pointer !== event.pointerId) return;
+  const dx = event.clientX - gesture.startX;
+  const dy = event.clientY - gesture.startY;
+  const {figure,columnWidth} = gesture;
+  if(gesture.mode === 'resize'){
+    const free = figure.dataset.layout === 'free';
+    const room = free ? columnWidth - figure.offsetLeft : columnWidth;
+    const width = Math.max(columnWidth * .08,Math.min(room,gesture.width + dx));
+    figure.style.setProperty('--w',String(width / columnWidth));
+  }else{
+    let left = Math.max(0,Math.min(columnWidth - gesture.width,gesture.left + dx));
+    let top = Math.max(0,gesture.top + dy);
+    ({left,top} = snapWriterImage(figure,left,top,gesture.width,figure.offsetHeight,event.altKey));
+    figure.style.setProperty('--x',String(left / columnWidth));
+    figure.style.setProperty('--y',String(top / columnWidth));
+  }
+  syncWriterFreeImageSpace(writerCanvas);
+});
+const endWriterImageGesture = event => {
+  if(!writerImageGesture || writerImageGesture.pointer !== event.pointerId) return;
+  writerImageGesture = null;
+  clearWriterImageGuides();
+  syncWriterFreeImageSpace(writerCanvas);
+  queueWriterSave();
+};
+writerCanvas.addEventListener('pointerup',endWriterImageGesture);
+writerCanvas.addEventListener('pointercancel',endWriterImageGesture);
+writerCanvas.addEventListener('click', event => {
+  const button = event.target.closest('.writer-image-tools button');
+  if(!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const figure = button.closest('.writer-image');
+  if(button.dataset.imageAction === 'remove'){
+    figure.remove();
+    selectWriterImage(null);
+    syncWriterFreeImageSpace(writerCanvas);
+    queueWriterSave();
+    return;
+  }
+  setWriterImageLayout(figure,button.dataset.imageLayout);
+},true);
+document.addEventListener('pointerdown', event => {
+  if(writerSelectedImage && !event.target.closest('.writer-image')) selectWriterImage(null);
+});
+document.addEventListener('keydown', event => {
+  if(!writerSelectedImage?.isConnected || !['Delete','Backspace'].includes(event.key)) return;
+  if(event.target.closest?.('input,textarea,select')) return;
+  event.preventDefault();
+  writerSelectedImage.remove();
+  selectWriterImage(null);
+  syncWriterFreeImageSpace(writerCanvas);
+  queueWriterSave();
+});
+window.addEventListener('resize',() => syncWriterFreeImageSpace(writerCanvas),{passive:true});
 
 // Keep toolbar popovers inside the viewport whichever way they open.
 const writerPopovers = [...document.querySelectorAll('.writer-color-menu,.writer-insert-menu,.writer-margin-menu,.writer-line-height-menu,.writer-find-menu')];
@@ -6164,7 +6469,9 @@ async function saveWriterImage(){
   const htmlCanvas = writerCategory.value === 'HTML' ? await renderWriterHtmlCanvas(format) : null;
   const cleanCanvas = writerCanvas.cloneNode(true);
   copyWriterExportTypography(writerCanvas,cleanCanvas);
-  cleanCanvas.querySelectorAll('.writer-bubble-delete').forEach(button => button.remove());
+  cleanCanvas.querySelectorAll('.writer-bubble-delete,.writer-image-tools,.writer-image-handle,.writer-image-guide').forEach(node => node.remove());
+  cleanCanvas.querySelectorAll('.writer-image.is-selected').forEach(figure => figure.classList.remove('is-selected'));
+  cleanCanvas.style.removeProperty('min-height');
   normalizeWriterExportHighlights(cleanCanvas);
   while(cleanCanvas.lastElementChild
     && cleanCanvas.lastElementChild.matches('p,div')
@@ -6192,6 +6499,7 @@ async function saveWriterImage(){
   if(paragraphGap) exportBody.style.setProperty('--writer-paragraph-gap',paragraphGap);
   document.body.appendChild(sheet);
   await Promise.all([...sheet.querySelectorAll('img')].map(image => image.decode()));
+  syncWriterFreeImageSpace(exportBody);
   normalizeWriterExportColors(sheet);
   const exportBackground = transparent ? null : (dark ? '#17181B' : '#FFFFFF');
   const exportScale = 2;
