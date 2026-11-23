@@ -5480,7 +5480,8 @@ function paintWriterRange(range){
 }
 Object.values(exportMarginInputs).forEach(input => {
   const range = document.getElementById(`${input.id}Range`);
-  const fallback = input.defaultValue;
+  // 사진형 has its own default for some sides (data-photo-fallback).
+  const fallback = () => writerCategory.value === '사진형' && input.dataset.photoFallback ? input.dataset.photoFallback : input.defaultValue;
   const setMargin = value => {
     const clamped = String(Math.round(Math.min(Number(input.max),Math.max(0,Number(value) || 0))));
     input.value = clamped;
@@ -5496,7 +5497,7 @@ Object.values(exportMarginInputs).forEach(input => {
   });
   input.addEventListener('change', () => setMargin(input.value));
   range.addEventListener('input', () => setMargin(range.value));
-  range.addEventListener('dblclick', () => setMargin(fallback));
+  range.addEventListener('dblclick', () => setMargin(fallback()));
   paintWriterRange(range);
 });
 document.addEventListener('click', event => {
@@ -6234,7 +6235,25 @@ function applyWriterPhotoTemplate(){
   syncWriterSlotShape();
   try{ localStorage.setItem('eoe-writer-photo-template',template); }catch{}
 }
+// 사진형 keeps its own right margin (30 by default); the other modes get theirs back.
+exportMarginInputs.right.dataset.photoFallback = '30';
+let writerOtherRightMargin = null;
+let writerPhotoRightMargin = '30';
+function swapWriterRightMargin(on){
+  const input = exportMarginInputs.right;
+  if(on === (writerOtherRightMargin !== null)) return;
+  if(on){
+    writerOtherRightMargin = input.value;
+    input.value = writerPhotoRightMargin;
+  }else{
+    writerPhotoRightMargin = input.value;
+    input.value = writerOtherRightMargin;
+    writerOtherRightMargin = null;
+  }
+  input.dispatchEvent(new Event('change'));
+}
 function setWriterPhotoMode(on){
+  swapWriterRightMargin(on);
   writerPhotoLayout.hidden = !on;
   writerPhotoTemplate.hidden = !on;
   writerPhotoButton.disabled = !on;
