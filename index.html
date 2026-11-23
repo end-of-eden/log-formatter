@@ -2400,7 +2400,7 @@
   .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr calc(var(--split) * (100% - var(--gutter)));grid-template-rows:1fr auto;grid-template-areas:"text p1" "name p1";column-gap:var(--gutter);row-gap:0;align-items:stretch;}
   /* The log name closes the text column instead of sitting under the photo. */
   .writer-photo-layout > .writer-preview-log-name,
-  .writer-photo-layout > .writer-export-log-name{grid-area:name;align-self:end;min-width:0;}
+  .writer-photo-layout > .writer-export-log-name{grid-area:name;align-self:end;min-width:0;margin-top:25px;}
   /* Side layouts: the photo fills the whole height of the text and runs out to the sheet edges. */
   .writer-photo-layout > #writerCanvas,
   .writer-photo-layout > .writer-export-body{align-self:start;}
