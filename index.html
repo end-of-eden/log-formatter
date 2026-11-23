@@ -2395,14 +2395,12 @@
   /* 사진형: a fixed grid of photo boxes and one text area. */
   .writer-photo-layout{display:grid;gap:18px;align-items:start;}
   .writer-photo-layout[hidden]{display:none;}
-  .writer-photo-layout[data-template="text-photo"]{grid-template-areas:"text" "p1";}
-  .writer-photo-layout[data-template="photo-text"]{grid-template-areas:"p1" "text";}
   .writer-photo-layout{position:relative;--split:.42;--gutter:28px;}
   .writer-photo-layout[data-template="photo-left"]{grid-template-columns:calc(var(--split) * (100% - var(--gutter))) 1fr;grid-template-areas:"p1 text";column-gap:var(--gutter);align-items:stretch;}
   .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr calc(var(--split) * (100% - var(--gutter)));grid-template-areas:"text p1";column-gap:var(--gutter);align-items:stretch;}
   /* Side layouts: the photo fills the whole height of the text and runs out to the sheet edges. */
-  .writer-photo-layout[data-template^="photo-"]:not([data-template="photo-text"]) > #writerCanvas,
-  .writer-photo-layout[data-template^="photo-"]:not([data-template="photo-text"]) > .writer-export-body{align-self:start;}
+  .writer-photo-layout > #writerCanvas,
+  .writer-photo-layout > .writer-export-body{align-self:start;}
   .writer-photo-layout[data-template="photo-left"] .writer-image.writer-layout-slot{width:auto;margin:calc(-1 * var(--m-top,0px)) 0 calc(-1 * var(--m-bottom,0px)) calc(-1 * var(--m-left,0px));}
   .writer-photo-layout[data-template="photo-right"] .writer-image.writer-layout-slot{width:auto;margin:calc(-1 * var(--m-top,0px)) calc(-1 * var(--m-right,0px)) calc(-1 * var(--m-bottom,0px)) 0;}
   .writer-photo-layout[data-template="photo-left"] .writer-layout-slot .writer-image-frame,
@@ -2415,12 +2413,11 @@
   .writer-photo-layout[data-template="photo-left"] > .writer-layout-split{display:block;left:calc(var(--split) * (100% - var(--gutter)) + var(--gutter) / 2);}
   .writer-photo-layout[data-template="photo-right"] > .writer-layout-split{display:block;left:calc((1 - var(--split)) * (100% - var(--gutter)) + var(--gutter) / 2);}
   .writer-app.night .writer-layout-split::after{background:#4a4d54;}
-  .writer-photo-layout[data-template="two-photo"]{grid-template-columns:1fr 1fr;grid-template-areas:"p1 p2" "text text";}
   .writer-photo-layout > #writerCanvas,
   .writer-photo-layout > .writer-export-body{grid-area:text;min-width:0;}
   .writer-layout-slot[data-slot="1"]{grid-area:p1;}
   .writer-layout-slot[data-slot="2"]{grid-area:p2;}
-  .writer-photo-layout:not([data-template="two-photo"]) .writer-layout-slot[data-slot="2"]{display:none;}
+  .writer-layout-slot[data-slot="2"]{display:none!important;}
   .writer-photo-layout .writer-image.writer-layout-slot{width:100%;max-width:none;margin:0;}
   .writer-layout-slot .writer-image-frame{background:#f1f2f4;}
   .writer-layout-slot.has-photo .writer-image-frame{background:none;cursor:grab;touch-action:none;}
@@ -2948,11 +2945,8 @@
           <option value="HTML">HTML 이미지</option>
         </select>
         <select id="writerPhotoTemplate" aria-label="사진 틀" title="사진 틀" hidden>
-          <option value="photo-left">왼쪽 사진 · 오른쪽 글</option>
-          <option value="photo-right">왼쪽 글 · 오른쪽 사진</option>
-          <option value="text-photo">위 글 · 아래 사진</option>
-          <option value="photo-text">위 사진 · 아래 글</option>
-          <option value="two-photo">사진 두 장 · 아래 글</option>
+          <option value="photo-left">사진 왼쪽</option>
+          <option value="photo-right">사진 오른쪽</option>
         </select>
         <input id="writerLogName" type="text" placeholder="로그 이름 (선택)" aria-label="로그 이름">
       </div>
@@ -6170,7 +6164,7 @@ writerSlotInput.accept = 'image/*';
 writerSlotInput.hidden = true;
 document.body.appendChild(writerSlotInput);
 let writerSlotTarget = null;
-const WRITER_SLOT_SHAPE = {'text-photo':1.5,'photo-text':1.5,'photo-left':.72,'photo-right':.72,'two-photo':.8};
+const WRITER_SLOT_SHAPE = {'photo-left':.72,'photo-right':.72};
 function createWriterSlot(index){
   const slot = document.createElement('figure');
   slot.className = 'writer-image writer-layout-slot';
