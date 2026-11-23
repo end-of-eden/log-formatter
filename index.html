@@ -6238,8 +6238,8 @@ function applyWriterPhotoTemplate(){
   syncWriterSlotShape();
   try{ localStorage.setItem('eoe-writer-photo-template',template); }catch{}
 }
-// 사진형 keeps its own margins (top/bottom 25, right 30); the other modes get theirs back.
-const WRITER_PHOTO_MARGINS = {top:'25',right:'30',bottom:'25'};
+// 사진형 keeps its own margins (25 on the text sides); the other modes get theirs back.
+const WRITER_PHOTO_MARGINS = {top:'25',right:'25',bottom:'25'};
 const writerOtherMargins = {};
 const writerPhotoMargins = {...WRITER_PHOTO_MARGINS};
 let writerPhotoMarginsOn = false;
