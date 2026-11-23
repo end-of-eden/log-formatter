@@ -6206,10 +6206,10 @@ writerPhotoLayout.querySelectorAll('.writer-image-frame').forEach(frame => write
 function setWriterLayoutSplit(value){
   const split = Math.min(.75,Math.max(.2,value));
   writerPhotoLayout.style.setProperty('--split',String(split));
-  try{ localStorage.setItem('eoe-writer-photo-split',String(split)); }catch{}
+  try{ localStorage.setItem('eoe-writer-photo-split-v2',String(split)); }catch{}
 }
 try{
-  const savedSplit = Number(localStorage.getItem('eoe-writer-photo-split'));
+  const savedSplit = Number(localStorage.getItem('eoe-writer-photo-split-v2'));
   if(savedSplit) writerPhotoLayout.style.setProperty('--split',String(savedSplit));
 }catch{}
 writerLayoutSplit.addEventListener('pointerdown', event => {
