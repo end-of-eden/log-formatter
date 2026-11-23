@@ -2395,7 +2395,7 @@
   /* 사진형: a fixed grid of photo boxes and one text area. */
   .writer-photo-layout{display:grid;gap:18px;align-items:start;}
   .writer-photo-layout[hidden]{display:none;}
-  .writer-photo-layout{position:relative;--split:.42;--gutter:28px;}
+  .writer-photo-layout{position:relative;--split:.42;--gutter:25px;}
   .writer-photo-layout[data-template="photo-left"]{grid-template-columns:calc(var(--split) * (100% - var(--gutter))) 1fr;grid-template-areas:"p1 text";column-gap:var(--gutter);align-items:stretch;}
   .writer-photo-layout[data-template="photo-right"]{grid-template-columns:1fr calc(var(--split) * (100% - var(--gutter)));grid-template-areas:"text p1";column-gap:var(--gutter);align-items:stretch;}
   /* Side layouts: the photo fills the whole height of the text and runs out to the sheet edges. */
@@ -6218,7 +6218,7 @@ writerLayoutSplit.addEventListener('pointerdown', event => {
 writerLayoutSplit.addEventListener('pointermove', event => {
   if(!writerLayoutSplit.hasPointerCapture(event.pointerId)) return;
   const box = writerPhotoLayout.getBoundingClientRect();
-  const gutter = 28;
+  const gutter = 25;
   const at = (event.clientX - box.left - gutter / 2) / (box.width - gutter);
   setWriterLayoutSplit(writerPhotoLayout.dataset.template === 'photo-right' ? 1 - at : at);
 });
@@ -6235,25 +6235,29 @@ function applyWriterPhotoTemplate(){
   syncWriterSlotShape();
   try{ localStorage.setItem('eoe-writer-photo-template',template); }catch{}
 }
-// 사진형 keeps its own right margin (30 by default); the other modes get theirs back.
-exportMarginInputs.right.dataset.photoFallback = '30';
-let writerOtherRightMargin = null;
-let writerPhotoRightMargin = '30';
-function swapWriterRightMargin(on){
-  const input = exportMarginInputs.right;
-  if(on === (writerOtherRightMargin !== null)) return;
-  if(on){
-    writerOtherRightMargin = input.value;
-    input.value = writerPhotoRightMargin;
-  }else{
-    writerPhotoRightMargin = input.value;
-    input.value = writerOtherRightMargin;
-    writerOtherRightMargin = null;
+// 사진형 keeps its own margins (top/bottom 25, right 30); the other modes get theirs back.
+const WRITER_PHOTO_MARGINS = {top:'25',right:'30',bottom:'25'};
+const writerOtherMargins = {};
+const writerPhotoMargins = {...WRITER_PHOTO_MARGINS};
+let writerPhotoMarginsOn = false;
+for(const [side,value] of Object.entries(WRITER_PHOTO_MARGINS)) exportMarginInputs[side].dataset.photoFallback = value;
+function swapWriterMargins(on){
+  if(on === writerPhotoMarginsOn) return;
+  writerPhotoMarginsOn = on;
+  for(const side of Object.keys(WRITER_PHOTO_MARGINS)){
+    const input = exportMarginInputs[side];
+    if(on){
+      writerOtherMargins[side] = input.value;
+      input.value = writerPhotoMargins[side];
+    }else{
+      writerPhotoMargins[side] = input.value;
+      input.value = writerOtherMargins[side];
+    }
+    input.dispatchEvent(new Event('change'));
   }
-  input.dispatchEvent(new Event('change'));
 }
 function setWriterPhotoMode(on){
-  swapWriterRightMargin(on);
+  swapWriterMargins(on);
   writerPhotoLayout.hidden = !on;
   writerPhotoTemplate.hidden = !on;
   writerPhotoButton.disabled = !on;
