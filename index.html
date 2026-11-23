@@ -4583,13 +4583,12 @@ function insertWriterBlockElement(block){
   caret.collapse(true);
   writerSavedRange = caret;
 }
-// A new photo starts at half the column where the caret was, then floats above the text.
+// A new photo sits at the caret on the left, with the text wrapping up beside it.
 function insertWriterImageSource(source){
   const figure = createWriterImage(source);
-  figure.style.setProperty('--w','0.5');
+  figure.style.setProperty('--w','0.45');
+  figure.dataset.layout = 'left';
   insertWriterBlockElement(figure);
-  setWriterImageLayout(figure,'free');
-  selectWriterImage(null);
   syncWriterFreeImageSpace(writerCanvas);
   queueWriterSave();
 }
@@ -5870,7 +5869,7 @@ function adoptWriterImage(image){
   }else{
     image.replaceWith(figure);
   }
-  setWriterImageLayout(figure,'free');
+  setWriterImageLayout(figure,'left');
   return figure;
 }
 function clearWriterImageGuides(){
@@ -5918,7 +5917,7 @@ function snapWriterImage(figure,left,top,width,height,disabled){
 function findWriterImageDrop(figure,clientX,clientY){
   const canvasBox = writerCanvas.getBoundingClientRect();
   const x = (clientX - canvasBox.left) / (writerCanvas.clientWidth || 1);
-  const layout = x < .34 ? 'left' : x > .66 ? 'right' : 'block';
+  const layout = x < .5 ? 'left' : 'right';
   const blocks = [...writerCanvas.children].filter(item => item !== figure
     && !item.matches('.writer-image-guide,.writer-sheet-backdrop'));
   let before = null;
@@ -5927,7 +5926,7 @@ function findWriterImageDrop(figure,clientX,clientY){
     if(clientY < box.top + box.height / 2){ before = item; break; }
   }
   // A photo on the side goes beside a paragraph, not beside another photo.
-  if(layout !== 'block') while(before?.classList.contains('writer-image')) before = before.nextElementSibling;
+  while(before?.classList.contains('writer-image')) before = before.nextElementSibling;
   if(before === figure) before = figure.nextElementSibling;
   const anchor = before ? before.getBoundingClientRect().top : (blocks.at(-1)?.getBoundingClientRect().bottom ?? canvasBox.top);
   return {layout,before,y:anchor - canvasBox.top};
@@ -5937,7 +5936,7 @@ function showWriterImageDrop(drop){
   const guide = document.createElement('div');
   guide.className = 'writer-image-guide';
   guide.contentEditable = 'false';
-  const span = drop.layout === 'left' ? 'left:0;width:45%;' : drop.layout === 'right' ? 'right:0;width:45%;' : 'left:0;width:100%;';
+  const span = drop.layout === 'left' ? 'left:0;width:45%;' : 'right:0;width:45%;';
   guide.style.cssText = `${span}top:${Math.max(0,drop.y - 1)}px;height:2px;`;
   writerCanvas.appendChild(guide);
 }
@@ -6018,7 +6017,7 @@ writerCanvas.addEventListener('pointermove', event => {
   }
   if(gesture.mode === 'resize'){
     const free = figure.dataset.layout === 'free';
-    const room = free ? columnWidth - figure.offsetLeft : columnWidth;
+    const room = free ? columnWidth - figure.offsetLeft : columnWidth * .75;
     const width = Math.max(columnWidth * .08,Math.min(room,gesture.width + dx));
     figure.style.setProperty('--w',String(width / columnWidth));
   }else{
