@@ -4839,12 +4839,24 @@ function writerRangeVisibleText(range){
   return text;
 }
 
-function focusWriterEditableTail(){
-  let tail = writerCanvas.lastElementChild;
-  if(!tail?.matches('p') || tail.textContent.trim() || tail.querySelector('img,.writer-inline-chat')){
-    tail = document.createElement('p');
-    tail.innerHTML = '<br>';
-    writerCanvas.appendChild(tail);
+// Put the caret on the line right after a bubble. An empty line already there is reused,
+// so inserting a bubble never leaves a second blank line (or one at the end of the text).
+function focusWriterEditableTail(group){
+  const isEmptyLine = block => block?.matches('p,div')
+    && !block.textContent.trim()
+    && !block.querySelector('img,hr,.writer-inline-chat,.writer-image');
+  let tail = group?.isConnected ? group.nextElementSibling : writerCanvas.lastElementChild;
+  if(group?.isConnected){
+    // Drop extra empty lines the insertion split off, keeping one.
+    while(isEmptyLine(tail) && isEmptyLine(tail.nextElementSibling) && !tail.nextElementSibling.nextElementSibling) tail.nextElementSibling.remove();
+  }
+  // Text already follows the bubble: put the caret at its start instead of adding a blank line.
+  if(!isEmptyLine(tail) && !(group?.isConnected && tail?.matches('p,div'))){
+    const line = document.createElement('p');
+    line.innerHTML = '<br>';
+    if(group?.isConnected) group.after(line);
+    else writerCanvas.appendChild(line);
+    tail = line;
   }
   const range = document.createRange();
   range.selectNodeContents(tail);
@@ -5316,6 +5328,7 @@ writerChatFontSize.addEventListener('change', () => {
   writerSelectedChatGroup.style.setProperty('--writer-message-font-size',`${safeFontSize}px`);
   queueWriterSave();
 });
+let writerLastInsertedGroup = null;
 function insertWriterBubbleHtml(html){
   const savedRange = writerBubbleReplaceRange || writerSavedRange;
   if(savedRange && !writerCanvas.contains(savedRange.commonAncestorContainer)) return false;
@@ -5346,6 +5359,7 @@ function insertWriterBubbleHtml(html){
     if(!writerCanvas.contains(group) || !group.querySelector('.writer-inline-chat-bubble')){
       throw new Error('Chat insertion failed');
     }
+    writerLastInsertedGroup = group;
     return true;
   }catch(error){
     writerCanvas.innerHTML = backup;
@@ -5386,7 +5400,7 @@ writerAddBubble.addEventListener('click', () => {
     && previousGroup.style.getPropertyValue('--writer-bubble-color').toLowerCase() === writerBubbleColor.value.toLowerCase()){
     previousGroup.querySelector('.writer-inline-chat-bubbles').insertAdjacentHTML('beforeend',messageHtml);
     writerChatText.value = '';
-    focusWriterEditableTail();
+    focusWriterEditableTail(previousGroup);
     queueWriterSave();
     return;
   }
@@ -5401,8 +5415,15 @@ writerAddBubble.addEventListener('click', () => {
     alert('말풍선을 적용하지 못했습니다. 원문과 입력한 대사는 유지됩니다. 적용할 문장을 다시 선택해 주세요.');
     return;
   }
+  // The new group may merge into the one before it; keep the caret after whichever survives.
+  let anchor = writerLastInsertedGroup;
+  const fallbacks = [];
+  for(let item = anchor?.previousElementSibling; item; item = item.previousElementSibling){
+    if(item.matches('.writer-inline-chat')){ fallbacks.push(item); break; }
+  }
   mergeAdjacentWriterBubbleGroups();
-  focusWriterEditableTail();
+  if(!anchor?.isConnected) anchor = fallbacks.find(item => item.isConnected) || null;
+  focusWriterEditableTail(anchor);
   writerChatText.value = '';
   writerBubbleReplaceRange = null;
   writerAddBubble.textContent = style === 'discord' ? '채팅 넣기' : '말풍선 넣기';
