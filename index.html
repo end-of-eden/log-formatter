@@ -2761,6 +2761,10 @@
       <button class="writer-photo" type="button" data-writer-action="image" title="사진 · 배경 사진" aria-label="사진"><svg class="lucide" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> <circle cx="9" cy="9" r="2"/> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></button>
       <input type="file" id="writerImageInput" accept="image/*" multiple hidden>
       <div class="writer-margin-menu writer-photo-menu" id="writerPhotoMenu" hidden>
+          <div class="writer-backdrop-row">
+            <strong>본문 사진</strong>
+            <button type="button" class="writer-backdrop-pick" id="writerInlinePick">사진 넣기</button>
+          </div>
           <div class="writer-backdrop-row" id="writerSlotRow">
             <strong>옆 사진</strong>
             <button type="button" class="writer-backdrop-pick" id="writerSlotPick">사진 고르기</button>
@@ -4614,6 +4618,7 @@ function createWriterImage(source){
     if(!image.naturalWidth) return;
     figure.dataset.ratio = String(image.naturalWidth / image.naturalHeight);
     if(!figure.style.getPropertyValue('--ar')) figure.style.setProperty('--ar',figure.dataset.ratio);
+    clampWriterImageCrop(figure);
     syncWriterFreeImageSpace(writerCanvas);
   };
   image.complete ? fit() : image.addEventListener('load',fit,{once:true});
@@ -4651,8 +4656,6 @@ function insertWriterBlockElement(block){
 // A new photo sits at the caret on the left, with the text wrapping up beside it.
 function insertWriterImageSource(source){
   const figure = createWriterImage(source);
-  figure.style.setProperty('--w','0.45');
-  figure.dataset.layout = 'left';
   insertWriterBlockElement(figure);
   syncWriterFreeImageSpace(writerCanvas);
   queueWriterSave();
@@ -4677,6 +4680,7 @@ document.querySelector('[data-writer-action="image"]').addEventListener('click',
   const open = writerPhotoMenu.hidden;
   writerPhotoMenu.hidden = !open;
   if(!open) return;
+  rememberWriterRange();
   document.getElementById('writerSlotRow').hidden = writerCategory.value !== '사진형';
   const button = event.currentTarget.getBoundingClientRect();
   const width = writerPhotoMenu.offsetWidth;
@@ -4687,6 +4691,11 @@ document.addEventListener('click', event => {
   if(!event.target.closest('#writerPhotoMenu')) writerPhotoMenu.hidden = true;
 });
 window.addEventListener('scroll',() => { writerPhotoMenu.hidden = true; },{passive:true});
+// A photo in the text sits on its own line; dragging it moves it between paragraphs.
+document.getElementById('writerInlinePick').addEventListener('click', () => {
+  writerPhotoMenu.hidden = true;
+  writerImageInput.click();
+});
 document.getElementById('writerSlotPick').addEventListener('click', () => {
   writerPhotoMenu.hidden = true;
   const slots = [...writerPhotoLayout.querySelectorAll('.writer-layout-slot')].filter(slot => getComputedStyle(slot).display !== 'none');
@@ -5956,7 +5965,6 @@ function adoptWriterImage(image){
   }else{
     image.replaceWith(figure);
   }
-  setWriterImageLayout(figure,'left');
   return figure;
 }
 function clearWriterImageGuides(){
@@ -5999,12 +6007,10 @@ function snapWriterImage(figure,left,top,width,height,disabled){
   if(sy){ top = sy.value; showWriterImageGuide(false,sy.line); }
   return {left,top};
 }
-// Dragging a photo moves it within the text: the paragraph under the pointer decides
-// where it goes, and the pointer's side of the column decides left / right / its own line.
+// Dragging a photo moves it between paragraphs: it goes before the one under the pointer.
 function findWriterImageDrop(figure,clientX,clientY){
   const canvasBox = writerCanvas.getBoundingClientRect();
-  const x = (clientX - canvasBox.left) / (writerCanvas.clientWidth || 1);
-  const layout = x < .5 ? 'left' : 'right';
+  const layout = 'block';
   const blocks = [...writerCanvas.children].filter(item => item !== figure
     && !item.matches('.writer-image-guide,.writer-sheet-backdrop'));
   let before = null;
@@ -6012,8 +6018,6 @@ function findWriterImageDrop(figure,clientX,clientY){
     const box = item.getBoundingClientRect();
     if(clientY < box.top + box.height / 2){ before = item; break; }
   }
-  // A photo on the side goes beside a paragraph, not beside another photo.
-  while(before?.classList.contains('writer-image')) before = before.nextElementSibling;
   if(before === figure) before = figure.nextElementSibling;
   const anchor = before ? before.getBoundingClientRect().top : (blocks.at(-1)?.getBoundingClientRect().bottom ?? canvasBox.top);
   return {layout,before,y:anchor - canvasBox.top};
@@ -6023,7 +6027,7 @@ function showWriterImageDrop(drop){
   const guide = document.createElement('div');
   guide.className = 'writer-image-guide';
   guide.contentEditable = 'false';
-  const span = drop.layout === 'left' ? 'left:0;width:45%;' : 'right:0;width:45%;';
+  const span = 'left:0;width:100%;';
   guide.style.cssText = `${span}top:${Math.max(0,drop.y - 1)}px;height:2px;`;
   writerCanvas.appendChild(guide);
 }
