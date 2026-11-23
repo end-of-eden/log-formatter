@@ -2274,7 +2274,7 @@
     border-top:1px solid #e2ded5;
     margin:36px 0;
   }
-  #writerCanvas img{max-width:100%;height:auto;border-radius:4px;}
+  #writerCanvas img{max-width:100%;height:auto;}
   /* Placed photos. Sizes and positions are fractions of the text column (cqw), so a
      layout made on a phone keeps its proportions on a desktop and in the saved image. */
   #writerCanvas,.writer-export-body{position:relative;container-type:inline-size;}
@@ -2294,7 +2294,7 @@
   }
   /* The photo sits in a box (aspect --ar). Inside it the picture can be zoomed (--z, of the
      box width) and moved (--ix of the box width, --iy of the box height). */
-  .writer-image-frame{position:relative;display:block;overflow:hidden;border-radius:4px;aspect-ratio:var(--ar,auto);}
+  .writer-image-frame{position:relative;display:block;overflow:hidden;aspect-ratio:var(--ar,auto);}
   .writer-image-frame img{
     position:absolute;
     top:calc(var(--iy,0) * 100%);
