@@ -1424,7 +1424,7 @@
   }
   .writer-spacing-row input[type=number]::-webkit-inner-spin-button,
   .writer-spacing-row input[type=number]::-webkit-outer-spin-button{margin:0;-webkit-appearance:none;}
-  .writer-spacing-row input[type=range]{
+  .writer-spacing-row input[type=range],.writer-image-zoom input[type=range]{
     --track:#e6e7ea;
     --thumb-bg:#fff;
     grid-column:1 / -1;
@@ -1436,12 +1436,12 @@
     -webkit-appearance:none;
     appearance:none;
   }
-  .writer-spacing-row input[type=range]::-webkit-slider-runnable-track{
+  .writer-spacing-row input[type=range]::-webkit-slider-runnable-track,.writer-image-zoom input[type=range]::-webkit-slider-runnable-track{
     height:4px;
     border-radius:999px;
     background:linear-gradient(to right,var(--burgundy) var(--fill,50%),var(--track) var(--fill,50%));
   }
-  .writer-spacing-row input[type=range]::-webkit-slider-thumb{
+  .writer-spacing-row input[type=range]::-webkit-slider-thumb,.writer-image-zoom input[type=range]::-webkit-slider-thumb{
     box-sizing:border-box;
     width:10px;
     height:10px;
@@ -1454,10 +1454,10 @@
     -webkit-appearance:none;
     appearance:none;
   }
-  .writer-spacing-row input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2);}
-  .writer-spacing-row input[type=range]::-moz-range-track{height:4px;border-radius:999px;background:var(--track);}
-  .writer-spacing-row input[type=range]::-moz-range-progress{height:4px;border-radius:999px;background:var(--burgundy);}
-  .writer-spacing-row input[type=range]::-moz-range-thumb{
+  .writer-spacing-row input[type=range]:active::-webkit-slider-thumb,.writer-image-zoom input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2);}
+  .writer-spacing-row input[type=range]::-moz-range-track,.writer-image-zoom input[type=range]::-moz-range-track{height:4px;border-radius:999px;background:var(--track);}
+  .writer-spacing-row input[type=range]::-moz-range-progress,.writer-image-zoom input[type=range]::-moz-range-progress{height:4px;border-radius:999px;background:var(--burgundy);}
+  .writer-spacing-row input[type=range]::-moz-range-thumb,.writer-image-zoom input[type=range]::-moz-range-thumb{
     box-sizing:border-box;
     width:10px;
     height:10px;
@@ -1466,9 +1466,9 @@
     background:var(--thumb-bg);
     box-shadow:0 1px 3px rgba(32,34,38,.18);
   }
-  .writer-spacing-row input[type=range]:focus{outline:none;box-shadow:none;}
-  .writer-spacing-row input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
-  .writer-spacing-row input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
+  .writer-spacing-row input[type=range]:focus,.writer-image-zoom input[type=range]:focus{outline:none;box-shadow:none;}
+  .writer-spacing-row input[type=range]:focus-visible::-webkit-slider-thumb,.writer-image-zoom input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
+  .writer-spacing-row input[type=range]:focus-visible::-moz-range-thumb,.writer-image-zoom input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(192,57,43,.18);}
   .writer-spacing-hint{margin:-2px 0 0;color:#9a9ea6;font:10px/1.4 'Pretendard',sans-serif;}
   /* HTML 이미지 mode swaps the sheet for a code box and a sandboxed preview. */
   .writer-html-panel{display:none;grid-template-columns:minmax(0,1fr);gap:10px;}
@@ -2321,8 +2321,10 @@
     margin:0;
   }
   #writerCanvas .writer-image{cursor:pointer;}
-  #writerCanvas .writer-image[data-layout="free"]{cursor:move;touch-action:none;}
+  #writerCanvas .writer-image.is-selected{cursor:move;touch-action:none;}
   #writerCanvas .writer-image.is-selected{outline:2px solid rgba(192,57,43,.75);outline-offset:2px;}
+  #writerCanvas .writer-image.is-dragging{z-index:7;opacity:.6;pointer-events:none;}
+  #writerCanvas .writer-image.is-dragging .writer-image-tools{display:none;}
   .writer-image-tools{
     position:absolute;
     bottom:100%;
@@ -2388,7 +2390,8 @@
   .writer-image.is-selected .writer-image-height{display:block;}
   .writer-image-zoom{display:none;align-items:center;gap:5px;padding:0 6px;color:#44484f;font:600 11px 'Pretendard',sans-serif;}
   .writer-image.is-cropping .writer-image-zoom{display:flex;}
-  .writer-image-zoom input{width:80px;accent-color:var(--burgundy);}
+  .writer-image-zoom input[type=range]{width:96px;margin:0;}
+  .writer-image-zoom output{min-width:30px;color:#6b7079;font:11px 'JetBrains Mono',monospace;text-align:right;}
   .writer-image-guide{position:absolute;z-index:5;background:#e0457b;pointer-events:none;}
   .writer-app.night .writer-image-tools{border-color:#3b3d43;background:#292b2f;}
   .writer-app.night .writer-image-tools button{color:#e7e5df;}
@@ -2473,7 +2476,7 @@
   .writer-app.night .writer-toolbar .writer-find-icon{color:#d8d9dc;}
   .writer-app.night .writer-toolbar .writer-find-icon:hover{background:#35373c;}
   .writer-app.night .writer-spacing-row{color:#ece9e1;}
-  .writer-app.night .writer-spacing-row input[type=range]{--track:#3b3d43;--thumb-bg:#292b2f;}
+  .writer-app.night .writer-spacing-row input[type=range],.writer-app.night .writer-image-zoom input[type=range]{--track:#3b3d43;--thumb-bg:#292b2f;}
   .writer-app.night .writer-spacing-row input[type=number]{background:#202226;border-color:#41444a;color:#ece9e1;}
   .writer-app.night .writer-tidy-button{background:#24262a;border-color:#3b3d43;color:#d8d9dc;}
   .writer-app.night .writer-tidy-button:hover{background:#2e3035;}
@@ -4540,9 +4543,8 @@ function createWriterImage(source){
     + '<button type="button" data-image-layout="block">한 줄</button>'
     + '<button type="button" data-image-layout="left">왼쪽</button>'
     + '<button type="button" data-image-layout="right">오른쪽</button>'
-    + '<button type="button" data-image-layout="free">자유</button>'
     + '<button type="button" data-image-action="crop" aria-pressed="false">사진 맞추기</button>'
-    + '<label class="writer-image-zoom">확대<input type="range" min="1" max="4" step="0.01" value="1" aria-label="사진 확대"></label>'
+    + '<label class="writer-image-zoom">확대<input type="range" min="1" max="4" step="0.01" value="1" aria-label="사진 확대"><output>1.00</output></label>'
     + '<button type="button" class="writer-image-remove" data-image-action="remove" aria-label="사진 삭제">×</button>'
     + '</span><span class="writer-image-handle" aria-hidden="true"></span>'
     + '<span class="writer-image-height" aria-hidden="true"></span>';
@@ -5825,7 +5827,11 @@ function clampWriterImageCrop(figure){
   figure.style.setProperty('--ix',String(ix));
   figure.style.setProperty('--iy',String(iy));
   const slider = figure.querySelector('.writer-image-zoom input');
-  if(slider) slider.value = String(zoom);
+  if(slider){
+    slider.value = String(zoom);
+    paintWriterRange(slider);
+    slider.nextElementSibling.textContent = zoom.toFixed(2);
+  }
 }
 // Free photos are out of the text flow; keep the column tall enough to hold them.
 function syncWriterFreeImageSpace(root){
@@ -5906,6 +5912,48 @@ function snapWriterImage(figure,left,top,width,height,disabled){
   if(sy){ top = sy.value; showWriterImageGuide(false,sy.line); }
   return {left,top};
 }
+// Dragging a photo moves it within the text: the paragraph under the pointer decides
+// where it goes, and the pointer's side of the column decides left / right / its own line.
+function findWriterImageDrop(figure,clientX,clientY){
+  const canvasBox = writerCanvas.getBoundingClientRect();
+  const x = (clientX - canvasBox.left) / (writerCanvas.clientWidth || 1);
+  const layout = x < .34 ? 'left' : x > .66 ? 'right' : 'block';
+  const blocks = [...writerCanvas.children].filter(item => item !== figure
+    && !item.matches('.writer-image-guide,.writer-sheet-backdrop'));
+  let before = null;
+  for(const item of blocks){
+    const box = item.getBoundingClientRect();
+    if(clientY < box.top + box.height / 2){ before = item; break; }
+  }
+  // A photo on the side goes beside a paragraph, not beside another photo.
+  if(layout !== 'block') while(before?.classList.contains('writer-image')) before = before.nextElementSibling;
+  if(before === figure) before = figure.nextElementSibling;
+  const anchor = before ? before.getBoundingClientRect().top : (blocks.at(-1)?.getBoundingClientRect().bottom ?? canvasBox.top);
+  return {layout,before,y:anchor - canvasBox.top};
+}
+function showWriterImageDrop(drop){
+  clearWriterImageGuides();
+  const guide = document.createElement('div');
+  guide.className = 'writer-image-guide';
+  guide.contentEditable = 'false';
+  const span = drop.layout === 'left' ? 'left:0;width:45%;' : drop.layout === 'right' ? 'right:0;width:45%;' : 'left:0;width:100%;';
+  guide.style.cssText = `${span}top:${Math.max(0,drop.y - 1)}px;height:2px;`;
+  writerCanvas.appendChild(guide);
+}
+function dropWriterImage(figure,drop){
+  if(drop.before) writerCanvas.insertBefore(figure,drop.before);
+  else{
+    writerCanvas.appendChild(figure);
+    const tail = document.createElement('p');
+    tail.innerHTML = '<br>';
+    figure.after(tail);
+  }
+  if(figure.dataset.layout === 'free'){
+    figure.style.removeProperty('--x');
+    figure.style.removeProperty('--y');
+  }
+  setWriterImageLayout(figure,drop.layout);
+}
 let writerImageGesture = null;
 writerCanvas.addEventListener('pointerdown', event => {
   let figure = event.target.closest('.writer-image');
@@ -5920,11 +5968,10 @@ writerCanvas.addEventListener('pointerdown', event => {
   const handle = event.target.closest('.writer-image-handle');
   const heightHandle = event.target.closest('.writer-image-height');
   const cropping = figure.classList.contains('is-cropping') && event.target.closest('.writer-image-frame');
-  if(!handle && !heightHandle && !cropping && figure.dataset.layout !== 'free') return;
   const frame = figure.querySelector('.writer-image-frame');
   writerImageGesture = {
     figure,
-    mode:handle ? 'resize' : heightHandle ? 'height' : cropping ? 'pan' : 'move',
+    mode:handle ? 'resize' : heightHandle ? 'height' : cropping ? 'pan' : figure.dataset.layout === 'free' ? 'move' : 'flow',
     frameWidth:frame.offsetWidth,
     frameHeight:frame.offsetHeight,
     ix:writerImageVar(figure,'--ix'),
@@ -5945,6 +5992,15 @@ writerCanvas.addEventListener('pointermove', event => {
   const dx = event.clientX - gesture.startX;
   const dy = event.clientY - gesture.startY;
   const {figure,columnWidth} = gesture;
+  if(gesture.mode === 'flow'){
+    if(!gesture.dragging && Math.hypot(dx,dy) < 5) return;
+    gesture.dragging = true;
+    figure.classList.add('is-dragging');
+    figure.style.translate = `${dx}px ${dy}px`;
+    gesture.drop = findWriterImageDrop(figure,event.clientX,event.clientY);
+    showWriterImageDrop(gesture.drop);
+    return;
+  }
   if(gesture.mode === 'pan'){
     figure.style.setProperty('--ix',String(gesture.ix + dx / gesture.frameWidth));
     figure.style.setProperty('--iy',String(gesture.iy + dy / gesture.frameHeight));
@@ -5975,8 +6031,12 @@ writerCanvas.addEventListener('pointermove', event => {
 const endWriterImageGesture = event => {
   if(!writerImageGesture || writerImageGesture.pointer !== event.pointerId) return;
   const moved = writerImageGesture.figure;
+  const drop = writerImageGesture.dragging && event.type === 'pointerup' ? writerImageGesture.drop : null;
   writerImageGesture = null;
   clearWriterImageGuides();
+  moved.classList.remove('is-dragging');
+  moved.style.translate = '';
+  if(drop) dropWriterImage(moved,drop);
   placeWriterImageTools(moved);
   syncWriterFreeImageSpace(writerCanvas);
   queueWriterSave();
